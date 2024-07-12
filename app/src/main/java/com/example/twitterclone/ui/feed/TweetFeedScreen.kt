@@ -1,30 +1,29 @@
 package com.example.twitterclone.ui.feed
-import android.net.Uri
+
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.twitterclone.model.Tweet
+import com.example.twitterclone.model.MimeiId
 import com.example.twitterclone.ui.tweet.TweetItem
-
+import com.example.twitterclone.viewmodel.TweetFeedViewModel
+import com.example.twitterclone.viewmodel.TweetViewModel
 
 @Composable
-fun TweetFeedScreen(viewModel: TweetFeedViewModel = viewModel()) {
-    val tweets = viewModel.tweets
+fun TweetFeedScreen(
+    tweetFeedViewModel: TweetFeedViewModel = viewModel(),
+    tweetViewModel: TweetViewModel = viewModel(),
+    currentUserMid: MimeiId
+) {
+    val tweets = tweetFeedViewModel.tweets.collectAsState().value
     val context = LocalContext.current
 
     LazyColumn {
         items(tweets) { tweet ->
-            TweetItem(tweet = tweet, onMediaClick = { uri ->
-                // Handle media click, e.g., open a media player or download the file
-                handleMediaClick(context, uri)
-            })
+            val author = tweetFeedViewModel.getUser(tweet.author)
+            val originalTweet = tweet.original?.let { tweetFeedViewModel.getTweet(it) }
+            TweetItem(tweet = tweet, author = author, originalTweet = originalTweet, viewModel = tweetViewModel, currentUserMid = currentUserMid)
         }
     }
-}
-
-fun handleMediaClick(context: Context, uri: Uri) {
-    // Implement logic to handle media click, e.g., open a media player or download the file
-    // This could involve starting an activity with an intent to view/play the media
 }

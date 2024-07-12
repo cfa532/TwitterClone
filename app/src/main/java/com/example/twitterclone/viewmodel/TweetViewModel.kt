@@ -2,8 +2,8 @@ package com.example.twitterclone.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.twitterclone.model.Tweet
 import com.example.twitterclone.model.MimeiId
+import us.leither.mytweet.model.Tweet
 import com.example.twitterclone.repository.TweetRepository
 import kotlinx.coroutines.launch
 
@@ -15,6 +15,14 @@ class TweetViewModel(
         viewModelScope.launch {
             val tweet = tweetRepository.getTweet(tweetMid)
             val updatedTweet = tweet.copy(bookmarkCount = tweet.bookmarkCount + 1)
+            tweetRepository.updateTweet(updatedTweet)
+        }
+    }
+
+    fun likeTweet(tweetMid: MimeiId) {
+        viewModelScope.launch {
+            val tweet = tweetRepository.getTweet(tweetMid)
+            val updatedTweet = tweet.copy(likeCount = tweet.likeCount + 1)
             tweetRepository.updateTweet(updatedTweet)
         }
     }

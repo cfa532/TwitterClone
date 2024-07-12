@@ -1,7 +1,7 @@
 package com.example.twitterclone.repository
 
-import com.example.twitterclone.model.Tweet
 import com.example.twitterclone.model.MimeiId
+import com.example.twitterclone.model.Tweet
 
 class TweetRepository {
     private val tweets = mutableListOf<Tweet>()

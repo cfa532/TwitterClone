@@ -7,7 +7,7 @@ data class Tweet(
     val author: MimeiId,        // mid of the author
     val likeCount: Int = 0,     // Number of likes
     val bookmarkCount: Int = 0, // Number of bookmarks
-    var original: MimeiId?,     // this is retweet of the original tweet
+    var original: MimeiId?= null, // this is retweet of the original tweet
 
     // List of retweets ID, without comments.
     val retweets: List<MimeiId> = emptyList(),
