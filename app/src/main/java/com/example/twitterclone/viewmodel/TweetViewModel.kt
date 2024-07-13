@@ -3,7 +3,6 @@ package com.example.twitterclone.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.twitterclone.model.MimeiId
-import us.leither.mytweet.model.Tweet
 import com.example.twitterclone.repository.TweetRepository
 import kotlinx.coroutines.launch
 
