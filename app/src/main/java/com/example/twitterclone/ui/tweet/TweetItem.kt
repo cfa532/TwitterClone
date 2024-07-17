@@ -2,7 +2,7 @@ package com.example.twitterclone.ui.tweet
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.twitterclone.model.Tweet
@@ -11,7 +11,13 @@ import com.example.twitterclone.model.User
 import com.example.twitterclone.viewmodel.TweetViewModel
 
 @Composable
-fun TweetItem(tweet: Tweet, author: User, originalTweet: Tweet?, viewModel: TweetViewModel, currentUserMid: MimeiId) {
+fun TweetItem(
+    tweet: Tweet,
+    author: User,
+    originalTweet: Tweet?,
+    viewModel: TweetViewModel,
+    currentUserMid: MimeiId
+) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -28,11 +34,6 @@ fun TweetItem(tweet: Tweet, author: User, originalTweet: Tweet?, viewModel: Twee
             Button(onClick = { viewModel.likeTweet(tweet.mid) }) {
                 Text("Like")
             }
-
-            Spacer(modifier = Modifier.width(8.dp))
-            Button(onClick = { viewModel.likeTweet(tweet.mid) }) {
-                Text("Like")
-            }
             Spacer(modifier = Modifier.width(8.dp))
             Button(onClick = { /* Handle reply action */ }) {
                 Text("Reply")
@@ -41,7 +42,13 @@ fun TweetItem(tweet: Tweet, author: User, originalTweet: Tweet?, viewModel: Twee
         originalTweet?.let {
             Spacer(modifier = Modifier.height(8.dp))
             Text(text = "Retweet of:", style = MaterialTheme.typography.labelSmall)
-            TweetItem(tweet = it, author = author, originalTweet = null, viewModel = viewModel, currentUserMid = currentUserMid)
+            TweetItem(
+                tweet = it,
+                author = author,
+                originalTweet = null,
+                viewModel = viewModel,
+                currentUserMid = currentUserMid
+            )
         }
     }
 }

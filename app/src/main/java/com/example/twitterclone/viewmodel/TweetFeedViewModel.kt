@@ -31,4 +31,8 @@ class TweetFeedViewModel(
     fun getTweet(tweetMid: MimeiId): Tweet {
         return tweetRepository.getTweet(tweetMid)
     }
+
+    fun getTweetRepository(): TweetRepository {
+        return tweetRepository
+    }
 }
