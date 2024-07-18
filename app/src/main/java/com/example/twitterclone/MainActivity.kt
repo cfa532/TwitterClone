@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -61,7 +62,8 @@ fun TopAppBar() {
             ) {
                 Image(
                     painter = painterResource(id = R.drawable.ic_app_icon),
-                    contentDescription = "App Icon"
+                    contentDescription = "App Icon",
+                    modifier = Modifier.size(40.dp)
                 )
             }
         },
@@ -70,6 +72,8 @@ fun TopAppBar() {
                 painter = painterResource(id = R.drawable.ic_user_avatar),
                 contentDescription = "User Avatar",
                 modifier = Modifier.padding(8.dp)
+                    .size(40.dp)
+                    .padding(top = 16.dp)
             )
         }
     )
@@ -83,13 +87,25 @@ fun BottomNavigationBar() {
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
             IconButton(onClick = { /* Navigate to Home */ }) {
-                Icon(painter = painterResource(id = R.drawable.ic_home), contentDescription = "Home")
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_home),
+                    contentDescription = "Home",
+                    modifier = Modifier.size(24.dp)
+                )
             }
             IconButton(onClick = { /* Navigate to Notice */ }) {
-                Icon(painter = painterResource(id = R.drawable.ic_notice), contentDescription = "Notice")
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_notice),
+                    contentDescription = "Notice",
+                    modifier = Modifier.size(24.dp)
+                )
             }
             IconButton(onClick = { /* Navigate to Compose */ }) {
-                Icon(painter = painterResource(id = R.drawable.ic_compose), contentDescription = "Compose")
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_compose),
+                    contentDescription = "Compose",
+                    modifier = Modifier.size(24.dp)
+                )
             }
         }
     }
