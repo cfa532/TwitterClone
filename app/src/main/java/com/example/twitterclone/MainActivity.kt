@@ -26,6 +26,11 @@ import com.example.twitterclone.ui.theme.TwitterCloneTheme
 import com.example.twitterclone.ui.tweet.TweetItem
 import com.example.twitterclone.viewmodel.TweetFeedViewModel
 import com.example.twitterclone.viewmodel.TweetViewModel
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import com.example.twitterclone.ui.compose.ComposeTweetScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -40,14 +45,29 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun MainScreen(viewModel: TweetFeedViewModel = TweetFeedViewModel()) {
+    val navController = rememberNavController()
     Scaffold(
         topBar = { TopAppBar() },
-        bottomBar = { BottomNavigationBar() }
+        bottomBar = { BottomNavigationBar(navController) }
     ) { innerPadding ->
-        TweetFeed(
-            modifier = Modifier.padding(innerPadding),
-            viewModel = viewModel
-        )
+        NavHost(
+            navController = navController,
+            startDestination = "tweetFeed",
+            modifier = Modifier.padding(innerPadding)
+        ) {
+            composable("tweetFeed") {
+                TweetFeed(
+                    modifier = Modifier.fillMaxSize(),
+                    viewModel = viewModel
+                )
+            }
+            composable("composeTweet") {
+                ComposeTweetScreen(
+                    viewModel = TweetViewModel(viewModel.getTweetRepository()),
+                    currentUserMid = "currentUserId" // Replace with actual current user ID
+                )
+            }
+        }
     }
 }
 
@@ -80,7 +100,7 @@ fun TopAppBar() {
 }
 
 @Composable
-fun BottomNavigationBar() {
+fun BottomNavigationBar(navController: NavHostController) {
     BottomAppBar {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -100,7 +120,7 @@ fun BottomNavigationBar() {
                     modifier = Modifier.size(24.dp)
                 )
             }
-            IconButton(onClick = { /* Navigate to Compose */ }) {
+            IconButton(onClick = { navController.navigate("composeTweet") }) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_compose),
                     contentDescription = "Compose",
