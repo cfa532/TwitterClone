@@ -32,6 +32,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.twitterclone.ui.compose.ComposeTweetScreen
 
+const val CURRENT_USER_ID = "5lrADJpzRpYZ82-6jkewoa1w3jB"
+
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -64,7 +66,7 @@ fun MainScreen(viewModel: TweetFeedViewModel = TweetFeedViewModel()) {
             composable("composeTweet") {
                 ComposeTweetScreen(
                     viewModel = TweetViewModel(viewModel.getTweetRepository()),
-                    currentUserMid = "currentUserId" // Replace with actual current user ID
+                    currentUserMid = CURRENT_USER_ID // Replace with actual current user ID
                 )
             }
         }

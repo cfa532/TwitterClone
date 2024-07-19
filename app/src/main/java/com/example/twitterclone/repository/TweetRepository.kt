@@ -2,6 +2,7 @@ package com.example.twitterclone.repository
 
 import com.example.twitterclone.model.MimeiId
 import com.example.twitterclone.model.Tweet
+import com.example.twitterclone.model.TweetResponse
 
 class TweetRepository {
     private val tweets = mutableListOf<Tweet>()
@@ -21,6 +22,10 @@ class TweetRepository {
         } else {
             throw IllegalArgumentException("Tweet not found")
         }
+    }
+
+    fun deleteTweet(tweetMid: MimeiId) {
+        tweets.removeIf { it.mid == tweetMid }
     }
 
     fun getTweets(): List<Tweet> {

@@ -3,10 +3,10 @@ package com.example.twitterclone.model
 typealias MimeiId = String
 
 data class Tweet(
-    val mid: MimeiId,
-    val content: String,
-    val timestamp: Long,
+    val mid: MimeiId? = null,   // mid of the tweet
     val author: MimeiId,        // mid of the author
+    val content: String,
+    val timestamp: Long = System.currentTimeMillis(),
     var likeCount: Int = 0,     // Number of likes
     var bookmarkCount: Int = 0, // Number of bookmarks
     var original: MimeiId?= null, // this is retweet of the original tweet
@@ -20,7 +20,7 @@ data class Tweet(
     val commentCount: Int = 0,  // Number of comments
 
     // List of media IDs attached to the tweet. Max 4 items for now.
-    val mediaIds: List<MimeiId> = emptyList(),
+    val attachments: List<MimeiId> = emptyList(),
 
     var isPrivate: Boolean = false,     // Viewable by the author only if true.
 )
