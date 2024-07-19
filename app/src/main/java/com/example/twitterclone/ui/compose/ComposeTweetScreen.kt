@@ -13,8 +13,8 @@ import com.example.twitterclone.viewmodel.TweetViewModel
 
 @Composable
 fun ComposeTweetScreen(viewModel: TweetViewModel, currentUserMid: MimeiId) {
-    val tweetContent = remember { mutableStateOf("") }
-    val attachments = remember { mutableStateOf(listOf<MimeiId>()) }
+    var tweetContent by remember {mutableStateOf("") } // Use by delegation for better syntax
+    val attachments = remember { mutableStateOf(listOf<MimeiId>()) } // Consider if attachments are actually used
     var isPrivate by remember { mutableStateOf(false) }
 
     Column(
@@ -22,15 +22,17 @@ fun ComposeTweetScreen(viewModel: TweetViewModel, currentUserMid: MimeiId) {
             .fillMaxWidth()
             .padding(16.dp)
     ) {
-        TextField(
-            value = tweetContent.value,
-            onValueChange = { tweetContent.value = it },
-            label = { Text("What's happening?") }
+        OutlinedTextField( // Use OutlinedTextField for a more modern look
+            value = tweetContent,
+            onValueChange = { tweetContent = it },
+            label = { Text("What's happening?") },
+            modifier = Modifier.fillMaxWidth() // Make the text field take up full width
         )
         Spacer(modifier = Modifier.height(8.dp))
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically // Vertically center the row contents
         ) {
             Text("Private")
             Switch(
@@ -39,9 +41,8 @@ fun ComposeTweetScreen(viewModel: TweetViewModel, currentUserMid: MimeiId) {
             )
         }
         Spacer(modifier = Modifier.height(16.dp))
-        Button(onClick = {
-            viewModel.composeTweet(currentUserMid, tweetContent.value, isPrivate)
-        },
+        Button(
+            onClick = { viewModel.composeTweet(currentUserMid, tweetContent, isPrivate) },
             modifier = Modifier.align(Alignment.End)
         ) {
             Text("Tweet")
