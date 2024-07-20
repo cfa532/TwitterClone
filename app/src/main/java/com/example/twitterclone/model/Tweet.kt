@@ -3,7 +3,7 @@ package com.example.twitterclone.model
 typealias MimeiId = String
 
 data class Tweet(
-    val mid: MimeiId? = null,   // mid of the tweet
+    var mid: MimeiId? = null,   // mid of the tweet
     val author: MimeiId,        // mid of the author
     val content: String,
     val timestamp: Long = System.currentTimeMillis(),
@@ -12,39 +12,39 @@ data class Tweet(
     var original: MimeiId?= null, // this is retweet of the original tweet
 
     // List of retweets ID, without comments.
-    val retweets: List<MimeiId> = emptyList(),
-    val retweetCount: Int = 0,  // Number of retweets
+    var retweets: List<MimeiId> = emptyList(),
+    var retweetCount: Int = 0,  // Number of retweets
 
     // List of comments (tweets) Id on this tweet.
-    val comments: List<MimeiId> = emptyList(),
-    val commentCount: Int = 0,  // Number of comments
+    var comments: List<MimeiId> = emptyList(),
+    var commentCount: Int = 0,  // Number of comments
 
     // List of media IDs attached to the tweet. Max 4 items for now.
-    val attachments: List<MimeiId> = emptyList(),
+    var attachments: List<MimeiId> = emptyList(),
 
     var isPrivate: Boolean = false,     // Viewable by the author only if true.
 )
 
 data class User(
     val mid: MimeiId, // Unique identifier for the user
-    val name: String,
+    var name: String,
     val username: String,
-    val avatar: MimeiId? = null, // Optional profile image URL
+    var avatar: MimeiId? = null, // Optional profile image URL
 
     // List of tweet MIDs bookmarked by the user
-    val bookmarkedTweets: List<MimeiId> = emptyList(),
+    var bookmarkedTweets: List<MimeiId> = emptyList(),
 
     // List of tweet MIDs liked by the user
-    val likedTweets: List<MimeiId> = emptyList(),
+    var likedTweets: List<MimeiId> = emptyList(),
 
     // List of tweet MIDs commented to by the user
-    val repliedTweets: List<MimeiId> = emptyList(),
+    var repliedTweets: List<MimeiId> = emptyList(),
 
     // List of nodes authorized to the user to write tweets on.
-    val nodeIds: List<MimeiId>? = null,
+    var nodeIds: List<MimeiId>? = null,
 
-    val publicKey: String? = null,
+    var publicKey: String? = null,
 
     // List of users blocked by the user
-    val blockList: List<MimeiId>? = null
+    var blackList: List<MimeiId>? = null
 )

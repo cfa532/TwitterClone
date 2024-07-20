@@ -1,31 +1,18 @@
 package com.example.twitterclone.viewmodel
 
 import androidx.compose.runtime.mutableStateListOf
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.twitterclone.model.MimeiId
 import com.example.twitterclone.model.Tweet
-import com.example.twitterclone.model.TweetApiService
-import com.example.twitterclone.model.TweetRequest
-import com.example.twitterclone.network.RetrofitInstance
+import com.example.twitterclone.network.TweetRequest
+import com.example.twitterclone.network.HproseInstance
 import com.example.twitterclone.repository.TweetRepository
 import kotlinx.coroutines.launch
-import java.time.Instant
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
-import retrofit2.awaitResponse
 
 class TweetViewModel(
     private val tweetRepository: TweetRepository = TweetRepository()
 ) : ViewModel() {
-    private val retrofit = Retrofit.Builder()
-        .baseUrl("https://your-api-base-url.com/")
-        .addConverterFactory(GsonConverterFactory.create())
-        .build()
-
-    private val tweetApiService = retrofit.create(TweetApiService::class.java)
 
     private val tweets = mutableStateListOf<Tweet>()
 
@@ -50,29 +37,13 @@ class TweetViewModel(
         }
     }
 
-    private fun saveTweetToDatabase(tweet: Tweet) {
-        // Implement your proprietary database access logic here
-    }
-
     fun composeTweet(authorId: MimeiId, content: String, isPrivate: Boolean) {
         viewModelScope.launch {
-            val tweetRequest = TweetRequest(Tweet(author = authorId, content = content))
-            val response = RetrofitInstance.api.uploadTweet(tweetRequest).awaitResponse()
-            if (response.isSuccessful) {
-                val tweetResponse = response.body()
-                tweetResponse?.let {
-                    val newTweet = Tweet(
-                        mid = it.mimeiId,
-                        content = content,
-                        timestamp = System.currentTimeMillis(),
-                        author = authorId,
-                        isPrivate = isPrivate
-                    )
-                    tweets.add(newTweet)
-                }
-            } else {
-                // Handle error
-            }
+            val newTweet = Tweet(author = authorId, content = content, isPrivate = isPrivate)
+            println(newTweet)
+            val tweetRequest = TweetRequest(newTweet)
+            val response = HproseInstance.client.GetVar("", "ver")
+            println(response)
         }
     }
 }
