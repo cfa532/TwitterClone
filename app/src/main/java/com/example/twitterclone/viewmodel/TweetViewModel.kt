@@ -42,8 +42,15 @@ class TweetViewModel(
             val newTweet = Tweet(author = authorId, content = content, isPrivate = isPrivate)
             println(newTweet)
             val tweetRequest = TweetRequest(newTweet)
-            val response = HproseInstance.client.GetVar("", "ver")
-            println(response)
+
+//            val (result, error) = HproseInstance.client.GetVar("", "ver")
+            val error = null
+            val result = HproseInstance.client.GetVarByContext("", "context_ppt")
+            if (error == null) {
+                println("Version: $result")
+            } else {
+                println(error)
+            }
         }
     }
 }
