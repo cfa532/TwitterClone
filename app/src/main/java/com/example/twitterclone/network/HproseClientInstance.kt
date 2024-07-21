@@ -3,9 +3,9 @@ package com.example.twitterclone.network
 import hprose.client.HproseClient
 
 interface HproseService {
-    fun GetVarByContext(sid: String, context: String, args: Any? = null): String
+    fun GetVarByContext(sid: String, context: String, mapOpt: Map<String, String>? = null): String
     fun Login(ppt: String): Map<String, String>
-    fun GetVar(sid: String, name: String, vararg args: String): Pair<Any?, Throwable?>
+    fun GetVar(sid: String, name: String): String
 }
 
 object HproseInstance {
