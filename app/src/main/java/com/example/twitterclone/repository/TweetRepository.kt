@@ -6,8 +6,9 @@ import com.example.twitterclone.model.Tweet
 class TweetRepository {
     private val tweets = mutableListOf<Tweet>()
 
-    fun addTweet(tweet: Tweet) {
+    fun addTweet(tweet: Tweet): List<Tweet> {
         tweets.add(tweet)
+        return tweets
     }
 
     fun getTweet(tweetMid: MimeiId): Tweet {

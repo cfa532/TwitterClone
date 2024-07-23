@@ -1,20 +1,20 @@
 package com.example.twitterclone.viewmodel
 
-import androidx.compose.runtime.mutableStateListOf
+import android.net.Uri
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.twitterclone.model.MimeiId
 import com.example.twitterclone.model.Tweet
-import com.example.twitterclone.network.TweetRequest
-import com.example.twitterclone.network.HproseInstance
 import com.example.twitterclone.repository.TweetRepository
 import kotlinx.coroutines.launch
 
 class TweetViewModel(
     private val tweetRepository: TweetRepository = TweetRepository()
 ) : ViewModel() {
-
-    private val tweets = mutableStateListOf<Tweet>()
+    private val _attachments = MutableLiveData<List<Uri>>()
+    val attachments: LiveData<List<Uri>> get() = _attachments
 
     fun likeTweet(tweetMid: MimeiId) {
         viewModelScope.launch {
@@ -22,6 +22,10 @@ class TweetViewModel(
             val updatedTweet = tweet.copy(likeCount = tweet.likeCount + 1)
             tweetRepository.updateTweet(updatedTweet)
         }
+    }
+
+    fun addAttachment(uri: Uri) {
+        _attachments.value = (_attachments.value ?: emptyList()) + uri
     }
 
     fun retweet(tweetMid: MimeiId, authorMid: MimeiId) {
@@ -37,16 +41,16 @@ class TweetViewModel(
         }
     }
 
-    fun composeTweet(authorId: MimeiId, content: String, isPrivate: Boolean) {
-        viewModelScope.launch {
-            val newTweet = Tweet(author = authorId, content = content, isPrivate = isPrivate)
-            println(newTweet)
-            val tweetRequest = TweetRequest(newTweet)
-
-            val ppt  = HproseInstance.client.GetVarByContext("", "context_ppt")
-            val result = HproseInstance.client.Login(ppt)
-            println(HproseInstance.client.GetVar("", "ver"))
-            println("Login: $result")
-        }
+    fun composeTweet(currentUserMid: MimeiId, content: String, isPrivate: Boolean) {
+        // Handle tweet composition, including attachments
+        val tweet = Tweet(
+            author = currentUserMid,
+            content = content,
+            isPrivate = isPrivate,
+            attachments = _attachments.value?.map { it.toString() } ?: emptyList()
+        )
+        println(tweet)
+        tweetRepository.addTweet(tweet)
+        // Add logic to save or upload the tweet
     }
 }

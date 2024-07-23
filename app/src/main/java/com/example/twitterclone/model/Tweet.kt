@@ -1,6 +1,6 @@
 package com.example.twitterclone.model
 
-typealias MimeiId = String
+typealias MimeiId = String      // 27 or 64 character long string
 
 data class Tweet(
     var mid: MimeiId? = null,   // mid of the tweet
