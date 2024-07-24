@@ -2,8 +2,10 @@ package com.example.twitterclone.ui.compose
 
 import AttachmentIcon
 import android.net.Uri
+import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -12,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
@@ -32,6 +35,7 @@ import androidx.compose.ui.unit.dp
 import com.example.twitterclone.model.MimeiId
 import com.example.twitterclone.viewmodel.TweetViewModel
 
+@RequiresApi(Build.VERSION_CODES.Q)
 @Composable
 fun ComposeTweetScreen(viewModel: TweetViewModel, currentUserMid: MimeiId) {
     var tweetContent by remember {mutableStateOf("") }
@@ -40,7 +44,6 @@ fun ComposeTweetScreen(viewModel: TweetViewModel, currentUserMid: MimeiId) {
     var isPrivate by remember { mutableStateOf(false) }
 
     // Create a launcher for the file picker
-    val context = LocalContext.current
     val filePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
@@ -97,15 +100,25 @@ fun ComposeTweetScreen(viewModel: TweetViewModel, currentUserMid: MimeiId) {
         }
 
         // Display icons for attached files (moved outside of the button row)
-        LazyRow(modifier = Modifier.fillMaxWidth().padding(top = 8.dp)) {
-            items(selectedAttachments) { uri ->
-                AttachmentIcon(uri)
-                Spacer(modifier = Modifier.width(4.dp))
+        val groupedAttachments = selectedAttachments.chunked(2)
+
+        LazyColumn(
+            modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp) // Control spacing between rows
+        ) {
+            items(groupedAttachments) { pair ->
+                Row(modifier = Modifier.fillMaxWidth()) {
+                    pair.forEach { uri ->
+                        AttachmentIcon(uri)
+                        Spacer(modifier = Modifier.width(4.dp))
+                    }
+                }
             }
         }
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.Q)
 @Preview(showBackground = true)
 @Composable
 fun PreviewComposeTweetScreen() {
