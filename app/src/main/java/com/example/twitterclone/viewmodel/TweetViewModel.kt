@@ -41,13 +41,14 @@ class TweetViewModel(
         }
     }
 
-    fun composeTweet(currentUserMid: MimeiId, content: String, isPrivate: Boolean) {
+    fun composeTweet(currentUserMid: MimeiId, content: String, isPrivate: Boolean, attachments: List<Uri>) {
         // Handle tweet composition, including attachments
         val tweet = Tweet(
             author = currentUserMid,
             content = content,
             isPrivate = isPrivate,
-            attachments = _attachments.value?.map { it.toString() } ?: emptyList()
+            attachments = attachments.map { it.toString() }
+//            attachments = _attachments.value?.map { it.toString() } ?: emptyList()
         )
         println(tweet)
         tweetRepository.addTweet(tweet)
