@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.twitterclone.model.MimeiId
 import com.example.twitterclone.model.Tweet
+import com.example.twitterclone.network.HproseInstance
 import com.example.twitterclone.repository.TweetRepository
 import kotlinx.coroutines.launch
 
@@ -34,15 +35,16 @@ class TweetViewModel(
     }
 
     fun uploadTweet(currentUserMid: MimeiId, content: String, isPrivate: Boolean, attachments: List<MimeiId>) {
-        val tweet = Tweet(
+
+        var tweet = Tweet(
             author = currentUserMid,
             content = content,
             isPrivate = isPrivate,
             attachments = attachments
         )
+        tweet = HproseInstance.createTweet(tweet)
 
         // Now you can save the tweet with attachment CIDs
         println(tweet)
-//        tweetRepository.addTweet(tweet)
     }
 }

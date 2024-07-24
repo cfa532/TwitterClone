@@ -1,6 +1,9 @@
 package com.example.twitterclone.network
 
 import com.example.twitterclone.model.MimeiId
+import com.example.twitterclone.model.ScorePair
+import com.example.twitterclone.model.ScorePairClass
+import com.example.twitterclone.model.Tweet
 import hprose.client.HproseClient
 import java.io.InputStream
 
@@ -17,6 +20,12 @@ interface HproseService {fun getVarByContext(sid: String, context: String, mapOp
     fun mfTemp2Ipfs(fsid: String, ref: MimeiId): MimeiId
     fun mfSetCid(sid: String, mid: MimeiId, cid: MimeiId)
     fun mfSetData(fsid: String, data: ByteArray, offset: Int)
+    fun set(sid: String, key: String, value: Any)
+    fun get(sid: String, key: String): Any
+    fun hGet(sid: String, key: String, field: String): Any
+    fun hSet(sid: String, key: String, field: String, value: Any)
+    fun hDel(sid: String, key: String, field: String)
+    fun zAdd(sid: String, key: String, sp: ScorePair)
 }
 
 // Encapsulate Hprose client and related operations in a singleton object.
@@ -26,6 +35,9 @@ object HproseInstance {
     private const val APP_ID = "V6MUd0cVeuCFE7YsGLNn5ygyJlm"
     private const val APP_EXT = "com.example.twitterclone"
     private const val APP_MARK = "version 0.0.1"
+
+    private const val TWT_CONTENT_KEY = "content_of_tweet"  // content key within the Mimei
+    private const val TWTS_LIST_KEY = "list_of_tweets"       // list key within the Mimei
 
     private var sid:String = ""
     private val client: HproseService by lazy {
@@ -49,13 +61,22 @@ object HproseInstance {
     }
 
     // Store an object in a Mimei file and return its MimeiId.
-    fun storeObject(obj: Any): MimeiId {
+    fun createTweet(t: Tweet): Tweet {
         val mid = client.mmCreate(sid, APP_ID, APP_EXT, "{{auto}}", 2, 120022788)
-        val fsid = client.mmOpen(sid, mid, "cur")
-        client.mmSetObject(fsid, obj)
+        println("Created tweet mid=$mid")
+        t.mid = mid
+        var mmsid = client.mmOpen(sid, mid, "cur")
+        client.set(mmsid, TWT_CONTENT_KEY, t)
         client.mmBackup(sid, mid, "", "delref=true") // Use default memo, specify ref deletion
         client.mmAddRef(sid, appMid, mid) // Reference the object from the app's main Mimei
-        return mid
+
+        // add the new tweet in user's tweet list
+        mmsid = client.mmOpen(sid, appMid, "cur")
+        client.zAdd(mmsid, TWTS_LIST_KEY, ScorePairClass(System.currentTimeMillis(), mid))
+        client.mmBackup(sid, appMid, "", "delref=true") // Use default memo, specify ref deletion
+        client.mimeiPublish(sid, "", mid)
+
+        return t
     }
 
     // Upload data from an InputStream to IPFS and return the resulting MimeiId.

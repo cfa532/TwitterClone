@@ -43,7 +43,7 @@ import kotlinx.coroutines.withContext
 @RequiresApi(Build.VERSION_CODES.Q)
 @Composable
 fun ComposeTweetScreen(viewModel: TweetViewModel, currentUserMid: MimeiId) {
-    var tweetContent by remember { mutableStateOf("") }
+    var tweetContent by remember { mutableStateOf("Hello Twitter.") }
     val selectedAttachments = remember { mutableStateListOf<Uri>() }
     var isPrivate by remember { mutableStateOf(false) }
     val context = LocalContext.current // Renamed for clarity
