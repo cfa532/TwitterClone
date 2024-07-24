@@ -1,6 +1,7 @@
 package com.example.twitterclone.ui.compose
 
 import AttachmentIcon
+import android.content.Context
 import android.net.Uri
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -15,7 +16,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.OutlinedTextField
@@ -34,6 +34,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.twitterclone.model.MimeiId
 import com.example.twitterclone.viewmodel.TweetViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.twitterclone.network.HproseInstance
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 @RequiresApi(Build.VERSION_CODES.Q)
 @Composable
@@ -42,6 +46,7 @@ fun ComposeTweetScreen(viewModel: TweetViewModel, currentUserMid: MimeiId) {
     val selectedAttachments =
         remember { mutableStateListOf<Uri>() } // Renamed for clarity
     var isPrivate by remember { mutableStateOf(false) }
+    val contentResolver = LocalContext.current.contentResolver
 
     // Create a launcher for the file picker
     val filePickerLauncher = rememberLauncherForActivityResult(
@@ -88,7 +93,17 @@ fun ComposeTweetScreen(viewModel: TweetViewModel, currentUserMid: MimeiId) {
             Spacer(modifier = Modifier.width(8.dp))
             Button(
                 onClick = {
-                    viewModel.composeTweet(currentUserMid, tweetContent, isPrivate, selectedAttachments)
+                    HproseInstance.initialize()
+                    val attachments = mutableListOf<MimeiId>()
+                    selectedAttachments.map { uri: Uri ->
+                        contentResolver.openInputStream(uri)?.let { inputStream ->
+                            val cid = HproseInstance.mmUpload2IPFS(inputStream)
+                            println("CID: $cid")
+                            attachments += cid
+                            inputStream.close()
+                        }
+                    }
+                    viewModel.uploadTweet(currentUserMid, tweetContent, isPrivate, attachments)
                     selectedAttachments.clear()
                     tweetContent = ""
                     // Consider navigating back to the previous screen or showing a confirmation message

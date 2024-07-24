@@ -1,8 +1,6 @@
 package com.example.twitterclone.viewmodel
 
 import android.net.Uri
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.twitterclone.model.MimeiId
@@ -13,8 +11,6 @@ import kotlinx.coroutines.launch
 class TweetViewModel(
     private val tweetRepository: TweetRepository = TweetRepository()
 ) : ViewModel() {
-    private val _attachments = MutableLiveData<List<Uri>>()
-    val attachments: LiveData<List<Uri>> get() = _attachments
 
     fun likeTweet(tweetMid: MimeiId) {
         viewModelScope.launch {
@@ -22,10 +18,6 @@ class TweetViewModel(
             val updatedTweet = tweet.copy(likeCount = tweet.likeCount + 1)
             tweetRepository.updateTweet(updatedTweet)
         }
-    }
-
-    fun addAttachment(uri: Uri) {
-        _attachments.value = (_attachments.value ?: emptyList()) + uri
     }
 
     fun retweet(tweetMid: MimeiId, authorMid: MimeiId) {
@@ -41,17 +33,16 @@ class TweetViewModel(
         }
     }
 
-    fun composeTweet(currentUserMid: MimeiId, content: String, isPrivate: Boolean, attachments: List<Uri>) {
-        // Handle tweet composition, including attachments
+    fun uploadTweet(currentUserMid: MimeiId, content: String, isPrivate: Boolean, attachments: List<MimeiId>) {
         val tweet = Tweet(
             author = currentUserMid,
             content = content,
             isPrivate = isPrivate,
-            attachments = attachments.map { it.toString() }
-//            attachments = _attachments.value?.map { it.toString() } ?: emptyList()
+            attachments = attachments
         )
+
+        // Now you can save the tweet with attachment CIDs
         println(tweet)
-        tweetRepository.addTweet(tweet)
-        // Add logic to save or upload the tweet
+//        tweetRepository.addTweet(tweet)
     }
 }

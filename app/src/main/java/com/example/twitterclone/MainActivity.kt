@@ -1,8 +1,10 @@
 package com.example.twitterclone
 
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -35,6 +37,7 @@ import com.example.twitterclone.ui.compose.ComposeTweetScreen
 const val CURRENT_USER_ID = "5lrADJpzRpYZ82-6jkewoa1w3jB"
 
 class MainActivity : ComponentActivity() {
+    @RequiresApi(Build.VERSION_CODES.Q)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -45,6 +48,7 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.Q)
 @Composable
 fun MainScreen(viewModel: TweetFeedViewModel = TweetFeedViewModel()) {
     val navController = rememberNavController()

@@ -31,7 +31,7 @@ import kotlinx.coroutines.withContext
 fun AttachmentIcon(uri: Uri) {
     val view = LocalView.current
     val viewWidth = with(LocalDensity.current) { view.width.toDp() }.value.toInt()
-    val canvasSize = viewWidth * 9 / 10 / 2
+    val canvasSize = viewWidth / 2
     var imageBitmap by remember { mutableStateOf<ImageBitmap?>(null) }
     val contentResolver = LocalContext.current.contentResolver
 
