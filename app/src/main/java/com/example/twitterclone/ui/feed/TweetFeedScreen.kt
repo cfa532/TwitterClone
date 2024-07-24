@@ -19,7 +19,6 @@ fun TweetFeedScreen(
     currentUserMid: MimeiId
 ) {
     val tweets = tweetFeedViewModel.tweets.collectAsState().value
-    val context = LocalContext.current
 
     LazyColumn {
         items(tweets) { tweet ->

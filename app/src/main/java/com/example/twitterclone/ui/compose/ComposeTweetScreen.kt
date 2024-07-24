@@ -124,7 +124,7 @@ private suspend fun uploadAttachments(context: Context, selectedAttachments: Lis
         mutableListOf<MimeiId>().apply {
             selectedAttachments.forEach { uri ->
                 context.contentResolver.openInputStream(uri)?.use { inputStream ->
-                    val cid = HproseInstance.mmUpload2IPFS(inputStream)
+                    val cid = HproseInstance.uploadToIPFS(inputStream)
                     println("CID: $cid")
                     add(cid)
                 }
