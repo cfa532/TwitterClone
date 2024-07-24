@@ -8,12 +8,7 @@ interface HproseService {
     fun getVarByContext(sid: String, context: String, mapOpt: Map<String, String>? = null): String
     fun login(ppt: String): Map<String, String>
     fun getVar(sid: String, name: String): String
-    fun mmCreate(sid: String,
-                 appId: String,
-                 ext: String,
-                 mark: String,
-                 tp: Byte,
-                 right: UInt): MimeiId     // 0x07276704
+    fun mmCreate(sid: String, appId: String, ext: String, mark: String, tp: Byte, right: Long): MimeiId     // 0x07276704
     fun mmOpen(sid: String, mid: MimeiId, version: String): String
     fun mmBackup(sid: String, mid: MimeiId, memo: String = "", ref: String)
     fun mmAddRef(sid: String, mid: MimeiId, mimeiId: MimeiId)
@@ -41,7 +36,7 @@ object HproseInstance {
     }
     // Main database Mimei of this user. All the files mimei refer to this one.
     private val mid: MimeiId by lazy {
-        client.mmCreate(sid, APP_ID, APP_EXT, APP_MARK, 2, 120022788u)
+        client.mmCreate(sid, APP_ID, APP_EXT, APP_MARK, 2, 120022788)
     }
 
     fun initialize() {
@@ -49,14 +44,14 @@ object HproseInstance {
         val result = client.login(ppt)
         sid = result["sid"].toString()
         println("Leither ver: " + client.getVar("", "ver"))
-        println("Login sid = $sid")
+        println("Login result = $result")
         println("App mid=$mid")     // required to init App mid. Must have.
     }
 
     // Given an object, store it in mimei file and return the mimei Id.
     fun mmSetObject(obj: Any): MimeiId {
         // create a file mimei for a tweet
-        val mid = client.mmCreate(sid, APP_ID, APP_EXT, "{{auto}}", 2, 120022788u)
+        val mid = client.mmCreate(sid, APP_ID, APP_EXT, "{{auto}}", 2, 120022788)
         // open Cur version of the mimei
         val fsid = client.mmOpen(sid, mid, "cur")
         // set the object into mimei

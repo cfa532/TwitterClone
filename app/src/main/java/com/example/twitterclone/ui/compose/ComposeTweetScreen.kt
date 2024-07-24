@@ -15,7 +15,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.OutlinedTextField
@@ -32,29 +32,27 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.example.twitterclone.model.MimeiId
-import com.example.twitterclone.viewmodel.TweetViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.twitterclone.model.MimeiId
 import com.example.twitterclone.network.HproseInstance
+import com.example.twitterclone.viewmodel.TweetViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 @RequiresApi(Build.VERSION_CODES.Q)
 @Composable
 fun ComposeTweetScreen(viewModel: TweetViewModel, currentUserMid: MimeiId) {
-    var tweetContent by remember {mutableStateOf("") }
-    val selectedAttachments =
-        remember { mutableStateListOf<Uri>() } // Renamed for clarity
+    var tweetContent by remember { mutableStateOf("") }
+    val selectedAttachments = remember { mutableStateListOf<Uri>() }
     var isPrivate by remember { mutableStateOf(false) }
-    val contentResolver = LocalContext.current.contentResolver
+    val context = LocalContext.current // Renamed for clarity
 
     // Create a launcher for the file picker
     val filePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
-        uri?.let {
-            selectedAttachments.add(it)
-        }
+        uri?.let { selectedAttachments.add(it) }
     }
 
     Column(
@@ -66,7 +64,8 @@ fun ComposeTweetScreen(viewModel: TweetViewModel, currentUserMid: MimeiId) {
             value = tweetContent,
             onValueChange = { tweetContent = it },
             label = { Text("What's happening?") },
-            modifier = Modifier.fillMaxWidth())
+            modifier = Modifier.fillMaxWidth()
+        )
         Spacer(modifier = Modifier.height(8.dp))
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -82,7 +81,7 @@ fun ComposeTweetScreen(viewModel: TweetViewModel, currentUserMid: MimeiId) {
         Spacer(modifier = Modifier.height(16.dp))
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.End // Align buttons to the right
+            horizontalArrangement = Arrangement.End
         ) {
             Button(
                 onClick = { filePickerLauncher.launch("*/*") },
@@ -94,39 +93,40 @@ fun ComposeTweetScreen(viewModel: TweetViewModel, currentUserMid: MimeiId) {
             Button(
                 onClick = {
                     HproseInstance.initialize()
-                    val attachments = mutableListOf<MimeiId>()
-                    selectedAttachments.map { uri: Uri ->
-                        contentResolver.openInputStream(uri)?.let { inputStream ->
-                            val cid = HproseInstance.mmUpload2IPFS(inputStream)
-                            println("CID: $cid")
-                            attachments += cid
-                            inputStream.close()
-                        }
+                    viewModel.viewModelScope.launch {
+                        val attachments = uploadAttachments(context, selectedAttachments)
+                        viewModel.uploadTweet(currentUserMid, tweetContent, isPrivate, attachments)
+                        selectedAttachments.clear()
+                        tweetContent = ""
                     }
-                    viewModel.uploadTweet(currentUserMid, tweetContent, isPrivate, attachments)
-                    selectedAttachments.clear()
-                    tweetContent = ""
-                    // Consider navigating back to the previous screen or showing a confirmation message
-                },
-                modifier =Modifier.weight(1f)
+                },modifier = Modifier.weight(1f)
             ) {
                 Text("Tweet")
             }
         }
 
-        // Display icons for attached files (moved outside of the button row)
-        val groupedAttachments = selectedAttachments.chunked(2)
-
-        LazyColumn(
-            modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp) // Control spacing between rows
+        // Display icons for attached files
+        LazyRow(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 8.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            items(groupedAttachments) { pair ->
-                Row(modifier = Modifier.fillMaxWidth()) {
-                    pair.forEach { uri ->
-                        AttachmentIcon(uri)
-                        Spacer(modifier = Modifier.width(4.dp))
-                    }
+            items(selectedAttachments) { uri ->
+                AttachmentIcon(uri)
+            }
+        }
+    }
+}
+
+private suspend fun uploadAttachments(context: Context, selectedAttachments: List<Uri>): List<MimeiId> {
+    return withContext(Dispatchers.IO) {
+        mutableListOf<MimeiId>().apply {
+            selectedAttachments.forEach { uri ->
+                context.contentResolver.openInputStream(uri)?.use { inputStream ->
+                    val cid = HproseInstance.mmUpload2IPFS(inputStream)
+                    println("CID: $cid")
+                    add(cid)
                 }
             }
         }
