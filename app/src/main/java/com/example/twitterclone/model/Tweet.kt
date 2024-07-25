@@ -1,7 +1,9 @@
 package com.example.twitterclone.model
 
+import kotlinx.serialization.Serializable
 typealias MimeiId = String      // 27 or 64 character long string
 
+@Serializable
 data class Tweet(
     var mid: MimeiId? = null,   // mid of the tweet
     val author: MimeiId,        // mid of the author
@@ -25,10 +27,11 @@ data class Tweet(
     var isPrivate: Boolean = false,     // Viewable by the author only if true.
 )
 
+@Serializable
 data class User(
-    val mid: MimeiId, // Unique identifier for the user
-    var name: String,
-    val username: String,
+    var mid: MimeiId, // Unique identifier for the user
+    var name: String? = null,
+    var username: String? = null,
     var avatar: MimeiId? = null, // Optional profile image URL
 
     // List of tweet MIDs bookmarked by the user
@@ -44,7 +47,4 @@ data class User(
     var nodeIds: List<MimeiId>? = null,
 
     var publicKey: String? = null,
-
-    // List of users blocked by the user
-    var blackList: List<MimeiId>? = null
 )

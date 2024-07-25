@@ -32,11 +32,18 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.twitterclone.network.HproseInstance
 import com.example.twitterclone.ui.compose.ComposeTweetScreen
 
 const val CURRENT_USER_ID = "5lrADJpzRpYZ82-6jkewoa1w3jB"
 
 class MainActivity : ComponentActivity() {
+    companion object {
+        init {
+            HproseInstance.initialize()
+        }
+    }
+
     @RequiresApi(Build.VERSION_CODES.Q)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

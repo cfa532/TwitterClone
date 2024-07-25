@@ -43,7 +43,7 @@ import kotlinx.coroutines.withContext
 @RequiresApi(Build.VERSION_CODES.Q)
 @Composable
 fun ComposeTweetScreen(viewModel: TweetViewModel, currentUserMid: MimeiId) {
-    var tweetContent by remember { mutableStateOf("Hello Twitter.") }
+    var tweetContent by remember { mutableStateOf("Hello Twitter!") }
     val selectedAttachments = remember { mutableStateListOf<Uri>() }
     var isPrivate by remember { mutableStateOf(false) }
     val context = LocalContext.current // Renamed for clarity
@@ -92,7 +92,7 @@ fun ComposeTweetScreen(viewModel: TweetViewModel, currentUserMid: MimeiId) {
             Spacer(modifier = Modifier.width(8.dp))
             Button(
                 onClick = {
-                    HproseInstance.initialize()
+//                    HproseInstance.initialize()
                     viewModel.viewModelScope.launch {
                         val attachments = uploadAttachments(context, selectedAttachments)
                         viewModel.uploadTweet(currentUserMid, tweetContent, isPrivate, attachments)
