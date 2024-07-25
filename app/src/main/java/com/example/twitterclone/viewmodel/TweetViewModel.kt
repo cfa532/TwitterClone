@@ -1,17 +1,24 @@
 package com.example.twitterclone.viewmodel
 
 import android.net.Uri
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.twitterclone.model.MimeiId
 import com.example.twitterclone.model.Tweet
 import com.example.twitterclone.network.HproseInstance
 import com.example.twitterclone.repository.TweetRepository
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class TweetViewModel(
     private val tweetRepository: TweetRepository = TweetRepository()
 ) : ViewModel() {
+
+    private val _errorState = MutableLiveData<String?>(null)
+    val errorState: LiveData<String?> = _errorState
 
     fun likeTweet(tweetMid: MimeiId) {
         viewModelScope.launch {
@@ -42,7 +49,16 @@ class TweetViewModel(
             isPrivate = isPrivate,
             attachments = attachments
         )
-        tweet = HproseInstance.createTweet(tweet)
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) {
+                // Perform long-running task here (e.g., network request, file I/O)
+                try {
+                    tweet = HproseInstance.uploadTweet(tweet)
+                } catch (e: Exception) {
+                    _errorState.value = e.message ?: "Failed to upload tweet"
+                }
+            }
+        }
 
         // Now you can save the tweet with attachment CIDs
         println(tweet)

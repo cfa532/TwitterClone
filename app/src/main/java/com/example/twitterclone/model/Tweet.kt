@@ -5,11 +5,11 @@ typealias MimeiId = String      // 27 or 64 character long string
 data class Tweet(
     var mid: MimeiId? = null,   // mid of the tweet
     val author: MimeiId,        // mid of the author
-    val content: String,
+    var content: String,
     val timestamp: Long = System.currentTimeMillis(),
     var likeCount: Int = 0,     // Number of likes
     var bookmarkCount: Int = 0, // Number of bookmarks
-    var original: MimeiId?= null, // this is retweet of the original tweet
+    val original: MimeiId?= null, // this is retweet of the original tweet
 
     // List of retweets ID, without comments.
     var retweets: List<MimeiId> = emptyList(),

@@ -61,10 +61,10 @@ object HproseInstance {
     }
 
     // Store an object in a Mimei file and return its MimeiId.
-    fun createTweet(t: Tweet): Tweet {
-        val mid = client.mmCreate(sid, APP_ID, APP_EXT, "{{auto}}", 2, 120022788)
-        println("Created tweet mid=$mid")
+    fun uploadTweet(t: Tweet): Tweet {
+        val mid = client.mmCreate(sid, APP_ID, APP_EXT, t.content, 2, 120022788)
         t.mid = mid
+        println("Created tweet mid=$mid $t")
         var mmsid = client.mmOpen(sid, mid, "cur")
         client.set(mmsid, TWT_CONTENT_KEY, t)
         client.mmBackup(sid, mid, "", "delref=true") // Use default memo, specify ref deletion
