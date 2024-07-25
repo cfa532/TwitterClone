@@ -83,14 +83,18 @@ object HproseInstance {
     fun uploadToIPFS(inputStream: InputStream): MimeiId {
         val fsid = client.mfOpenTempFile(sid)
         var start = 0
-        inputStream.use {
-            val buffer = ByteArray(CHUNK_SIZE)
-            var bytesRead: Int
-            while (it.read(buffer).also { bytesRead = it } != -1) {
-                client.mfSetData(fsid, buffer.copyOfRange(0, bytesRead), start)
-                start+= bytesRead
+        try {
+            inputStream.use { inputStream1 ->
+                val buffer = ByteArray(CHUNK_SIZE)
+                var bytesRead: Int
+                while (inputStream1.read(buffer).also { bytesRead = it } != -1) {
+                    client.mfSetData(fsid, buffer.copyOfRange(0, bytesRead), start)
+                    start += bytesRead
+                }
             }
+            return client.mfTemp2Ipfs(fsid, appMid) // Associate the uploaded data with the app's main Mimei
+        } catch (e: Exception) {
+            throw e
         }
-        return client.mfTemp2Ipfs(fsid, appMid) // Associate the uploaded data with the app's main Mimei
     }
 }
