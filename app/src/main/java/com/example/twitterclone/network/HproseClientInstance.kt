@@ -15,7 +15,7 @@ import java.io.InputStream
 
 interface HproseService {fun getVarByContext(sid: String, context: String, mapOpt: Map<String, String>? = null): String
     fun login(ppt: String): Map<String, String>
-    fun getVar(sid: String, name: String): String
+    fun getVar(sid: String, name: String, args: String? = null): String
     fun mmCreate(sid: String, appId: String, ext: String, mark: String, tp: Byte, right: Long): MimeiId
     fun mmOpen(sid: String, mid: MimeiId, version: String): String
     fun mmBackup(sid: String, mid: MimeiId, memo: String = "", ref: String = "") // Add default value for 'ref'
@@ -67,6 +67,7 @@ object HproseInstance {
         val result = client.login(ppt)
         sid = result["sid"].toString()
         println("Leither ver: " + client.getVar("", "ver"))
+        println("IPS: " + client.getVar("", "ips", "1-U-7NvW2hOWmyoiipkzno65so-"))
         println("Login result = $result")
 
         // Initialize the app's main MimeiId after successful login.
