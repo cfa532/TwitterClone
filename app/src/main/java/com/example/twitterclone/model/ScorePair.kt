@@ -1,9 +1,8 @@
 package com.example.twitterclone.model
 
-import kotlinx.serialization.*
-
-@Serializable
-data class ScorePair(
-    val score: Long = 0,
-    val member: String = ""
-)
+//interface ScorePair {
+//    val score: Long
+//    val member: String
+//}
+//
+//data class ScorePairData(override val score:Long, override val member: String) : ScorePair

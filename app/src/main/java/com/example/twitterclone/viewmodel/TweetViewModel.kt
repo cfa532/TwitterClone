@@ -50,14 +50,13 @@ class TweetViewModel(
             attachments = attachments
         )
         viewModelScope.launch {
-            withContext(Dispatchers.IO) {
-                // Perform long-running task here (e.g., network request, file I/O)
+//            withContext(Dispatchers.IO) {
                 try {
                     tweet = HproseInstance.uploadTweet(tweet)
                 } catch (e: Exception) {
                     _errorState.value = e.message ?: "Failed to upload tweet"
                 }
-            }
+//            }
         }
 
         // Now you can save the tweet with attachment CIDs

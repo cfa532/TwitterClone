@@ -1,11 +1,14 @@
 package com.example.twitterclone.network
 
-import com.example.twitterclone.model.ScorePair
 import android.util.Log
 import com.example.twitterclone.model.MimeiId
+import com.example.twitterclone.model.ScorePair
+import com.example.twitterclone.model.ScorePairClass
 import com.example.twitterclone.model.Tweet
 import com.example.twitterclone.model.User
 import hprose.client.HproseClient
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.io.InputStream
@@ -73,7 +76,7 @@ object HproseInstance {
 
         // if this is the 1st time user login, the appMid is empty, cannot open Last ver
         client.mmOpen(sid, appMid, "cur").let {
-            var user = client.get(it, OWNER_DATA_KEY)
+            val user = client.get(it, OWNER_DATA_KEY)
             println("User data=$user")
             if (user == null) {
                 // first time run, init user data
@@ -102,7 +105,7 @@ object HproseInstance {
                                     val sp = l as Map<*, *>
                                     client.mmOpen("", sp["member"] as MimeiId, "last").let { tmid ->
                                         client.get(tmid, TWT_CONTENT_KEY)?.let { content ->
-                                            tweets += content as Tweet
+                                            tweets += Json.decodeFromString(content.toString()) as Tweet
                                         }
                                     }
                                 }
@@ -124,7 +127,7 @@ object HproseInstance {
             t.mid = mid
             println("Created tweet mid=$mid $t")
             client.mmOpen(sid, mid, "cur").let {
-                client.set(it, TWT_CONTENT_KEY, t)
+                client.set(it, TWT_CONTENT_KEY, Json.encodeToString(t))
                 client.mmBackup(
                     sid,
                     mid,
@@ -137,7 +140,7 @@ object HproseInstance {
 
             // add the new tweet in user's tweet list
             client.mmOpen(sid, appMid, "cur").let {
-                client.zAdd(it, TWT_LIST_KEY, ScorePair(System.currentTimeMillis(), mid))
+                client.zAdd(it, TWT_LIST_KEY, ScorePairClass(System.currentTimeMillis(), mid))
                 client.mmBackup(
                     sid,
                     appMid,
@@ -146,8 +149,8 @@ object HproseInstance {
                 ) // Use default memo, specify ref deletion
                 client.mimeiPublish(sid, "", appMid)    // publish tweet list
             }
-            return t
         }
+        return t
     }
 
     // Upload data from an InputStream to IPFS and return the resulting MimeiId.
