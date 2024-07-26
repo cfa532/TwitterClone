@@ -15,7 +15,7 @@ import java.io.InputStream
 
 interface HproseService {fun getVarByContext(sid: String, context: String, mapOpt: Map<String, String>? = null): String
     fun login(ppt: String): Map<String, String>
-    fun getVar(sid: String, name: String, args: String? = null): String
+    fun getVar(sid: String, name: String, arg1: String? = null, arg2: String? = null): String
     fun mmCreate(sid: String, appId: String, ext: String, mark: String, tp: Byte, right: Long): MimeiId
     fun mmOpen(sid: String, mid: MimeiId, version: String): String
     fun mmBackup(sid: String, mid: MimeiId, memo: String = "", ref: String = "") // Add default value for 'ref'
