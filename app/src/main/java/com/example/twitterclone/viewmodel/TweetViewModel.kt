@@ -1,6 +1,5 @@
 package com.example.twitterclone.viewmodel
 
-import android.net.Uri
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -9,9 +8,7 @@ import com.example.twitterclone.model.MimeiId
 import com.example.twitterclone.model.Tweet
 import com.example.twitterclone.network.HproseInstance
 import com.example.twitterclone.repository.TweetRepository
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 class TweetViewModel(
     private val tweetRepository: TweetRepository = TweetRepository()
@@ -34,7 +31,7 @@ class TweetViewModel(
             val retweet = Tweet(
                 content = originalTweet.content,
                 timestamp = System.currentTimeMillis(),
-                author = authorMid,
+                authorId = authorMid,
                 original = originalTweet.mid
             )
             tweetRepository.addTweet(retweet)   // update tweet with Id returned from server
@@ -44,7 +41,7 @@ class TweetViewModel(
     fun uploadTweet(currentUserMid: MimeiId, content: String, isPrivate: Boolean, attachments: List<MimeiId>) {
 
         var tweet = Tweet(
-            author = currentUserMid,
+            authorId = currentUserMid,
             content = content,
             isPrivate = isPrivate,
             attachments = attachments

@@ -149,15 +149,7 @@ fun TweetFeed(modifier: Modifier = Modifier, viewModel: TweetFeedViewModel) {
     val tweets = viewModel.tweets.collectAsState().value
     Column(modifier = modifier.fillMaxSize()) {
         tweets.forEach { tweet ->
-            val author = viewModel.getUser(tweet.author)
-            val tweetViewModel = TweetViewModel(viewModel.getTweetRepository())
-            TweetItem(
-                tweet = tweet,
-                author = author,
-                originalTweet = tweet.original?.let { viewModel.getTweet(it) },
-                viewModel = tweetViewModel,
-                currentUserMid = "currentUserId" // Replace with actual current user ID
-            )
+            TweetItem( tweet = tweet )
         }
     }
 }

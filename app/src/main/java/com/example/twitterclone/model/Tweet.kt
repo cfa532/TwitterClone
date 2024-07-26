@@ -6,7 +6,7 @@ typealias MimeiId = String      // 27 or 64 character long string
 @Serializable
 data class Tweet(
     var mid: MimeiId? = null,   // mid of the tweet
-    val author: MimeiId,        // mid of the author
+    val authorId: MimeiId,        // mid of the author
     var content: String,
     val timestamp: Long = System.currentTimeMillis(),
     var likeCount: Int = 0,     // Number of likes

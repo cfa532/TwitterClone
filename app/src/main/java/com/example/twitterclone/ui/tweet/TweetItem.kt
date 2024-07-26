@@ -14,11 +14,8 @@ import com.example.twitterclone.viewmodel.TweetViewModel
 @Composable
 fun TweetItem(
     tweet: Tweet,
-    author: User,
-    originalTweet: Tweet?,
-    viewModel: TweetViewModel,
-    currentUserMid: MimeiId
 ) {
+    val viewModel = TweetViewModel()
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -26,7 +23,7 @@ fun TweetItem(
     ) {
         // Use a Row to align author name and potential verification badge
         Row(verticalAlignment= Alignment.CenterVertically) {
-            Text(text = author.name?: "No One", style = MaterialTheme.typography.bodyMedium)
+            Text(text = "No One", style = MaterialTheme.typography.bodyMedium)
             // Add a verified badge icon if the user is verified (assuming you have a way to check this)
             // if (author.isVerified) {
             //     Icon(imageVector = Icons.Filled.Verified, contentDescription = "Verified")
@@ -55,17 +52,17 @@ fun TweetItem(
             }
         }
 
-        originalTweet?.let {
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(text = "Retweet of:", style = MaterialTheme.typography.labelSmall)
-            // Pass null for originalTweet to avoid infinite recursion
-            TweetItem(
-                tweet = it,
-                author = author,
-                originalTweet = null,
-                viewModel = viewModel,
-                currentUserMid = currentUserMid
-            )
-        }
+//        originalTweet?.let {
+//            Spacer(modifier = Modifier.height(8.dp))
+//            Text(text = "Retweet of:", style = MaterialTheme.typography.labelSmall)
+//            // Pass null for originalTweet to avoid infinite recursion
+//            TweetItem(
+//                tweet = it,
+//                author = author,
+//                originalTweet = null,
+//                viewModel = viewModel,
+//                currentUserMid = currentUserMid
+//            )
+//        }
     }
 }
