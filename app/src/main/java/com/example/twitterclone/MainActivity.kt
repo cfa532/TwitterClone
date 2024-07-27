@@ -44,7 +44,11 @@ const val CURRENT_USER_ID = "5lrADJpzRpYZ82-6jkewoa1w3jB"
 class MainActivity : ComponentActivity() {
     companion object {
         init {
-            HproseInstance.initialize()
+            try {
+                HproseInstance.initialize()
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
         }
     }
 
@@ -59,7 +63,6 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @RequiresApi(Build.VERSION_CODES.Q)
 @Composable
 fun MainScreen(viewModel: TweetFeedViewModel = TweetFeedViewModel()) {
@@ -67,20 +70,17 @@ fun MainScreen(viewModel: TweetFeedViewModel = TweetFeedViewModel()) {
     val context = LocalContext.current
     val preferencesHelper = remember { PreferencesHelper(context) }
 
-    Scaffold(
-//        topBar = { MainTopAppBar(navController) },
-        bottomBar = { BottomNavigationBar(navController) }
-    ) { innerPadding ->
+    Column {
         NavHost(
             navController = navController,
             startDestination = "tweetFeed",
-            modifier = Modifier.padding(innerPadding)
         ) {
             composable("tweetFeed") {
                 TweetFeedScreen(navController, viewModel)
             }
             composable("composeTweet") {
                 ComposeTweetScreen(
+                    navController = navController,
                     viewModel = TweetViewModel(viewModel.getTweetRepository()),
                     currentUserMid = CURRENT_USER_ID // Replace with actual current user ID
                 )
@@ -128,35 +128,36 @@ fun BottomNavigationBar(navController: NavHostController) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_home),
                     contentDescription = "Home",
-                    modifier = Modifier.size(24.dp)
+                    modifier = Modifier.size(32.dp)
                 )
             }
             IconButton(onClick = { /* Navigate to Notice */ }) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_notice),
                     contentDescription = "Notice",
-                    modifier = Modifier.size(24.dp)
+                    modifier = Modifier.size(32.dp)
                 )
             }
             IconButton(onClick = { navController.navigate("composeTweet") }) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_compose),
                     contentDescription = "Compose",
-                    modifier = Modifier.size(24.dp)
+                    modifier = Modifier.size(32.dp)
                 )
             }
         }
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TweetFeedScreen(navController: NavHostController, viewModel: TweetFeedViewModel) {
     Scaffold(
-        topBar = { MainTopAppBar(navController) }
+        topBar = { MainTopAppBar(navController) },
+        bottomBar = { BottomNavigationBar(navController) }
     ) { innerPadding ->
         TweetFeed(
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier
+                .fillMaxSize()
                 .padding(innerPadding),
             viewModel = viewModel
         )

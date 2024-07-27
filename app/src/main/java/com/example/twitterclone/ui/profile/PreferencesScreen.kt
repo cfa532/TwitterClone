@@ -1,6 +1,5 @@
 package com.example.twitterclone.ui.profile
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -21,7 +20,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.example.twitterclone.PreferencesHelper
@@ -32,9 +30,16 @@ import com.example.twitterclone.ui.compose.AppIcon
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PreferencesScreen(navController: NavHostController, preferencesHelper: PreferencesHelper) {
-    var username by remember { mutableStateOf(preferencesHelper.getUsername()?.takeIf { it.isNotEmpty() } ?: "NoOne") }
+    var username by remember {
+        mutableStateOf(
+            preferencesHelper.getUsername()?.takeIf { it.isNotEmpty() } ?: "NoOne")
+    }
     var name by remember { mutableStateOf(preferencesHelper.getName() ?: "No One") }
-    var entryUrl by remember { mutableStateOf(preferencesHelper.getEntryUrl() ?: "tw.fireshare.us") }
+    var entryUrl by remember {
+        mutableStateOf(
+            preferencesHelper.getEntryUrl() ?: "tw.fireshare.us"
+        )
+    }
 
     val user = HproseInstance.getUserData()
     if (user != null) {
@@ -42,7 +47,11 @@ fun PreferencesScreen(navController: NavHostController, preferencesHelper: Prefe
         name = user.name ?: name
     }
 
-    Column(modifier = Modifier.padding(16.dp)) {
+    Column (
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp)
+    ) {
         TopAppBar(
             title = {
                 Row(
@@ -57,38 +66,49 @@ fun PreferencesScreen(navController: NavHostController, preferencesHelper: Prefe
                     Icon(
                         painter = painterResource(id = R.drawable.ic_back),
                         contentDescription = "Back",
-                        modifier = Modifier.size(40.dp)
+                        modifier = Modifier
+                            .size(40.dp)
                             .padding(8.dp)
                     )
                 }
             }
         )
-        TextField(
-            value = username,
-            onValueChange = { username = it },
-            label = { Text("Username") }
-        )
-        TextField(
-            value = name,
-            onValueChange = { name = it },
-            label = { Text("Name") }
-        )
-        TextField(
-            value = entryUrl,
-            onValueChange = { entryUrl = it },
-            label = { Text("Entry URL") }
-        )
-        Button(onClick = {
-            preferencesHelper.saveUsername(username)
-            preferencesHelper.saveName(name)
-            preferencesHelper.saveEntryUrl(entryUrl)
+        Column(
+        ) {
+            Text("Preferences")
+            TextField(
+                value = username,
+                onValueChange = { username = it },
+                label = { Text("Username") },
+                modifier = Modifier.fillMaxWidth(),
+            )
+            TextField(
+                value = name,
+                onValueChange = { name = it },
+                label = { Text("Name") },
+                        modifier = Modifier.fillMaxWidth(),
+            )
+            TextField(
+                value = entryUrl,
+                onValueChange = { entryUrl = it },
+                label = { Text("Entry URL") },
+                        modifier = Modifier.fillMaxWidth(),
+            )
+        }
+        Button(
+            onClick = {
+                preferencesHelper.saveUsername(username)
+                preferencesHelper.saveName(name)
+                preferencesHelper.saveEntryUrl(entryUrl)
 
-            if (user != null) {
-                user.username = username
-                user.name = name
-                HproseInstance.setUserData(user)
-            }
-        }) {
+                if (user != null) {
+                    user.username = username
+                    user.name = name
+                    HproseInstance.setUserData(user)
+                }
+            },
+            Modifier.padding(start = 16.dp, end = 16.dp, top = 8.dp)
+        ) {
             Text("Save")
         }
     }

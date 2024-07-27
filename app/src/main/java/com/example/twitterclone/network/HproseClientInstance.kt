@@ -61,33 +61,38 @@ object HproseInstance {
 
     // Initialize the Hprose instance and establish a session.
     fun initialize() {
-        val ppt = client.getVarByContext("", "context_ppt")
-        val result = client.login(ppt)
-        sid = result["sid"].toString()
-        println("Leither ver: " + client.getVar("", "ver"))
-        println("IPS: " + client.getVar("", "mmprovsips", "ejEx2oIEJGHHRGyYCzYCBxLkQrg"))
-        println("Login result = $result")
+        try {
+            val ppt = client.getVarByContext("", "context_ppt")
+            val result = client.login(ppt)
+            sid = result["sid"].toString()
+            println("Leither ver: " + client.getVar("", "ver"))
+            println("IPS: " + client.getVar("", "mmprovsips", "ejEx2oIEJGHHRGyYCzYCBxLkQrg"))
+            println("Login result = $result")
 
-        // Initialize the app's main MimeiId after successful login.
-        // it should stay the same for the same user, therefore also used as UserId
-        appMid = client.mmCreate(sid, APP_ID, APP_EXT, APP_MARK, 2, 120022788)
-        println("App mid=$appMid")
+            // Initialize the app's main MimeiId after successful login.
+            // it should stay the same for the same user, therefore also used as UserId
+            appMid = client.mmCreate(sid, APP_ID, APP_EXT, APP_MARK, 2, 120022788)
+            println("App mid=$appMid")
 
-        // if this is the 1st time user login, the appMid is empty, cannot open Last ver
-        client.mmOpen(sid, appMid, "cur").let {
-            val user = client.get(it, OWNER_DATA_KEY)
-            println("User data=$user")
-            if (user == null) {
-                // first time run, init user data
-                appUser = User(mid = appMid)
-                client.set(it, OWNER_DATA_KEY, Json.encodeToString(appUser))
-                client.set(it, FOLLOWINGS_KEY, listOf(appMid))  // always following oneself
-                client.mmBackup(sid, appMid, "")
-                client.mimeiPublish(sid, "", appMid)
-            } else {
-                appUser = Json.decodeFromString(user.toString())
+            // if this is the 1st time user login, the appMid is empty, cannot open Last ver
+            client.mmOpen(sid, appMid, "cur").let {
+                val user = client.get(it, OWNER_DATA_KEY)
+                println("User data=$user")
+                if (user == null && sid != "") {
+                    // first time run, init user data
+                    appUser = User(mid = appMid)
+                    client.set(it, OWNER_DATA_KEY, Json.encodeToString(appUser))
+                    client.set(it, FOLLOWINGS_KEY, listOf(appMid))  // always following oneself
+                    client.mmBackup(sid, appMid, "")
+                    client.mimeiPublish(sid, "", appMid)
+                } else {
+                    appUser = Json.decodeFromString(user.toString())
+                }
+                println("App user=$appUser")
             }
-            println("App user=$appUser")
+        } catch (e: Exception) {
+            Log.e("HproseInstance.initialize", e.toString())
+            throw e
         }
     }
 
