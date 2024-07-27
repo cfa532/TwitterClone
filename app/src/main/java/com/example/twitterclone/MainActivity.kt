@@ -67,7 +67,7 @@ fun MainScreen(viewModel: TweetFeedViewModel = TweetFeedViewModel()) {
     val preferencesHelper = remember { PreferencesHelper(context) }
 
     Scaffold(
-        topBar = { TopAppBar(navController) },
+//        topBar = { MainTopAppBar(navController) },
         bottomBar = { BottomNavigationBar(navController) }
     ) { innerPadding ->
         NavHost(
@@ -76,10 +76,7 @@ fun MainScreen(viewModel: TweetFeedViewModel = TweetFeedViewModel()) {
             modifier = Modifier.padding(innerPadding)
         ) {
             composable("tweetFeed") {
-                TweetFeed(
-                    modifier = Modifier.fillMaxSize(),
-                    viewModel = viewModel
-                )
+                TweetFeedScreen(navController, viewModel)
             }
             composable("composeTweet") {
                 ComposeTweetScreen(
@@ -88,7 +85,7 @@ fun MainScreen(viewModel: TweetFeedViewModel = TweetFeedViewModel()) {
                 )
             }
             composable("preferences") {
-                PreferencesScreen(preferencesHelper)
+                PreferencesScreen(navController, preferencesHelper)
             }
         }
     }
@@ -96,7 +93,7 @@ fun MainScreen(viewModel: TweetFeedViewModel = TweetFeedViewModel()) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TopAppBar(navController: NavHostController) {
+fun MainTopAppBar(navController: NavHostController) {
     TopAppBar(
         title = {
             Row(
@@ -124,7 +121,6 @@ fun TopAppBar(navController: NavHostController) {
         }
     )
 }
-
 @Composable
 fun BottomNavigationBar(navController: NavHostController) {
     BottomAppBar {
@@ -154,6 +150,20 @@ fun BottomNavigationBar(navController: NavHostController) {
                 )
             }
         }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun TweetFeedScreen(navController: NavHostController, viewModel: TweetFeedViewModel) {
+    Scaffold(
+        topBar = { MainTopAppBar(navController) }
+    ) { innerPadding ->
+        TweetFeed(
+            modifier = Modifier.fillMaxSize()
+                .padding(innerPadding),
+            viewModel = viewModel
+        )
     }
 }
 
