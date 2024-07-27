@@ -21,7 +21,9 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.example.twitterclone.ui.theme.TwitterCloneTheme
@@ -34,6 +36,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.twitterclone.network.HproseInstance
 import com.example.twitterclone.ui.compose.ComposeTweetScreen
+import com.example.twitterclone.ui.profile.PreferencesScreen
 
 const val CURRENT_USER_ID = "5lrADJpzRpYZ82-6jkewoa1w3jB"
 
@@ -55,12 +58,16 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @RequiresApi(Build.VERSION_CODES.Q)
 @Composable
 fun MainScreen(viewModel: TweetFeedViewModel = TweetFeedViewModel()) {
     val navController = rememberNavController()
+    val context = LocalContext.current
+    val preferencesHelper = remember { PreferencesHelper(context) }
+
     Scaffold(
-        topBar = { TopAppBar() },
+        topBar = { TopAppBar(navController) },
         bottomBar = { BottomNavigationBar(navController) }
     ) { innerPadding ->
         NavHost(
@@ -80,13 +87,16 @@ fun MainScreen(viewModel: TweetFeedViewModel = TweetFeedViewModel()) {
                     currentUserMid = CURRENT_USER_ID // Replace with actual current user ID
                 )
             }
+            composable("preferences") {
+                PreferencesScreen(preferencesHelper)
+            }
         }
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TopAppBar() {
+fun TopAppBar(navController: NavHostController) {
     TopAppBar(
         title = {
             Row(
@@ -96,18 +106,21 @@ fun TopAppBar() {
                 Image(
                     painter = painterResource(id = R.drawable.ic_app_icon),
                     contentDescription = "App Icon",
-                    modifier = Modifier.size(40.dp)
+                    modifier = Modifier
+                        .size(40.dp)
                 )
             }
         },
         navigationIcon = {
-            Image(
-                painter = painterResource(id = R.drawable.ic_user_avatar),
-                contentDescription = "User Avatar",
-                modifier = Modifier.padding(8.dp)
-                    .size(40.dp)
-                    .padding(top = 16.dp)
-            )
+            IconButton(onClick = { navController.navigate("preferences") }) {
+                Image(
+                    painter = painterResource(id = R.drawable.ic_user_avatar),
+                    contentDescription = "User Avatar",
+                    modifier = Modifier
+                        .padding(4.dp)
+                        .size(40.dp)
+                )
+            }
         }
     )
 }

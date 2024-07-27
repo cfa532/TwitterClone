@@ -7,8 +7,6 @@ import com.example.twitterclone.model.ScorePairClass
 import com.example.twitterclone.model.Tweet
 import com.example.twitterclone.model.User
 import hprose.client.HproseClient
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.io.InputStream
@@ -67,7 +65,7 @@ object HproseInstance {
         val result = client.login(ppt)
         sid = result["sid"].toString()
         println("Leither ver: " + client.getVar("", "ver"))
-        println("IPS: " + client.getVar("", "ips", "1-U-7NvW2hOWmyoiipkzno65so-"))
+        println("IPS: " + client.getVar("", "mmprovsips", "ejEx2oIEJGHHRGyYCzYCBxLkQrg"))
         println("Login result = $result")
 
         // Initialize the app's main MimeiId after successful login.
@@ -90,6 +88,23 @@ object HproseInstance {
                 appUser = Json.decodeFromString(user.toString())
             }
             println("App user=$appUser")
+        }
+    }
+
+    fun getUserData(userId: MimeiId = appMid): User? {
+        // open CUR version in case the Mimei is null
+        client.mmOpen("", userId, "cur").let {
+            val user = client.get(it, OWNER_DATA_KEY) ?: return null
+            return Json.decodeFromString(user.toString()) as User
+        }
+    }
+
+    fun setUserData(user: User) {
+        // open CUR version in case the Mimei is null
+        client.mmOpen(sid, appMid, "cur").let {
+            client.set(it, OWNER_DATA_KEY, Json.encodeToString(user))
+            client.mmBackup(sid, appMid, "")
+            client.mimeiPublish(sid, "", appMid)
         }
     }
 
