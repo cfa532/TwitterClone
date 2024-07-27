@@ -27,6 +27,7 @@ import androidx.navigation.NavHostController
 import com.example.twitterclone.PreferencesHelper
 import com.example.twitterclone.R
 import com.example.twitterclone.network.HproseInstance
+import com.example.twitterclone.ui.compose.AppIcon
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -48,18 +49,16 @@ fun PreferencesScreen(navController: NavHostController, preferencesHelper: Prefe
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.Center
                 ) {
-                    Image(
-                        painter = painterResource(id = R.drawable.ic_app_icon),
-                        contentDescription = "App Icon",
-                        modifier = Modifier.size(40.dp)
-                    )
+                    AppIcon()
                 }
             },
             navigationIcon = {
                 IconButton(onClick = { navController.popBackStack() }) {
                     Icon(
                         painter = painterResource(id = R.drawable.ic_back),
-                        contentDescription = "Back"
+                        contentDescription = "Back",
+                        modifier = Modifier.size(40.dp)
+                            .padding(8.dp)
                     )
                 }
             }

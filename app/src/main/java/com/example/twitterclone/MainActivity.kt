@@ -35,6 +35,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.twitterclone.network.HproseInstance
+import com.example.twitterclone.ui.compose.AppIcon
 import com.example.twitterclone.ui.compose.ComposeTweetScreen
 import com.example.twitterclone.ui.profile.PreferencesScreen
 
@@ -100,12 +101,7 @@ fun MainTopAppBar(navController: NavHostController) {
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.Center
             ) {
-                Image(
-                    painter = painterResource(id = R.drawable.ic_app_icon),
-                    contentDescription = "App Icon",
-                    modifier = Modifier
-                        .size(40.dp)
-                )
+                AppIcon()
             }
         },
         navigationIcon = {
