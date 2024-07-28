@@ -21,7 +21,6 @@ import kotlinx.coroutines.launch
 
 class TweetFeedViewModel(
     private val tweetRepository: TweetRepository = TweetRepository(),
-    private val userRepository: UserRepository = UserRepository()
 ) : ViewModel() {
 
     private var startTimestamp = mutableLongStateOf(System.currentTimeMillis())     // current time
