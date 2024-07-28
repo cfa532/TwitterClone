@@ -151,7 +151,7 @@ object HproseInstance {
         endTimestamp: Long?
     ) = try {
         client.mmOpen("", authorId, "last").also {
-            client.zRevRange(it, TWT_LIST_KEY, 0, 3).forEach { e ->
+            client.zRevRange(it, TWT_LIST_KEY, 0, -1).forEach { e ->
                 val sp = e as Map<*, *>
                 val score = (sp["score"] as BigInteger).toLong()
                 val tweetId = sp["member"] as MimeiId
