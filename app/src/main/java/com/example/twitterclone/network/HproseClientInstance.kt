@@ -152,24 +152,21 @@ object HproseInstance {
     ) = try {
         client.mmOpen("", authorId, "last").also {
             client.zRevRange(it, TWT_LIST_KEY, 0, 3).forEach { e ->
-                (e as Map<*, *>).let { sp ->
-                    val score = (sp["score"] as BigInteger).toLong()
-                        if (score <= startTimestamp && (endTimestamp == null || score > endTimestamp)) {
-                            // check if the tweet is in the tweets already.
-                            (sp["member"] as? MimeiId)?.let { tweetId ->
-                                if (tweets.none { t -> t.mid == tweetId }) {
-                                    client.mmOpen("", tweetId, "last").also { mmsid ->
-                                        client.get(mmsid, TWT_CONTENT_KEY)?.let { content ->
-                                            tweets += Json.decodeFromString(content as String) as Tweet
-                                        }
-                                    }
-                                }
+                val sp = e as Map<*, *>
+                val score = (sp["score"] as BigInteger).toLong()
+                val tweetId = sp["member"] as MimeiId
+                if (score <= startTimestamp && (endTimestamp == null || score > endTimestamp)) {
+                    // check if the tweet is in the tweets already.
+                    if (tweets.none { t -> t.mid == tweetId }) {
+                        client.mmOpen("", tweetId, "last").also { mmsid ->
+                            client.get(mmsid, TWT_CONTENT_KEY)?.let { content ->
+                                tweets += Json.decodeFromString(content as String) as Tweet
                             }
                         }
                     }
                 }
             }
-
+        }
     } catch (e: Exception) {
         Log.e("HproseInstance.getTweets", e.toString())
     }
