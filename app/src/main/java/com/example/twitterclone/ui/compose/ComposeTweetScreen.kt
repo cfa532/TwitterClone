@@ -1,7 +1,6 @@
 package com.example.twitterclone.ui.compose
 
 import AttachmentIcon
-import android.content.Context
 import android.net.Uri
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -36,22 +35,23 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavHostController
 import com.example.twitterclone.R
 import com.example.twitterclone.model.MimeiId
-import com.example.twitterclone.network.HproseInstance
+import com.example.twitterclone.network.HproseInstance.uploadAttachments
 import com.example.twitterclone.viewmodel.TweetViewModel
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 @OptIn(ExperimentalMaterial3Api::class)
 @RequiresApi(Build.VERSION_CODES.Q)
 @Composable
-fun ComposeTweetScreen(navController: NavHostController, viewModel: TweetViewModel, currentUserMid: MimeiId) {
+fun ComposeTweetScreen(
+    navController: NavHostController,
+    viewModel: TweetViewModel,
+    currentUserMid: MimeiId
+) {
     var tweetContent by remember { mutableStateOf("Hello Twitter!") }
     val selectedAttachments = remember { mutableStateListOf<Uri>() }
     var isPrivate by remember { mutableStateOf(false) }
@@ -122,14 +122,17 @@ fun ComposeTweetScreen(navController: NavHostController, viewModel: TweetViewMod
             Spacer(modifier = Modifier.width(8.dp))
             Button(
                 onClick = {
-//                    HproseInstance.initialize()
                     viewModel.viewModelScope.launch {
                         val attachments = uploadAttachments(context, selectedAttachments)
-                        viewModel.uploadTweet(currentUserMid, tweetContent, isPrivate, attachments)
+                        viewModel.uploadTweet(
+                            currentUserMid,
+                            tweetContent,
+                            isPrivate,
+                            attachments.mapNotNull { it.getOrNull() })
                         selectedAttachments.clear()
                         tweetContent = ""
                     }
-                },modifier = Modifier.weight(1f)
+                }, modifier = Modifier.weight(1f)
             ) {
                 Text("Tweet")
             }
@@ -149,16 +152,3 @@ fun ComposeTweetScreen(navController: NavHostController, viewModel: TweetViewMod
     }
 }
 
-private suspend fun uploadAttachments(context: Context, selectedAttachments: List<Uri>): List<MimeiId> {
-    return withContext(Dispatchers.IO) {
-        mutableListOf<MimeiId>().apply {
-            selectedAttachments.forEach { uri ->
-                context.contentResolver.openInputStream(uri)?.use { inputStream ->
-                    val cid = HproseInstance.uploadToIPFS(inputStream)
-                    println("CID: $cid")
-                    add(cid)
-                }
-            }
-        }
-    }
-}

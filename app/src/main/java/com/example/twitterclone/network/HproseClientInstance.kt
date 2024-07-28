@@ -1,5 +1,7 @@
 package com.example.twitterclone.network
 
+import android.content.Context
+import android.net.Uri
 import android.util.Log
 import com.example.twitterclone.model.MimeiId
 import com.example.twitterclone.model.ScorePair
@@ -7,8 +9,11 @@ import com.example.twitterclone.model.ScorePairClass
 import com.example.twitterclone.model.Tweet
 import com.example.twitterclone.model.User
 import hprose.client.HproseClient
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import java.io.IOException
 import java.io.InputStream
 import java.math.BigInteger
 
@@ -142,7 +147,7 @@ object HproseInstance {
             emptyList()
         }
 
-    // get tweets of a given author in before given date time.
+    // get tweets of a given author in a given span of time
     // if end is null, get all tweets
     fun getTweets(
         authorId: MimeiId = appMid,
@@ -207,21 +212,31 @@ object HproseInstance {
     fun uploadToIPFS(inputStream: InputStream): MimeiId {
         val fsid = client.mfOpenTempFile(sid)
         var start = 0
-        try {
-            inputStream.use { inputStream1 ->
-                val buffer = ByteArray(CHUNK_SIZE)
-                var bytesRead: Int
-                while (inputStream1.read(buffer).also { bytesRead = it } != -1) {
-                    client.mfSetData(fsid, buffer.copyOfRange(0, bytesRead), start)
-                    start += bytesRead
-                }
+        inputStream.use { inputStream1 ->
+            val buffer = ByteArray(CHUNK_SIZE)
+            var bytesRead: Int
+            while (inputStream1.read(buffer).also { bytesRead = it } != -1) {
+                client.mfSetData(fsid, buffer.copyOfRange(0, bytesRead), start)
+                start += bytesRead
             }
-            return client.mfTemp2Ipfs(
-                fsid,
-                appMid
-            ) // Associate the uploaded data with the app's main Mimei
-        } catch (e: Exception) {
-            throw e
+        }
+        return client.mfTemp2Ipfs(fsid,
+            appMid)    // Associate the uploaded data with the app's main Mimei
+    }
+
+    suspend fun uploadAttachments(context: Context, attachments: List<Uri>): List<Result<MimeiId>> {
+        return attachments.map { uri ->
+            uploadFile(context, uri)
+        }
+    }
+
+    suspend fun uploadFile(context: Context, uri: Uri): Result<MimeiId> {
+        return withContext(Dispatchers.IO) {
+            runCatching {
+                context.contentResolver.openInputStream(uri)?.use { inputStream ->
+                    uploadToIPFS(inputStream)
+                } ?: throw IOException("Failed to open input stream for URI: $uri")
+            }
         }
     }
 }

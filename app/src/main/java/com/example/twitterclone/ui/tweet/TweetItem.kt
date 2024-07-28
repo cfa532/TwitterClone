@@ -24,10 +24,6 @@ fun TweetItem(
         // Use a Row to align author name and potential verification badge
         Row(verticalAlignment= Alignment.CenterVertically) {
             Text(text = "No One", style = MaterialTheme.typography.bodyMedium)
-            // Add a verified badge icon if the user is verified (assuming you have a way to check this)
-            // if (author.isVerified) {
-            //     Icon(imageVector = Icons.Filled.Verified, contentDescription = "Verified")
-            // }
         }
         Spacer(modifier = Modifier.height(4.dp))
         Text(text = tweet.content, style = MaterialTheme.typography.bodyMedium)

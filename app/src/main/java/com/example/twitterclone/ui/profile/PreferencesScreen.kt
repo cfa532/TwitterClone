@@ -1,11 +1,17 @@
 package com.example.twitterclone.ui.profile
 
+import android.net.Uri
+import androidx.activity.compose.ManagedActivityResultLauncher
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -17,15 +23,24 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import coil.compose.rememberAsyncImagePainter
 import com.example.twitterclone.PreferencesHelper
 import com.example.twitterclone.R
 import com.example.twitterclone.network.HproseInstance
+import com.example.twitterclone.network.HproseInstance.uploadToIPFS
 import com.example.twitterclone.ui.compose.AppIcon
+import kotlinx.coroutines.launch
+import coil.compose.rememberImagePainter
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -40,11 +55,33 @@ fun PreferencesScreen(navController: NavHostController, preferencesHelper: Prefe
             preferencesHelper.getEntryUrl() ?: "tw.fireshare.us"
         )
     }
-
+    var avatar by remember { mutableStateOf<String?>(null) }
     val user = HproseInstance.getUserData()
     if (user != null) {
         username = user.username ?: username
         name = user.name ?: name
+        avatar = user.avatar
+    }
+
+    val context = LocalContext.current // Renamed for clarity
+    val coroutineScope = rememberCoroutineScope()
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri ->
+        uri?.let {
+            coroutineScope.launch {
+                val inputStream = context.contentResolver.openInputStream(it)
+                inputStream?.let { stream ->
+                    val mimeiId = uploadToIPFS(stream)
+                    avatar = mimeiId
+                    if (user != null) {
+                        user.avatar = mimeiId
+                        HproseInstance.setUserData(user)
+                    }
+                }
+            }
+        }
+
     }
 
     Column (
@@ -76,6 +113,7 @@ fun PreferencesScreen(navController: NavHostController, preferencesHelper: Prefe
         Column(
         ) {
             Text("Preferences")
+            AvatarSection(avatar, launcher)
             TextField(
                 value = username,
                 onValueChange = { username = it },
@@ -86,13 +124,13 @@ fun PreferencesScreen(navController: NavHostController, preferencesHelper: Prefe
                 value = name,
                 onValueChange = { name = it },
                 label = { Text("Name") },
-                        modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth(),
             )
             TextField(
                 value = entryUrl,
                 onValueChange = { entryUrl = it },
                 label = { Text("Entry URL") },
-                        modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth(),
             )
         }
         Button(
@@ -110,6 +148,29 @@ fun PreferencesScreen(navController: NavHostController, preferencesHelper: Prefe
             Modifier.padding(start = 16.dp, end = 16.dp, top = 8.dp)
         ) {
             Text("Save")
+        }
+    }
+}
+
+@Composable
+fun AvatarSection(avatar: String?, launcher: ManagedActivityResultLauncher<String, Uri?>) {
+    val defaultAvatar: Painter = painterResource(id = R.drawable.ic_user_avatar)
+    val avatarPainter = rememberAsyncImagePainter(model = avatar ?: R.drawable.ic_user_avatar)
+
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Image(
+            painter = avatarPainter,
+            contentDescription = "User Avatar",
+            modifier = Modifier
+                .size(100.dp)
+                .clip(CircleShape)
+                .padding(8.dp)
+        )
+        Button(onClick = { launcher.launch("image/*") }) {
+            Text("Upload Avatar")
         }
     }
 }

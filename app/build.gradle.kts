@@ -53,6 +53,7 @@ android {
 
 dependencies {
 
+    implementation(libs.coil.compose)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.retrofit2)
     implementation(libs.converter.gson)
