@@ -1,5 +1,10 @@
 package com.example.twitterclone.viewmodel
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.twitterclone.model.MimeiId
@@ -19,15 +24,13 @@ class TweetFeedViewModel(
     private val userRepository: UserRepository = UserRepository()
 ) : ViewModel() {
 
+    private var startTimestamp = mutableLongStateOf(System.currentTimeMillis())     // current time
+    private var endTimestamp = mutableLongStateOf(System.currentTimeMillis() - 1000 * 60 * 60 * 72)     // previous time
     private val _tweets = MutableStateFlow<List<Tweet>>(emptyList())
     val tweets: StateFlow<List<Tweet>> get() = _tweets
 
     init {
-        getTweets(System.currentTimeMillis())
-    }
-
-    fun getUser(userMid: MimeiId): User {
-        return userRepository.getUser(userMid)
+        getTweets(startTimestamp.longValue, endTimestamp.longValue)
     }
 
     private fun getTweets(

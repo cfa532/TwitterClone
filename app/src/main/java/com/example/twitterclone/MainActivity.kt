@@ -13,6 +13,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -157,14 +159,14 @@ fun TweetFeedScreen(navController: NavHostController, viewModel: TweetFeedViewMo
         bottomBar = { BottomNavigationBar(navController) }
     ) { innerPadding ->
         val tweets = viewModel.tweets.collectAsState().value
-        Column(
+        LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
         )
         {
-            tweets.forEach { tweet ->
-                TweetItem(tweet = tweet)
+            items(tweets) { tweet ->
+                TweetItem(tweet)
             }
         }
     }
