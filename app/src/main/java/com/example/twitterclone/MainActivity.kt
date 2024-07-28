@@ -26,10 +26,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import com.example.twitterclone.ui.theme.TwitterCloneTheme
-import com.example.twitterclone.ui.tweet.TweetItem
-import com.example.twitterclone.viewmodel.TweetFeedViewModel
-import com.example.twitterclone.viewmodel.TweetViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -38,6 +34,10 @@ import com.example.twitterclone.network.HproseInstance
 import com.example.twitterclone.ui.compose.AppIcon
 import com.example.twitterclone.ui.compose.ComposeTweetScreen
 import com.example.twitterclone.ui.profile.PreferencesScreen
+import com.example.twitterclone.ui.theme.TwitterCloneTheme
+import com.example.twitterclone.ui.tweet.TweetItem
+import com.example.twitterclone.viewmodel.TweetFeedViewModel
+import com.example.twitterclone.viewmodel.TweetViewModel
 
 const val CURRENT_USER_ID = "5lrADJpzRpYZ82-6jkewoa1w3jB"
 
@@ -117,6 +117,7 @@ fun MainTopAppBar(navController: NavHostController) {
         }
     )
 }
+
 @Composable
 fun BottomNavigationBar(navController: NavHostController) {
     BottomAppBar {
@@ -155,21 +156,16 @@ fun TweetFeedScreen(navController: NavHostController, viewModel: TweetFeedViewMo
         topBar = { MainTopAppBar(navController) },
         bottomBar = { BottomNavigationBar(navController) }
     ) { innerPadding ->
-        TweetFeed(
+        val tweets = viewModel.tweets.collectAsState().value
+        Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding),
-            viewModel = viewModel
+                .padding(innerPadding)
         )
-    }
-}
-
-@Composable
-fun TweetFeed(modifier: Modifier = Modifier, viewModel: TweetFeedViewModel) {
-    val tweets = viewModel.tweets.collectAsState().value
-    Column(modifier = modifier.fillMaxSize()) {
-        tweets.forEach { tweet ->
-            TweetItem( tweet = tweet )
+        {
+            tweets.forEach { tweet ->
+                TweetItem(tweet = tweet)
+            }
         }
     }
 }

@@ -10,13 +10,29 @@ import hprose.client.HproseClient
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.io.InputStream
+import java.math.BigInteger
 
-interface HproseService {fun getVarByContext(sid: String, context: String, mapOpt: Map<String, String>? = null): String
+interface HproseService {
+    fun getVarByContext(sid: String, context: String, mapOpt: Map<String, String>? = null): String
     fun login(ppt: String): Map<String, String>
     fun getVar(sid: String, name: String, arg1: String? = null, arg2: String? = null): String
-    fun mmCreate(sid: String, appId: String, ext: String, mark: String, tp: Byte, right: Long): MimeiId
+    fun mmCreate(
+        sid: String,
+        appId: String,
+        ext: String,
+        mark: String,
+        tp: Byte,
+        right: Long
+    ): MimeiId
+
     fun mmOpen(sid: String, mid: MimeiId, version: String): String
-    fun mmBackup(sid: String, mid: MimeiId, memo: String = "", ref: String = "") // Add default value for 'ref'
+    fun mmBackup(
+        sid: String,
+        mid: MimeiId,
+        memo: String = "",
+        ref: String = ""
+    ) // Add default value for 'ref'
+
     fun mmAddRef(sid: String, mid: MimeiId, mimeiId: MimeiId)
     fun mmSetObject(fsid: String, obj: Any)
     fun mimeiPublish(sid: String, memo: String, mid: MimeiId)
@@ -50,7 +66,7 @@ object HproseInstance {
     private const val FOLLOWINGS_KEY = "list_of_followings_mid"
     private const val FOLLOWERS_KEY = "list_of_followers_mid"
 
-    private var sid:String = ""
+    private var sid: String = ""
     private val client: HproseService by lazy {
         HproseClient.create(BASE_URL).useService(HproseService::class.java)
     }
@@ -113,20 +129,38 @@ object HproseInstance {
         }
     }
 
-    fun getTweets(): List<Tweet> {
-        val tweets = mutableListOf<Tweet>()
+    // get Ids of users who the current user is following
+    fun getFollowings(userId: MimeiId = appMid): List<MimeiId> =
         try {
-            client.mmOpen("", appMid, "last").let {
-                client.get(it, FOLLOWINGS_KEY)?.let { fls ->
-                    (fls as List<*>).forEach { uid ->
-                        println("following uid=$uid")
-                        client.mmOpen("", uid as MimeiId, "last").let { it1 ->
-                            client.zRevRange(it1, TWT_LIST_KEY, 0, 3).let { list ->
-                                list.forEach { l ->
-                                    val sp = l as Map<*, *>
-                                    client.mmOpen("", sp["member"] as MimeiId, "last").let { tmid ->
-                                        client.get(tmid, TWT_CONTENT_KEY)?.let { content ->
-                                            tweets += Json.decodeFromString(content.toString()) as Tweet
+            client.mmOpen("", userId, "last").run {
+                client.get(this, FOLLOWINGS_KEY)?.let { keys ->
+                    (keys as? List<*>)?.mapNotNull { it as? MimeiId }
+                } ?: emptyList()
+            }
+        } catch (e: Exception) {
+            Log.e("HproseInstance.getFollowings", e.toString())
+            emptyList()
+        }
+
+    // get tweets of a given author in before given date time.
+    // if end is null, get all tweets
+    fun getTweets(
+        authorId: MimeiId = appMid,
+        tweets: MutableList<Tweet>,
+        startTimestamp: Long,
+        endTimestamp: Long?
+    ) = try {
+        client.mmOpen("", authorId, "last").also {
+            client.zRevRange(it, TWT_LIST_KEY, 0, 3).forEach { e ->
+                (e as Map<*, *>).let { sp ->
+                    val score = (sp["score"] as BigInteger).toLong()
+                        if (score <= startTimestamp && (endTimestamp == null || score > endTimestamp)) {
+                            // check if the tweet is in the tweets already.
+                            (sp["member"] as? MimeiId)?.let { tweetId ->
+                                if (tweets.none { t -> t.mid == tweetId }) {
+                                    client.mmOpen("", tweetId, "last").also { mmsid ->
+                                        client.get(mmsid, TWT_CONTENT_KEY)?.let { content ->
+                                            tweets += Json.decodeFromString(content as String) as Tweet
                                         }
                                     }
                                 }
@@ -135,11 +169,9 @@ object HproseInstance {
                     }
                 }
             }
-            return tweets
-        } catch (e: Exception) {
-            Log.e("HproseInstance.getTweets", e.toString())
-            throw e
-        }
+
+    } catch (e: Exception) {
+        Log.e("HproseInstance.getTweets", e.toString())
     }
 
     // Store an object in a Mimei file and return its MimeiId.
@@ -187,7 +219,10 @@ object HproseInstance {
                     start += bytesRead
                 }
             }
-            return client.mfTemp2Ipfs(fsid, appMid) // Associate the uploaded data with the app's main Mimei
+            return client.mfTemp2Ipfs(
+                fsid,
+                appMid
+            ) // Associate the uploaded data with the app's main Mimei
         } catch (e: Exception) {
             throw e
         }
