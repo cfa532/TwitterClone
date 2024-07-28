@@ -56,8 +56,9 @@ interface HproseService {
 
 // Encapsulate Hprose client and related operations in a singleton object.
 object HproseInstance {
+    const val BASE_URL = "http://192.168.1.103:8081"
+
     private const val CHUNK_SIZE = 10 * 1024 * 1024 // 10MB in bytes
-    private const val BASE_URL = "http://192.168.1.103:8081/webapi/"
     private const val APP_ID = "V6MUd0cVeuCFE7YsGLNn5ygyJlm"
     private const val APP_EXT = "com.example.twitterclone"
     private const val APP_MARK = "version 0.0.2"
@@ -73,7 +74,7 @@ object HproseInstance {
 
     private var sid: String = ""
     private val client: HproseService by lazy {
-        HproseClient.create(BASE_URL).useService(HproseService::class.java)
+        HproseClient.create("$BASE_URL/webapi/").useService(HproseService::class.java)
     }
 
     // Initialize lazily, also used as UserId

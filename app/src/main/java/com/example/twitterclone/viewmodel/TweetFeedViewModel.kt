@@ -1,5 +1,6 @@
 package com.example.twitterclone.viewmodel
 
+import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -52,7 +53,25 @@ class TweetFeedViewModel(
         }
     }
 
-    fun getTweetRepository(): TweetRepository {
-        return tweetRepository
+    fun uploadTweet(currentUserMid: MimeiId, content: String, isPrivate: Boolean, attachments: List<MimeiId>) {
+        var tweet = Tweet(
+            authorId = currentUserMid,
+            content = content,
+            isPrivate = isPrivate,
+            attachments = attachments
+        )
+        viewModelScope.launch {
+//            withContext(Dispatchers.IO) {
+            try {
+                tweet = HproseInstance.uploadTweet(tweet)
+            } catch (e: Exception) {
+                Log.e("TweetFeedViewModel", "Error uploading tweet", e)
+            }
+//            }
+        }
+        println(tweet)
+        _tweets.update { currentTweets ->
+            currentTweets + tweet
+        }
     }
 }

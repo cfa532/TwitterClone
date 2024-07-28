@@ -37,26 +37,4 @@ class TweetViewModel(
             tweetRepository.addTweet(retweet)   // update tweet with Id returned from server
         }
     }
-
-    fun uploadTweet(currentUserMid: MimeiId, content: String, isPrivate: Boolean, attachments: List<MimeiId>) {
-
-        var tweet = Tweet(
-            authorId = currentUserMid,
-            content = content,
-            isPrivate = isPrivate,
-            attachments = attachments
-        )
-        viewModelScope.launch {
-//            withContext(Dispatchers.IO) {
-                try {
-                    tweet = HproseInstance.uploadTweet(tweet)
-                } catch (e: Exception) {
-                    _errorState.value = e.message ?: "Failed to upload tweet"
-                }
-//            }
-        }
-
-        // Now you can save the tweet with attachment CIDs
-        println(tweet)
-    }
 }

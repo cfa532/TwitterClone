@@ -41,7 +41,7 @@ import androidx.navigation.NavHostController
 import com.example.twitterclone.R
 import com.example.twitterclone.model.MimeiId
 import com.example.twitterclone.network.HproseInstance.uploadAttachments
-import com.example.twitterclone.viewmodel.TweetViewModel
+import com.example.twitterclone.viewmodel.TweetFeedViewModel
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -49,7 +49,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun ComposeTweetScreen(
     navController: NavHostController,
-    viewModel: TweetViewModel,
+    viewModel: TweetFeedViewModel,
     currentUserMid: MimeiId
 ) {
     var tweetContent by remember { mutableStateOf("Hello Twitter!") }

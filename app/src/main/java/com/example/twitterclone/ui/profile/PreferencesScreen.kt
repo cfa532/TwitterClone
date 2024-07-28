@@ -33,6 +33,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
 import com.example.twitterclone.PreferencesHelper
 import com.example.twitterclone.R
@@ -40,7 +41,7 @@ import com.example.twitterclone.network.HproseInstance
 import com.example.twitterclone.network.HproseInstance.uploadToIPFS
 import com.example.twitterclone.ui.compose.AppIcon
 import kotlinx.coroutines.launch
-import coil.compose.rememberImagePainter
+import com.example.twitterclone.model.MimeiId
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -55,7 +56,7 @@ fun PreferencesScreen(navController: NavHostController, preferencesHelper: Prefe
             preferencesHelper.getEntryUrl() ?: "tw.fireshare.us"
         )
     }
-    var avatar by remember { mutableStateOf<String?>(null) }
+    var avatar by remember { mutableStateOf<MimeiId?>(null) }
     val user = HproseInstance.getUserData()
     if (user != null) {
         username = user.username ?: username
@@ -81,7 +82,6 @@ fun PreferencesScreen(navController: NavHostController, preferencesHelper: Prefe
                 }
             }
         }
-
     }
 
     Column (
@@ -154,15 +154,13 @@ fun PreferencesScreen(navController: NavHostController, preferencesHelper: Prefe
 
 @Composable
 fun AvatarSection(avatar: String?, launcher: ManagedActivityResultLauncher<String, Uri?>) {
-    val defaultAvatar: Painter = painterResource(id = R.drawable.ic_user_avatar)
-    val avatarPainter = rememberAsyncImagePainter(model = avatar ?: R.drawable.ic_user_avatar)
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.fillMaxWidth()
     ) {
-        Image(
-            painter = avatarPainter,
+        AsyncImage(
+            model = if (avatar != null) { HproseInstance.BASE_URL+"/ipfs/"+avatar } else { R.drawable.ic_user_avatar },
             contentDescription = "User Avatar",
             modifier = Modifier
                 .size(100.dp)

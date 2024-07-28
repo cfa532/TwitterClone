@@ -35,6 +35,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.twitterclone.network.HproseInstance
 import com.example.twitterclone.ui.compose.AppIcon
 import com.example.twitterclone.ui.compose.ComposeTweetScreen
+import com.example.twitterclone.ui.feed.TweetFeedScreen
 import com.example.twitterclone.ui.profile.PreferencesScreen
 import com.example.twitterclone.ui.theme.TwitterCloneTheme
 import com.example.twitterclone.ui.tweet.TweetItem
@@ -83,7 +84,7 @@ fun MainScreen(viewModel: TweetFeedViewModel = TweetFeedViewModel()) {
             composable("composeTweet") {
                 ComposeTweetScreen(
                     navController = navController,
-                    viewModel = TweetViewModel(viewModel.getTweetRepository()),
+                    viewModel = viewModel,
                     currentUserMid = CURRENT_USER_ID // Replace with actual current user ID
                 )
             }
@@ -147,26 +148,6 @@ fun BottomNavigationBar(navController: NavHostController) {
                     contentDescription = "Compose",
                     modifier = Modifier.size(32.dp)
                 )
-            }
-        }
-    }
-}
-
-@Composable
-fun TweetFeedScreen(navController: NavHostController, viewModel: TweetFeedViewModel) {
-    Scaffold(
-        topBar = { MainTopAppBar(navController) },
-        bottomBar = { BottomNavigationBar(navController) }
-    ) { innerPadding ->
-        val tweets = viewModel.tweets.collectAsState().value
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-        )
-        {
-            items(tweets) { tweet ->
-                TweetItem(tweet)
             }
         }
     }
