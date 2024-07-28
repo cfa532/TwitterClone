@@ -23,7 +23,7 @@ class TweetFeedViewModel(
     val tweets: StateFlow<List<Tweet>> get() = _tweets
 
     init {
-        getTweets()
+        getTweets(System.currentTimeMillis())
     }
 
     fun getUser(userMid: MimeiId): User {
@@ -32,7 +32,7 @@ class TweetFeedViewModel(
 
     private fun getTweets(
         startTimestamp: Long = System.currentTimeMillis(),
-        endTimestamp: Long? = startTimestamp - 72 * 60 * 60 * 1000
+        endTimestamp: Long? = null
     ) {
         viewModelScope.launch {
             val followings = HproseInstance.getFollowings()
