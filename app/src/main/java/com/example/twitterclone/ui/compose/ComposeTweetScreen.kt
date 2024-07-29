@@ -129,8 +129,10 @@ fun ComposeTweetScreen(
                             tweetContent,
                             isPrivate,
                             attachments.mapNotNull { it.getOrNull() })
+                        // clear and return to previous screen
                         selectedAttachments.clear()
                         tweetContent = ""
+                        navController.popBackStack()
                     }
                 }, modifier = Modifier.weight(1f)
             ) {

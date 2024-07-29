@@ -1,5 +1,6 @@
 package com.example.twitterclone.network
 
+import android.content.ContentValues.TAG
 import android.content.Context
 import android.net.Uri
 import android.util.Log
@@ -119,11 +120,15 @@ object HproseInstance {
     }
 
     fun getUserData(userId: MimeiId = appMid): User? {
-        // open CUR version in case the Mimei is null
-        client.mmOpen("", userId, "cur").let {
-            val user = client.get(it, OWNER_DATA_KEY) ?: return null
-            return Json.decodeFromString(user.toString()) as User
-        }
+        return runCatching {
+            client.mmOpen("", userId, "last").let {
+                client.get(it, OWNER_DATA_KEY)?.let { userData ->
+                    Json.decodeFromString<User>(userData as String) // Assuming Json is a kotlinx.serialization object
+                }
+            }
+        }.onFailure { e ->
+            Log.e(TAG, "Failed to get user data for userId: $userId", e)
+        }.getOrNull()
     }
 
     fun setUserData(user: User) {
