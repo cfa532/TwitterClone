@@ -14,7 +14,7 @@ import kotlinx.coroutines.withContext
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonArray
-import java.io.IOException
+import java.io.FileNotFoundException
 import java.io.InputStream
 import java.math.BigInteger
 
@@ -237,13 +237,13 @@ object HproseInstance {
     // Upload data from an InputStream to IPFS and return the resulting MimeiId.
     fun uploadToIPFS(inputStream: InputStream): MimeiId {
         val fsid = client.mfOpenTempFile(sid)
-        var start = 0
-        inputStream.use { inputStream1 ->
+        var offset = 0
+        inputStream.use { stream ->
             val buffer = ByteArray(CHUNK_SIZE)
             var bytesRead: Int
-            while (inputStream1.read(buffer).also { bytesRead = it } != -1) {
-                client.mfSetData(fsid, buffer.copyOfRange(0, bytesRead), start)
-                start += bytesRead
+            while (stream.read(buffer).also { bytesRead = it } != -1) {
+                client.mfSetData(fsid, buffer, offset)
+                offset += bytesRead
             }
         }
         return client.mfTemp2Ipfs(
@@ -252,19 +252,30 @@ object HproseInstance {
         )    // Associate the uploaded data with the app's main Mimei
     }
 
-    suspend fun uploadAttachments(context: Context, attachments: List<Uri>): List<Result<MimeiId>> {
-        return attachments.map { uri ->
+    suspend fun uploadAttachments(context: Context, attachments: List<Uri>): List<MimeiId> {
+        return attachments.mapNotNull { uri ->
             uploadFile(context, uri)
         }
     }
 
-    private suspend fun uploadFile(context: Context, uri: Uri): Result<MimeiId> {
+    private suspend fun uploadFile(context: Context, uri: Uri): MimeiId? {
         return withContext(Dispatchers.IO) {
             runCatching {
                 context.contentResolver.openInputStream(uri)?.use { inputStream ->
                     uploadToIPFS(inputStream)
-                } ?: throw IOException("Failed to open input stream for URI: $uri")
+                } ?: throw FileNotFoundException("File not found for URI: $uri")
+            }.getOrElse { e ->
+                Log.e("HproseInstance.uploadFile", "Failed to upload file: $uri", e)
+                null
             }
         }
     }
+
+    private suspend fun uploadFile(json: String): MimeiId =
+        withContext(Dispatchers.IO) {
+            client.mfOpenTempFile(sid).let { fsid ->
+                client.mfSetData(fsid, json.toByteArray(), 0)
+                client.mfTemp2Ipfs(fsid, appMid)
+            }
+        }
 }

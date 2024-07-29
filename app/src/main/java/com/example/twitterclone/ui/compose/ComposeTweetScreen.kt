@@ -128,7 +128,8 @@ fun ComposeTweetScreen(
                             currentUserMid,
                             tweetContent,
                             isPrivate,
-                            attachments.mapNotNull { it.getOrNull() })
+                            attachments
+                        )
                         // clear and return to previous screen
                         selectedAttachments.clear()
                         tweetContent = ""
