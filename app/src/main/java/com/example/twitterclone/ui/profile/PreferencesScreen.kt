@@ -42,6 +42,7 @@ import com.example.twitterclone.network.HproseInstance.uploadToIPFS
 import com.example.twitterclone.ui.compose.AppIcon
 import kotlinx.coroutines.launch
 import com.example.twitterclone.model.MimeiId
+import kotlinx.coroutines.runBlocking
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -57,7 +58,7 @@ fun PreferencesScreen(navController: NavHostController, preferencesHelper: Prefe
         )
     }
     var avatar by remember { mutableStateOf<MimeiId?>(null) }
-    val user = HproseInstance.getUserData()
+    val user = runBlocking { HproseInstance.getUserData() }
     if (user != null) {
         username = user.username ?: username
         name = user.name ?: name

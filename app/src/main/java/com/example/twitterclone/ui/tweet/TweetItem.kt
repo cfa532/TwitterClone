@@ -11,13 +11,14 @@ import com.example.twitterclone.model.Tweet
 import com.example.twitterclone.model.MimeiId
 import com.example.twitterclone.model.User
 import com.example.twitterclone.viewmodel.TweetViewModel
+import kotlinx.coroutines.runBlocking
 
 @Composable
 fun TweetItem(
     tweet: Tweet,
 ) {
     val viewModel = TweetViewModel()
-    val author = viewModel.getAuthor(tweet.authorId)
+    val author = runBlocking { viewModel.getAuthor(tweet.authorId) }
 
     Column(
         modifier = Modifier

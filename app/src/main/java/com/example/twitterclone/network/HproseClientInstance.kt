@@ -81,6 +81,7 @@ object HproseInstance {
     // Initialize lazily, also used as UserId
     lateinit var appMid: MimeiId
     private lateinit var appUser: User
+    private val gadget = Gadget()
 
     // Initialize the Hprose instance and establish a session.
     fun initialize() {
@@ -120,24 +121,24 @@ object HproseInstance {
     }
 
     // operation too heavy
-    fun getMMBaseUrl(mimeiId: MimeiId) {
+    private suspend fun getMMBaseUrl(mimeiId: MimeiId) {
         client.getVar("", "mmprovsips", mimeiId).let { str ->
-            val json = Json.parseToJsonElement(str)
-            val outermostArray = json.jsonArray
+            val outermostArray = Json.parseToJsonElement(str).jsonArray
             if (outermostArray.isNotEmpty()) {
                 val innermostArrays = outermostArray[0].jsonArray.map { it.jsonArray }
-                innermostArrays.forEach { ip ->
-                    println(ip)
-                }
+                gadget.getFirstReachableUri(innermostArrays, mimeiId)
+//                innermostArrays.forEach { ip ->
+//                    println(ip[0])
+//                }
             } else {
                 throw Exception("Cannot parse BaseUrl=$str")
             }
         }
     }
 
-    fun getUserData(userId: MimeiId = appMid): User? {
+    suspend fun getUserData(userId: MimeiId = appMid): User? {
         return runCatching {
-//            getMMBaseUrl(userId)
+            getMMBaseUrl(userId)
             client.mmOpen("", userId, "last").let {
                 client.get(it, OWNER_DATA_KEY)?.let { userData ->
                     Json.decodeFromString<User>(userData as String) // Assuming Json is a kotlinx.serialization object

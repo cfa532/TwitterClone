@@ -1,13 +1,18 @@
 package com.example.twitterclone.network
 
+import android.net.Uri
+import android.util.Log
+import com.example.twitterclone.model.MimeiId
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
-import java.net.InetAddress
-import java.net.URI
+import kotlinx.serialization.json.JsonArray
+import java.net.HttpURLConnection
+import java.net.URL
 import java.net.UnknownHostException
+import java.util.concurrent.TimeoutException
 
 class Gadget {
-    fun getUriFromIp(ip: String): URI {
+    private fun getUriFromIp(ip: String): URL {
         val (host, port) = if (ip.startsWith("[")) { // IPv6 address
             val parts = ip.substring(1, ip.length - 1).split("]:")
             parts[0] to parts[1].toInt()
@@ -15,28 +20,45 @@ class Gadget {
             val parts = ip.split(":")
             parts[0] to parts[1].toInt()
         }
-        return URI("http://$host:$port")
+        return URL("http://$host:$port")
     }
 
-    private fun isReachable(host: String, port: Int, timeout: Int = 1000): Boolean {
+    private fun isReachable(mid: MimeiId, host: String, port: Int, timeout: Int = 1000): Pair<URL, String?>? {
         return try {
-            InetAddress.getByName(host).isReachable(timeout)
+            val url = URL("http://$host:$port/mm/$mid")
+            val connection = url.openConnection() as HttpURLConnection
+            connection.connectTimeout = timeout
+            connection.readTimeout = timeout
+            connection.requestMethod = "GET"
+
+            val responseCode = connection.responseCode
+            if (responseCode == HttpURLConnection.HTTP_OK) {
+                val response = connection.inputStream.bufferedReader().use { it.readText() }
+                Pair(url, response)
+            } else {
+                null // Or handle other response codes as needed
+            }
+        } catch (e: TimeoutException) {
+            null // Handle timeout
         } catch (e: Exception) {
-            false
+            null // Handle other exceptions
         }
     }
 
-    suspend fun getFirstReachableUri(ipList: List<String>): URI? {
+    suspend fun getFirstReachableUri(ipList: List<JsonArray>, mid: MimeiId): Pair<URL, String?>? {
         return coroutineScope {
-            ipList.map { ip ->
+            ipList.map { ip: JsonArray ->
                 async {
                     try {
-                        val uri = getUriFromIp(ip)
-                        if (isReachable(uri.host,uri.port)) uri else null
+                        val uri = getUriFromIp(ip[0].toString().replace("^\"|\"$".toRegex(), ""))
+                        val result = isReachable(mid, uri.host, uri.port) //Get Pair from isReachable
+                        result // Return the Pair if not null
                     } catch (e: UnknownHostException) {
-                        null // Handle invalid IP address
+                        Log.e("UnknownHostException", "Unknown host: ${e.message}")
+                        null
                     } catch (e: IllegalArgumentException) {
-                        null // Handle invalid port
+                        Log.e("IllegalArgumentException", "Invalid URL: ${e.message}")
+                        null
                     }
                 }
             }.firstOrNull {

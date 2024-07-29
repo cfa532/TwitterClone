@@ -18,7 +18,7 @@ class TweetViewModel(
     private val _errorState = MutableLiveData<String?>(null)
     val errorState: LiveData<String?> = _errorState
 
-    fun getAuthor(authorMid: MimeiId): User? {
+    suspend fun getAuthor(authorMid: MimeiId): User? {
         return HproseInstance.getUserData(authorMid)
     }
 
