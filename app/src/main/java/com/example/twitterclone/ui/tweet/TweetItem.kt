@@ -6,6 +6,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
 import com.example.twitterclone.model.Tweet
 import com.example.twitterclone.model.MimeiId
 import com.example.twitterclone.model.User
@@ -16,13 +17,19 @@ fun TweetItem(
     tweet: Tweet,
 ) {
     val viewModel = TweetViewModel()
+    val author = viewModel.getAuthor(tweet.authorId)
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(16.dp)
     ) {
+        Spacer(modifier = Modifier.height(8.dp))
         // Use a Row to align author name and potential verification badge
         Row(verticalAlignment= Alignment.CenterVertically) {
+//            AsyncImage(
+//                model = author?.profileImageUrl,
+//            )
             Text(text = "No One", style = MaterialTheme.typography.bodyMedium)
         }
         Spacer(modifier = Modifier.height(4.dp))

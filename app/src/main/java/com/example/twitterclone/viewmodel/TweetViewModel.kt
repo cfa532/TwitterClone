@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.twitterclone.model.MimeiId
 import com.example.twitterclone.model.Tweet
+import com.example.twitterclone.model.User
 import com.example.twitterclone.network.HproseInstance
 import com.example.twitterclone.repository.TweetRepository
 import kotlinx.coroutines.launch
@@ -16,6 +17,10 @@ class TweetViewModel(
 
     private val _errorState = MutableLiveData<String?>(null)
     val errorState: LiveData<String?> = _errorState
+
+    fun getAuthor(authorMid: MimeiId): User? {
+        return HproseInstance.getUserData(authorMid)
+    }
 
     fun likeTweet(tweetMid: MimeiId) {
         viewModelScope.launch {

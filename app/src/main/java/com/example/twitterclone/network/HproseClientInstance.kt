@@ -1,6 +1,5 @@
 package com.example.twitterclone.network
 
-import android.content.ContentValues.TAG
 import android.content.Context
 import android.net.Uri
 import android.util.Log
@@ -14,6 +13,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.jsonArray
 import java.io.IOException
 import java.io.InputStream
 import java.math.BigInteger
@@ -79,7 +79,7 @@ object HproseInstance {
     }
 
     // Initialize lazily, also used as UserId
-    private lateinit var appMid: MimeiId
+    lateinit var appMid: MimeiId
     private lateinit var appUser: User
 
     // Initialize the Hprose instance and establish a session.
@@ -89,7 +89,7 @@ object HproseInstance {
             val result = client.login(ppt)
             sid = result["sid"].toString()
             println("Leither ver: " + client.getVar("", "ver"))
-            println("IPS: " + client.getVar("", "mmprovsips", "ejEx2oIEJGHHRGyYCzYCBxLkQrg"))
+//            println("IPS: " + client.getVar("", "mmprovsips", "ejEx2oIEJGHHRGyYCzYCBxLkQrg"))
             println("Login result = $result")
 
             // Initialize the app's main MimeiId after successful login.
@@ -119,24 +119,44 @@ object HproseInstance {
         }
     }
 
+    // operation too heavy
+    fun getMMBaseUrl(mimeiId: MimeiId) {
+        client.getVar("", "mmprovsips", mimeiId).let { str ->
+            val json = Json.parseToJsonElement(str)
+            val outermostArray = json.jsonArray
+            if (outermostArray.isNotEmpty()) {
+                val innermostArrays = outermostArray[0].jsonArray.map { it.jsonArray }
+                innermostArrays.forEach { ip ->
+                    println(ip)
+                }
+            } else {
+                throw Exception("Cannot parse BaseUrl=$str")
+            }
+        }
+    }
+
     fun getUserData(userId: MimeiId = appMid): User? {
         return runCatching {
+//            getMMBaseUrl(userId)
             client.mmOpen("", userId, "last").let {
                 client.get(it, OWNER_DATA_KEY)?.let { userData ->
                     Json.decodeFromString<User>(userData as String) // Assuming Json is a kotlinx.serialization object
                 }
             }
         }.onFailure { e ->
-            Log.e(TAG, "Failed to get user data for userId: $userId", e)
+            Log.e("HproseInstance.getUserData", "Failed to get user data for userId: $userId", e)
         }.getOrNull()
     }
 
     fun setUserData(user: User) {
-        // open CUR version in case the Mimei is null
-        client.mmOpen(sid, appMid, "cur").let {
-            client.set(it, OWNER_DATA_KEY, Json.encodeToString(user))
-            client.mmBackup(sid, appMid, "")
-            client.mimeiPublish(sid, "", appMid)
+        try {
+            client.mmOpen(sid, appMid, "cur").let {
+                client.set(it, OWNER_DATA_KEY, Json.encodeToString(user))
+                client.mmBackup(sid, appMid, "")
+                client.mimeiPublish(sid, "", appMid)
+            }
+        } catch (e: Exception) {
+            Log.e("HproseInstance.setUserData", e.toString())
         }
     }
 
@@ -171,7 +191,7 @@ object HproseInstance {
                     if (tweets.none { t -> t.mid == tweetId }) {
                         client.mmOpen("", tweetId, "last").also { mmsid ->
                             client.get(mmsid, TWT_CONTENT_KEY)?.let { content ->
-                                tweets += Json.decodeFromString(content as String) as Tweet
+                                tweets += Json.decodeFromString<Tweet>(content as String)
                             }
                         }
                     }
@@ -226,8 +246,10 @@ object HproseInstance {
                 start += bytesRead
             }
         }
-        return client.mfTemp2Ipfs(fsid,
-            appMid)    // Associate the uploaded data with the app's main Mimei
+        return client.mfTemp2Ipfs(
+            fsid,
+            appMid
+        )    // Associate the uploaded data with the app's main Mimei
     }
 
     suspend fun uploadAttachments(context: Context, attachments: List<Uri>): List<Result<MimeiId>> {
@@ -236,7 +258,7 @@ object HproseInstance {
         }
     }
 
-    suspend fun uploadFile(context: Context, uri: Uri): Result<MimeiId> {
+    private suspend fun uploadFile(context: Context, uri: Uri): Result<MimeiId> {
         return withContext(Dispatchers.IO) {
             runCatching {
                 context.contentResolver.openInputStream(uri)?.use { inputStream ->
