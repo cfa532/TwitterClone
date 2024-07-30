@@ -1,6 +1,8 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
+    kotlin("plugin.serialization")
+    alias(libs.plugins.compose.compiler)
 }
 
 android {
@@ -51,6 +53,8 @@ android {
 
 dependencies {
 
+    implementation(libs.coil.compose)
+    implementation(libs.kotlinx.serialization.json)
     implementation(libs.retrofit2)
     implementation(libs.converter.gson)
     implementation(libs.androidx.navigation.compose)
@@ -64,6 +68,7 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
     implementation(libs.hprose.java)
+    implementation(libs.play.services.fido)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

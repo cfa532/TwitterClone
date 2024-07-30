@@ -6,31 +6,32 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
 import com.example.twitterclone.model.Tweet
 import com.example.twitterclone.model.MimeiId
 import com.example.twitterclone.model.User
 import com.example.twitterclone.viewmodel.TweetViewModel
+import kotlinx.coroutines.runBlocking
 
 @Composable
 fun TweetItem(
     tweet: Tweet,
-    author: User,
-    originalTweet: Tweet?,
-    viewModel: TweetViewModel,
-    currentUserMid: MimeiId
 ) {
+    val viewModel = TweetViewModel()
+    val author = runBlocking { viewModel.getAuthor(tweet.authorId) }
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(16.dp)
     ) {
+        Spacer(modifier = Modifier.height(8.dp))
         // Use a Row to align author name and potential verification badge
         Row(verticalAlignment= Alignment.CenterVertically) {
-            Text(text = author.name, style = MaterialTheme.typography.bodyMedium)
-            // Add a verified badge icon if the user is verified (assuming you have a way to check this)
-            // if (author.isVerified) {
-            //     Icon(imageVector = Icons.Filled.Verified, contentDescription = "Verified")
-            // }
+//            AsyncImage(
+//                model = author?.profileImageUrl,
+//            )
+            Text(text = "No One", style = MaterialTheme.typography.bodyMedium)
         }
         Spacer(modifier = Modifier.height(4.dp))
         Text(text = tweet.content, style = MaterialTheme.typography.bodyMedium)
@@ -55,17 +56,17 @@ fun TweetItem(
             }
         }
 
-        originalTweet?.let {
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(text = "Retweet of:", style = MaterialTheme.typography.labelSmall)
-            // Pass null for originalTweet to avoid infinite recursion
-            TweetItem(
-                tweet = it,
-                author = author,
-                originalTweet = null,
-                viewModel = viewModel,
-                currentUserMid = currentUserMid
-            )
-        }
+//        originalTweet?.let {
+//            Spacer(modifier = Modifier.height(8.dp))
+//            Text(text = "Retweet of:", style = MaterialTheme.typography.labelSmall)
+//            // Pass null for originalTweet to avoid infinite recursion
+//            TweetItem(
+//                tweet = it,
+//                author = author,
+//                originalTweet = null,
+//                viewModel = viewModel,
+//                currentUserMid = currentUserMid
+//            )
+//        }
     }
 }

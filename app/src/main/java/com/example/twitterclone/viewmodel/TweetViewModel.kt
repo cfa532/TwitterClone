@@ -1,11 +1,12 @@
 package com.example.twitterclone.viewmodel
 
-import androidx.compose.runtime.mutableStateListOf
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.twitterclone.model.MimeiId
 import com.example.twitterclone.model.Tweet
-import com.example.twitterclone.network.TweetRequest
+import com.example.twitterclone.model.User
 import com.example.twitterclone.network.HproseInstance
 import com.example.twitterclone.repository.TweetRepository
 import kotlinx.coroutines.launch
@@ -14,7 +15,12 @@ class TweetViewModel(
     private val tweetRepository: TweetRepository = TweetRepository()
 ) : ViewModel() {
 
-    private val tweets = mutableStateListOf<Tweet>()
+    private val _errorState = MutableLiveData<String?>(null)
+    val errorState: LiveData<String?> = _errorState
+
+    suspend fun getAuthor(authorMid: MimeiId): User? {
+        return HproseInstance.getUserData(authorMid)
+    }
 
     fun likeTweet(tweetMid: MimeiId) {
         viewModelScope.launch {
@@ -30,23 +36,10 @@ class TweetViewModel(
             val retweet = Tweet(
                 content = originalTweet.content,
                 timestamp = System.currentTimeMillis(),
-                author = authorMid,
+                authorId = authorMid,
                 original = originalTweet.mid
             )
             tweetRepository.addTweet(retweet)   // update tweet with Id returned from server
-        }
-    }
-
-    fun composeTweet(authorId: MimeiId, content: String, isPrivate: Boolean) {
-        viewModelScope.launch {
-            val newTweet = Tweet(author = authorId, content = content, isPrivate = isPrivate)
-            println(newTweet)
-            val tweetRequest = TweetRequest(newTweet)
-
-            val ppt  = HproseInstance.client.GetVarByContext("", "context_ppt")
-            val result = HproseInstance.client.Login(ppt)
-            println(HproseInstance.client.GetVar("", "ver"))
-            println("Login: $result")
         }
     }
 }

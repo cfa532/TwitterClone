@@ -1,38 +1,106 @@
 package com.example.twitterclone.ui.compose
 
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import AttachmentIcon
+import android.net.Uri
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.Button
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Switch
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewModelScope
+import androidx.navigation.NavHostController
+import com.example.twitterclone.R
 import com.example.twitterclone.model.MimeiId
-import com.example.twitterclone.model.Tweet
-import com.example.twitterclone.viewmodel.TweetViewModel
+import com.example.twitterclone.network.HproseInstance.uploadAttachments
+import com.example.twitterclone.viewmodel.TweetFeedViewModel
+import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalMaterial3Api::class)
+@RequiresApi(Build.VERSION_CODES.Q)
 @Composable
-fun ComposeTweetScreen(viewModel: TweetViewModel, currentUserMid: MimeiId) {
-    var tweetContent by remember {mutableStateOf("") } // Use by delegation for better syntax
-    val attachments = remember { mutableStateOf(listOf<MimeiId>()) } // Consider if attachments are actually used
+fun ComposeTweetScreen(
+    navController: NavHostController,
+    viewModel: TweetFeedViewModel,
+    currentUserMid: MimeiId
+) {
+    var tweetContent by remember { mutableStateOf("Hello Twitter!") }
+    val selectedAttachments = remember { mutableStateListOf<Uri>() }
     var isPrivate by remember { mutableStateOf(false) }
+    val context = LocalContext.current // Renamed for clarity
+
+    // Create a launcher for the file picker
+    val filePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        uri?.let { selectedAttachments.add(it) }
+    }
 
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(16.dp)
     ) {
-        OutlinedTextField( // Use OutlinedTextField for a more modern look
+        TopAppBar(
+            title = {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    AppIcon()
+                }
+            },
+            navigationIcon = {
+                IconButton(onClick = { navController.popBackStack() }) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_back),
+                        contentDescription = "Back",
+                        modifier = Modifier
+                            .size(40.dp)
+                            .padding(8.dp)
+                    )
+                }
+            }
+        )
+        OutlinedTextField(
             value = tweetContent,
             onValueChange = { tweetContent = it },
             label = { Text("What's happening?") },
-            modifier = Modifier.fillMaxWidth() // Make the text field take up full width
+            modifier = Modifier.fillMaxWidth()
         )
         Spacer(modifier = Modifier.height(8.dp))
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically // Vertically center the row contents
+            verticalAlignment = Alignment.CenterVertically
         ) {
             Text("Private")
             Switch(
@@ -41,21 +109,49 @@ fun ComposeTweetScreen(viewModel: TweetViewModel, currentUserMid: MimeiId) {
             )
         }
         Spacer(modifier = Modifier.height(16.dp))
-        Button(
-            onClick = { viewModel.composeTweet(currentUserMid, tweetContent, isPrivate) },
-            modifier = Modifier.align(Alignment.End)
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.End
         ) {
-            Text("Tweet")
+            Button(
+                onClick = { filePickerLauncher.launch("*/*") },
+                modifier = Modifier.weight(1f)
+            ) {
+                Text("Upload File")
+            }
+            Spacer(modifier = Modifier.width(8.dp))
+            Button(
+                onClick = {
+                    viewModel.viewModelScope.launch {
+                        val attachments = uploadAttachments(context, selectedAttachments)
+                        viewModel.uploadTweet(
+                            currentUserMid,
+                            tweetContent,
+                            isPrivate,
+                            attachments
+                        )
+                        // clear and return to previous screen
+                        selectedAttachments.clear()
+                        tweetContent = ""
+                        navController.popBackStack()
+                    }
+                }, modifier = Modifier.weight(1f)
+            ) {
+                Text("Tweet")
+            }
+        }
+
+        // Display icons for attached files
+        LazyRow(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 8.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            items(selectedAttachments) { uri ->
+                AttachmentIcon(uri)
+            }
         }
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun PreviewComposeTweetScreen() {
-    // Create a dummy TweetViewModel and currentUserMid for preview purposes
-    val dummyViewModel = TweetViewModel(/* Pass necessary parameters if any */)
-    val dummyCurrentUserMid: MimeiId = "dummyUserId"
-
-    ComposeTweetScreen(viewModel = dummyViewModel, currentUserMid = dummyCurrentUserMid)
-}
