@@ -9,9 +9,13 @@ data class Tweet(
     val authorId: MimeiId,        // mid of the author, is also the mimei database Id
     var content: String,
     val timestamp: Long = System.currentTimeMillis(),
-    var likeCount: Int = 0,     // Number of likes
-    var bookmarkCount: Int = 0, // Number of bookmarks
     val original: MimeiId?= null, // this is retweet of the original tweet
+
+    var likeCount: Int = 0,     // Number of likes
+    var likes: List<MimeiId> = emptyList(),     // user list that liked the tweet
+
+    var bookmarkCount: Int = 0, // Number of bookmarks
+    var bookmarks: List<MimeiId> = emptyList(), // user list that bookmarked the tweet
 
     // List of retweets ID, without comments.
     var retweets: List<MimeiId> = emptyList(),
