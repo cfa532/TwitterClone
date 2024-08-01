@@ -11,6 +11,8 @@ import java.net.URL
 import java.net.UnknownHostException
 import java.util.concurrent.TimeoutException
 
+const val MIMEI_ID_LENGTH = 27
+
 class Gadget {
     private fun getUriFromIp(ip: String): URL {
         val (host, port) = if (ip.startsWith("[")) { // IPv6 address
@@ -25,7 +27,11 @@ class Gadget {
 
     private fun isReachable(mid: MimeiId, host: String, port: Int, timeout: Int = 1000): Pair<URL, String?>? {
         return try {
-            val url = URL("http://$host:$port/mm/$mid")
+            val url = if (mid.length > MIMEI_ID_LENGTH) {
+                URL("http://$host:$port/ipfs/$mid")
+            } else {
+                URL("http://$host:$port/mm/$mid")
+            }
             val connection = url.openConnection() as HttpURLConnection
             connection.connectTimeout = timeout
             connection.readTimeout = timeout
@@ -45,6 +51,7 @@ class Gadget {
         }
     }
 
+    // In Pair<URL, String?>?, where String is JSON of Mimei content
     suspend fun getFirstReachableUri(ipList: List<JsonArray>, mid: MimeiId): Pair<URL, String?>? {
         return coroutineScope {
             ipList.map { ip: JsonArray ->

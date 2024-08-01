@@ -123,13 +123,11 @@ object HproseInstance {
     // operation too heavy
     private suspend fun getMMBaseUrl(mimeiId: MimeiId) {
         client.getVar("", "mmprovsips", mimeiId).let { str ->
+            // Given mid, find its providers IP list
             val outermostArray = Json.parseToJsonElement(str).jsonArray
             if (outermostArray.isNotEmpty()) {
                 val innermostArrays = outermostArray[0].jsonArray.map { it.jsonArray }
                 gadget.getFirstReachableUri(innermostArrays, mimeiId)
-//                innermostArrays.forEach { ip ->
-//                    println(ip[0])
-//                }
             } else {
                 throw Exception("Cannot parse BaseUrl=$str")
             }
@@ -138,7 +136,7 @@ object HproseInstance {
 
     suspend fun getUserData(userId: MimeiId = appMid): User? {
         return runCatching {
-            getMMBaseUrl(userId)
+            val baseUrl = getMMBaseUrl(userId)
             client.mmOpen("", userId, "last").let {
                 client.get(it, OWNER_DATA_KEY)?.let { userData ->
                     Json.decodeFromString<User>(userData as String) // Assuming Json is a kotlinx.serialization object
