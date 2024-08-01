@@ -14,6 +14,7 @@ import java.util.concurrent.TimeoutException
 const val MIMEI_ID_LENGTH = 27
 
 class Gadget {
+    // ip is in the format of "125.229.161.122:8081" or "[2001:b011:e606:98c5:3be9:a5f3:39c4:ff36]:8081"
     private fun getUriFromIp(ip: String): URL {
         val (host, port) = if (ip.startsWith("[")) { // IPv6 address
             val parts = ip.substring(1, ip.length - 1).split("]:")

@@ -17,6 +17,7 @@ import kotlinx.serialization.json.jsonArray
 import java.io.FileNotFoundException
 import java.io.InputStream
 import java.math.BigInteger
+import java.net.URL
 
 interface HproseService {
     fun getVarByContext(sid: String, context: String, mapOpt: Map<String, String>? = null): String
@@ -66,6 +67,7 @@ object HproseInstance {
 
     // Keys within the mimei of each tweet
     private const val TWT_CONTENT_KEY = "content_of_tweet"  // content key within the Mimei
+    private const val TWT_LIKED_COUNT = "count_of_likes"
 
     // Keys within the mimei of the user's database
     private const val TWT_LIST_KEY = "list_of_tweets_mid"
@@ -121,22 +123,32 @@ object HproseInstance {
     }
 
     // operation too heavy
-    private suspend fun getMMBaseUrl(mimeiId: MimeiId) {
-        client.getVar("", "mmprovsips", mimeiId).let { str ->
-            // Given mid, find its providers IP list
-            val outermostArray = Json.parseToJsonElement(str).jsonArray
-            if (outermostArray.isNotEmpty()) {
-                val innermostArrays = outermostArray[0].jsonArray.map { it.jsonArray }
-                gadget.getFirstReachableUri(innermostArrays, mimeiId)
-            } else {
-                throw Exception("Cannot parse BaseUrl=$str")
+    private suspend fun getUser(mimeiId: MimeiId): Result<Pair<URL, User>> {
+        val providerData = client.getVar("", "mmprovsips", mimeiId)
+        return try {
+            val providerLists = Json.parseToJsonElement(providerData).jsonArray
+            when {
+                providerLists.isNotEmpty() -> {
+                    val ipAddresses = providerLists[0].jsonArray.map { it.jsonArray }
+                    gadget.getFirstReachableUri(ipAddresses, mimeiId)?.let { (url, jsonData) ->
+                        jsonData?.let {
+                            Result.success(Pair(url, Json.decodeFromString<User>(jsonData)))
+                        } ?: Result.failure(InvalidProviderDataException("Missing user data for $mimeiId"))
+                    } ?: Result.failure(ProviderNotFoundException("No reachable provider found for $mimeiId"))
+                }
+                else -> Result.failure(InvalidProviderDataException("Invalid provider data for $mimeiId: $providerData"))
             }
+        } catch (e: Exception) {
+            Result.failure(e)
         }
     }
 
+    class ProviderNotFoundException(message: String) : Exception(message)
+    class InvalidProviderDataException(message: String) : Exception(message)
+
     suspend fun getUserData(userId: MimeiId = appMid): User? {
         return runCatching {
-            val baseUrl = getMMBaseUrl(userId)
+            val baseUrl = getUser(userId)
             client.mmOpen("", userId, "last").let {
                 client.get(it, OWNER_DATA_KEY)?.let { userData ->
                     Json.decodeFromString<User>(userData as String) // Assuming Json is a kotlinx.serialization object
