@@ -4,6 +4,7 @@
     const RETWEET_COUNT = "retweet_count_key"
     const RETWEET_LIST = "retweet_user_list_key"
 
+    let retweetId = request["retweetid"]
     let tweetId = request["tweetid"]
     console.log("tweet mid=", tweetId)
 
@@ -11,15 +12,11 @@
     let mmsid = lapi.MMOpen(authSid, tweetId, "cur")
     let count = lapi.Get(mmsid, RETWEET_COUNT)
 
-    let cl = lapi.Get(mmsid, RETWEET_LIST)
     if (request["action"] != "remove") {
         count++
-        lapi.Set(mmsid, RETWEET_LIST, cl.push(tweetId))
+        lapi.Zadd(mmsid, RETWEET_LIST, new ScorePair(Date.now(), retweetId))
     } else {
         // remove the tweet ID
-        count--
-        cl = cl.filter(item => item !== tweetId)
-        lapi.Set(mmsid, RETWEET_LIST, cl)
     }
     lapi.Set(mmsid, RETWEET_COUNT, count)
     lapi.MMBackup(sid, tweetId, "", "delref=true")
@@ -27,3 +24,10 @@
 
     count
 })()
+
+class ScorePair {
+    constructor(score, member) {
+      this.score = score;
+      this.member = member;
+    }
+};

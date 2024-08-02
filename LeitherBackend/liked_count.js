@@ -12,7 +12,6 @@
     else {
         count -= 1
     }
-    count = action=="like" ? count+1 : count-1
 
     lapi.Set(mmsid, "count_of_likes", count)
     lapi.MMBackup(authSid, tweetid, "", "delref=true")
