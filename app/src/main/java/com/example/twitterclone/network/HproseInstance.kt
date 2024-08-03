@@ -58,7 +58,7 @@ interface HproseService {
 
 // Encapsulate Hprose client and related operations in a singleton object.
 object HproseInstance {
-    const val BASE_URL = "http://192.168.1.103:8081"
+    const val BASE_URL = "http://192.168.0.61:8081"
 
     private const val CHUNK_SIZE = 10 * 1024 * 1024 // 10MB in bytes
     private const val APP_ID = "V6MUd0cVeuCFE7YsGLNn5ygyJlm"
@@ -75,50 +75,38 @@ object HproseInstance {
     private const val FOLLOWINGS_KEY = "list_of_followings_mid"
     private const val FOLLOWERS_KEY = "list_of_followers_mid"
 
-    private var sid: String = ""
+    private val gadget = Gadget()
+
     private val client: HproseService by lazy {
         HproseClient.create("$BASE_URL/webapi/").useService(HproseService::class.java)
     }
-
+    private val sid: String by lazy {
+        val ppt = client.getVarByContext("", "context_ppt",null)
+        val result = client.login(ppt)
+        println("Login result = $result")
+        val sid = result["sid"].toString()
+        sid
+    }
     // Initialize lazily, also used as UserId
-    lateinit var appMid: MimeiId
-    private lateinit var appUser: User
-    private val gadget = Gadget()
-
-    // Initialize the Hprose instance and establish a session.
-    fun initialize() {
-        try {
-            val ppt = client.getVarByContext("", "context_ppt")
-            val result = client.login(ppt)
-            sid = result["sid"].toString()
-            println("Leither ver: " + client.getVar("", "ver"))
+    val appMid: MimeiId by lazy {
+        println("Leither ver: " + client.getVar("", "ver"))
 //            println("IPS: " + client.getVar("", "mmprovsips", "ejEx2oIEJGHHRGyYCzYCBxLkQrg"))
-            println("Login result = $result")
-
-            // Initialize the app's main MimeiId after successful login.
-            // it should stay the same for the same user, therefore also used as UserId
-            appMid = client.mmCreate(sid, APP_ID, APP_EXT, APP_MARK, 2, 120022788)
-            println("App mid=$appMid")
-
-            // if this is the 1st time user login, the appMid is empty, cannot open Last ver
-            client.mmOpen(sid, appMid, "cur").let {
-                val user = client.get(it, OWNER_DATA_KEY)
-                println("User data=$user")
-                if (user == null && sid != "") {
-                    // first time run, init user data
-                    appUser = User(mid = appMid)
-                    client.set(it, OWNER_DATA_KEY, Json.encodeToString(appUser))
-                    client.set(it, FOLLOWINGS_KEY, listOf(appMid))  // always following oneself
-                    client.mmBackup(sid, appMid, "")
-                    client.mimeiPublish(sid, "", appMid)
-                } else {
-                    appUser = Json.decodeFromString(user.toString())
-                }
-                println("App user=$appUser")
+        client.mmCreate(sid, APP_ID, APP_EXT, APP_MARK, 2, 120022788)
+    }
+    private val appUser: User by lazy {
+        client.mmOpen(sid, appMid, "cur").let {
+            val user = client.get(it, OWNER_DATA_KEY)
+            if (user == null && sid != "") {
+                // first time run, init user data
+                val u = User(mid = appMid)
+                client.set(it, OWNER_DATA_KEY, Json.encodeToString(u))
+                client.set(it, FOLLOWINGS_KEY, listOf(appMid))  // always following oneself
+                client.mmBackup(sid, appMid, "")
+                client.mimeiPublish(sid, "", appMid)
+                u
+            } else {
+                Json.decodeFromString(user.toString())
             }
-        } catch (e: Exception) {
-            Log.e("HproseInstance.initialize", e.toString())
-            throw e
         }
     }
 

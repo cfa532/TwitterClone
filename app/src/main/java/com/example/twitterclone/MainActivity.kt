@@ -47,11 +47,7 @@ const val CURRENT_USER_ID = "5lrADJpzRpYZ82-6jkewoa1w3jB"
 class MainActivity : ComponentActivity() {
     companion object {
         init {
-            try {
-                HproseInstance.initialize()
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
+            // init global data here
         }
     }
 
