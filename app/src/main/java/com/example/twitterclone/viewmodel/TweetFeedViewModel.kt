@@ -30,7 +30,8 @@ class TweetFeedViewModel(
     val tweets: StateFlow<List<Tweet>> get() = _tweets
 
     init {
-        getTweets(startTimestamp.longValue, endTimestamp.longValue)
+//        getTweets(startTimestamp.longValue, endTimestamp.longValue)
+        getTweets(startTimestamp.longValue)
     }
 
     private fun getTweets(
