@@ -143,7 +143,7 @@ fun PreferencesScreen(navController: NavHostController, preferencesHelper: Prefe
                 if (user != null) {
                     user.username = username
                     user.name = name
-                    HproseInstance.setUserData(user)
+//                    HproseInstance.setUserData(user)
                 }
             },
             Modifier.padding(start = 16.dp, end = 16.dp, top = 8.dp)

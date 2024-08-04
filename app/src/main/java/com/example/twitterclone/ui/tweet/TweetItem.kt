@@ -1,15 +1,19 @@
 package com.example.twitterclone.ui.tweet
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import com.example.twitterclone.R
 import com.example.twitterclone.model.Tweet
 import com.example.twitterclone.model.MimeiId
 import com.example.twitterclone.model.User
+import com.example.twitterclone.network.HproseInstance
 import com.example.twitterclone.viewmodel.TweetViewModel
 import kotlinx.coroutines.runBlocking
 
@@ -28,12 +32,17 @@ fun TweetItem(
         Spacer(modifier = Modifier.height(8.dp))
         // Use a Row to align author name and potential verification badge
         Row(verticalAlignment= Alignment.CenterVertically) {
-//            AsyncImage(
-//                model = author?.profileImageUrl,
-//            )
-            Text(text = "No One", style = MaterialTheme.typography.bodyMedium)
+            AsyncImage(
+                model = if (author?.avatar != null) { HproseInstance.BASE_URL+"/ipfs/"+author.avatar } else { R.drawable.ic_user_avatar },
+                contentDescription = "User Avatar",
+                modifier = Modifier
+                    .size(24.dp)
+                    .clip(CircleShape)
+            )
+            Spacer(modifier = Modifier.padding(horizontal = 6.dp))
+            Text(text = author?.name?: "No One", style = MaterialTheme.typography.bodyMedium)
         }
-        Spacer(modifier = Modifier.height(4.dp))
+        Spacer(modifier = Modifier.height(8.dp))
         Text(text = tweet.content, style = MaterialTheme.typography.bodyMedium)
         Spacer(modifier = Modifier.height(8.dp))
 

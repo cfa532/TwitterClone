@@ -9,7 +9,9 @@ import com.example.twitterclone.model.Tweet
 import com.example.twitterclone.model.User
 import com.example.twitterclone.network.HproseInstance
 import com.example.twitterclone.repository.TweetRepository
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class TweetViewModel(
     private val tweetRepository: TweetRepository = TweetRepository()
@@ -18,8 +20,10 @@ class TweetViewModel(
     private val _errorState = MutableLiveData<String?>(null)
     val errorState: LiveData<String?> = _errorState
 
-    suspend fun getAuthor(authorMid: MimeiId): User? {
-        return HproseInstance.getUserData(authorMid)
+    suspend fun getAuthor(authorId: MimeiId): User? {
+        return withContext(Dispatchers.IO) {
+            HproseInstance.getUserPreview(authorId)
+        }
     }
 
     fun likeTweet(tweetMid: MimeiId) {

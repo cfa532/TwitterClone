@@ -8,12 +8,16 @@ import com.example.twitterclone.model.ScorePair
 import com.example.twitterclone.model.ScorePairClass
 import com.example.twitterclone.model.Tweet
 import com.example.twitterclone.model.User
+import com.google.gson.Gson
 import hprose.client.HproseClient
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonArray
+import okhttp3.*
 import java.io.FileNotFoundException
 import java.io.InputStream
 import java.math.BigInteger
@@ -59,6 +63,7 @@ interface HproseService {
 // Encapsulate Hprose client and related operations in a singleton object.
 object HproseInstance {
     const val BASE_URL = "http://192.168.0.61:8081"
+    const val TWBE_APP_ID = "d4lRyhABgqOnqY4bURSm_T-4FZ4"
 
     private const val CHUNK_SIZE = 10 * 1024 * 1024 // 10MB in bytes
     private const val APP_ID = "V6MUd0cVeuCFE7YsGLNn5ygyJlm"
@@ -66,7 +71,7 @@ object HproseInstance {
     private const val APP_MARK = "version 0.0.2"
 
     // Keys within the mimei of each tweet
-    private const val TWT_CONTENT_KEY = "content_of_tweet"  // content key within the Mimei
+    private const val TWT_CONTENT_KEY = "core_data_of_tweet"  // content key within the Mimei
     private const val TWT_LIKED_COUNT = "count_of_likes"
 
     // Keys within the mimei of the user's database
@@ -76,36 +81,38 @@ object HproseInstance {
     private const val FOLLOWERS_KEY = "list_of_followers_mid"
 
     private val gadget = Gadget()
+    private val httpClient = OkHttpClient()
 
     private val client: HproseService by lazy {
         HproseClient.create("$BASE_URL/webapi/").useService(HproseService::class.java)
     }
-    private val sid: String by lazy {
-        val ppt = client.getVarByContext("", "context_ppt",null)
-        val result = client.login(ppt)
-        println("Login result = $result")
-        val sid = result["sid"].toString()
-        sid
-    }
+//    private val sid: String by lazy {
+//        val ppt = client.getVarByContext("", "context_ppt", null)
+//        val result = client.login(ppt)
+//        println("Login result = $result")
+//        val sid = result["sid"].toString()
+//        sid
+//    }
+    private var sid = ""
+
+    @Serializable
+    data class TempJson (
+        var sid: String = "",
+        var mid: String = ""
+    )
+
     // Initialize lazily, also used as UserId
     val appMid: MimeiId by lazy {
-        println("Leither ver: " + client.getVar("", "ver"))
-//            println("IPS: " + client.getVar("", "mmprovsips", "ejEx2oIEJGHHRGyYCzYCBxLkQrg"))
-        client.mmCreate(sid, APP_ID, APP_EXT, APP_MARK, 2, 120022788)
-    }
-    private val appUser: User by lazy {
-        client.mmOpen(sid, appMid, "cur").let {
-            val user = client.get(it, OWNER_DATA_KEY)
-            if (user == null && sid != "") {
-                // first time run, init user data
-                val u = User(mid = appMid)
-                client.set(it, OWNER_DATA_KEY, Json.encodeToString(u))
-                client.set(it, FOLLOWINGS_KEY, listOf(appMid))  // always following oneself
-                client.mmBackup(sid, appMid, "")
-                client.mimeiPublish(sid, "", appMid)
-                u
-            } else {
-                Json.decodeFromString(user.toString())
+        runBlocking {
+            withContext(Dispatchers.IO) {
+                val method = "get_app_mid"
+                val url = "$BASE_URL/entry?&aid=$TWBE_APP_ID&ver=last&entry=$method"
+                val request = Request.Builder().url(url).build()
+                val response = httpClient.newCall(request).execute()
+                val json = Json.decodeFromString<TempJson>(response.body?.string() ?: "")
+                println(json)
+                sid = json.sid
+                json.mid
             }
         }
     }
@@ -121,9 +128,12 @@ object HproseInstance {
                     gadget.getFirstReachableUri(ipAddresses, mimeiId)?.let { (url, jsonData) ->
                         jsonData?.let {
                             Result.success(Pair(url, Json.decodeFromString<User>(jsonData)))
-                        } ?: Result.failure(InvalidProviderDataException("Missing user data for $mimeiId"))
-                    } ?: Result.failure(ProviderNotFoundException("No reachable provider found for $mimeiId"))
+                        }
+                            ?: Result.failure(InvalidProviderDataException("Missing user data for $mimeiId"))
+                    }
+                        ?: Result.failure(ProviderNotFoundException("No reachable provider found for $mimeiId"))
                 }
+
                 else -> Result.failure(InvalidProviderDataException("Invalid provider data for $mimeiId: $providerData"))
             }
         } catch (e: Exception) {
@@ -134,12 +144,27 @@ object HproseInstance {
     class ProviderNotFoundException(message: String) : Exception(message)
     class InvalidProviderDataException(message: String) : Exception(message)
 
-    suspend fun getUserData(userId: MimeiId = appMid): User? {
+    fun getUserPreview(userId: MimeiId = appMid): User? {
+        val method = "get_author_core_data"
+        val url = "$BASE_URL/entry?&aid=$TWBE_APP_ID&ver=last&entry=$method&authorid=$userId"
+        val request = Request.Builder().url(url).build()
+        val response = httpClient.newCall(request).execute()
+        if (!response.isSuccessful) {
+            return null
+        }
+        val responseBody = response.body?.string() ?: ""
+        if (responseBody == "")
+            return null
+        return Json.decodeFromString<User>(responseBody)
+    }
+
+    fun getUserData(userId: MimeiId = appMid): User? {
         return runCatching {
-            val baseUrl = getUser(userId)
+            // get each user data based on its node ip
+//            val baseUrl = getUser(userId)
             client.mmOpen("", userId, "last").let {
                 client.get(it, OWNER_DATA_KEY)?.let { userData ->
-                    Json.decodeFromString<User>(userData as String) // Assuming Json is a kotlinx.serialization object
+                    Json.decodeFromString<User>(userData as String)
                 }
             }
         }.onFailure { e ->
@@ -148,15 +173,28 @@ object HproseInstance {
     }
 
     fun setUserData(user: User) {
-        try {
-            client.mmOpen(sid, appMid, "cur").let {
-                client.set(it, OWNER_DATA_KEY, Json.encodeToString(user))
-                client.mmBackup(sid, appMid, "")
-                client.mimeiPublish(sid, "", appMid)
-            }
-        } catch (e: Exception) {
-            Log.e("HproseInstance.setUserData", e.toString())
+        // use Json here, so that null attributes in User are ignored. On the server-side, only set attributes
+        // that have value in incoming data.
+        val method = "set_author_core_data"
+        val url = "$BASE_URL/entry?&aid=$TWBE_APP_ID&ver=last&entry=$method&author=${
+            Json.encodeToString(user)
+        }"
+        val request = Request.Builder()
+            .url(url)
+            .build()
+        val response = httpClient.newCall(request).execute()
+        if (!response.isSuccessful) {
+            Log.d("HproseInstance.setUserData", "Set user data error")
         }
+//        try {
+//            client.mmOpen(sid, appMid, "cur").let {
+//                client.set(it, OWNER_DATA_KEY, Gson().toJson(user))
+//                client.mmBackup(sid, appMid, "", "delref=true")
+//                client.mimeiPublish(sid, "", appMid)
+//            }
+//        } catch (e: Exception) {
+//            Log.e("HproseInstance.setUserData", e.toString())
+//        }
     }
 
     // get Ids of users who the current user is following
@@ -174,7 +212,7 @@ object HproseInstance {
 
     // get tweets of a given author in a given span of time
     // if end is null, get all tweets
-    fun getTweets(
+    fun getTweetList(
         authorId: MimeiId = appMid,
         tweets: MutableList<Tweet>,
         startTimestamp: Long,
@@ -188,9 +226,18 @@ object HproseInstance {
                 if (score <= startTimestamp && (endTimestamp == null || score > endTimestamp)) {
                     // check if the tweet is in the tweets already.
                     if (tweets.none { t -> t.mid == tweetId }) {
-                        client.mmOpen("", tweetId, "last").also { mmsid ->
-                            client.get(mmsid, TWT_CONTENT_KEY)?.let { content ->
-                                tweets += Json.decodeFromString<Tweet>(content as String)
+                        val method = "get_tweet"
+                        val url =
+                            "$BASE_URL/entry?&aid=$TWBE_APP_ID&ver=last&entry=$method&tweetid=$tweetId"
+                        val request = Request.Builder()
+                            .url(url)
+                            .build()
+                        val response = httpClient.newCall(request).execute()
+                        if (response.isSuccessful) {
+                            response.body?.string()?.let { content ->
+                                println(content)
+//                                tweets += Json.decodeFromString<Tweet>(content)
+                                tweets += Gson().fromJson(content, Tweet::class.java)
                             }
                         }
                     }
@@ -203,78 +250,100 @@ object HproseInstance {
 
     // Store an object in a Mimei file and return its MimeiId.
     fun uploadTweet(t: Tweet): Tweet {
-        client.mmCreate(sid, APP_ID, APP_EXT, t.content, 2, 120022788).let { mid ->
-            t.mid = mid
-            println("Created tweet mid=$mid $t")
-            client.mmOpen(sid, mid, "cur").let {
-                client.set(it, TWT_CONTENT_KEY, Json.encodeToString(t))
-                client.mmBackup(
-                    sid,
-                    mid,
-                    "",
-                    "delref=true"
-                ) // Use default memo, specify ref deletion
-                client.mimeiPublish(sid, "", mid)       // publish tweet
-                client.mmAddRef(sid, appMid, mid) // Reference the object from the app's main Mimei
-            }
+            client.mmCreate(sid, APP_ID, APP_EXT, t.content, 2, 120022788).let { mid ->
+                t.mid = mid
+                println("Creating tweet mid=$mid $t")
+                client.mmOpen(sid, mid, "cur").let {
+                    client.set(it, TWT_CONTENT_KEY, Json.encodeToString(t))
+                    client.mmBackup(
+                        sid,
+                        mid,
+                        "",
+                        "delref=true"
+                    ) // Use default memo, specify ref deletion
+                    client.mimeiPublish(sid, "", mid)       // publish tweet
+                    client.mmAddRef(
+                        sid,
+                        appMid,
+                        mid
+                    ) // Reference the object from the app's main Mimei
+                }
 
-            // add the new tweet in user's tweet list
-            client.mmOpen(sid, appMid, "cur").let {
-                client.zAdd(it, TWT_LIST_KEY, ScorePairClass(System.currentTimeMillis(), mid))
-                client.mmBackup(
-                    sid,
-                    appMid,
-                    "",
-                    "delref=true"
-                ) // Use default memo, specify ref deletion
-                client.mimeiPublish(sid, "", appMid)    // publish tweet list
+                // add the new tweet in user's tweet list
+                client.mmOpen(sid, appMid, "cur").let {
+                    client.zAdd(it, TWT_LIST_KEY, ScorePairClass(System.currentTimeMillis(), mid))
+                    client.mmBackup(
+                        sid,
+                        appMid,
+                        "",
+                        "delref=true"
+                    ) // Use default memo, specify ref deletion
+                    client.mimeiPublish(sid, "", appMid)    // publish tweet list
+                }
+            }
+            return t
+        }
+//        val method = "upload_tweet"
+//        val tweet = Gson().toJson(t)
+//        val url = "$BASE_URL/entry?&aid=$TWBE_APP_ID&ver=last&entry=$method&tweet=$tweet&commentonly=false"
+//        val request = Request.Builder().url(url).build()
+//        return try {
+//            val response = httpClient.newCall(request).execute()
+//            if (response.isSuccessful) {
+//                t
+//            } else {
+//                null
+//            }
+//        } catch (e: IOException) {
+//            // Log the exception or handle it as needed
+//            Log.d("uploadTweet", e.message.toString())
+//            e.printStackTrace()
+//            null
+//        }
+//    }
+
+        // Upload data from an InputStream to IPFS and return the resulting MimeiId.
+        fun uploadToIPFS(inputStream: InputStream): MimeiId {
+            val fsid = client.mfOpenTempFile(sid)
+            var offset = 0
+            inputStream.use { stream ->
+                val buffer = ByteArray(CHUNK_SIZE)
+                var bytesRead: Int
+                while (stream.read(buffer).also { bytesRead = it } != -1) {
+                    client.mfSetData(fsid, buffer, offset)
+                    offset += bytesRead
+                }
+            }
+            return client.mfTemp2Ipfs(
+                fsid,
+                appMid
+            )    // Associate the uploaded data with the app's main Mimei
+        }
+
+        suspend fun uploadAttachments(context: Context, attachments: List<Uri>): List<MimeiId> {
+            return attachments.mapNotNull { uri ->
+                uploadFile(context, uri)
             }
         }
-        return t
+
+        private suspend fun uploadFile(context: Context, uri: Uri): MimeiId? {
+            return withContext(Dispatchers.IO) {
+                runCatching {
+                    context.contentResolver.openInputStream(uri)?.use { inputStream ->
+                        uploadToIPFS(inputStream)
+                    } ?: throw FileNotFoundException("File not found for URI: $uri")
+                }.getOrElse { e ->
+                    Log.e("HproseInstance.uploadFile", "Failed to upload file: $uri", e)
+                    null
+                }
+            }
+        }
+
+//    private suspend fun uploadFile(json: String): MimeiId =
+//        withContext(Dispatchers.IO) {
+//            client.mfOpenTempFile(sid).let { fsid ->
+//                client.mfSetData(fsid, json.toByteArray(), 0)
+//                client.mfTemp2Ipfs(fsid, appMid)
+//            }
+//        }
     }
-
-    // Upload data from an InputStream to IPFS and return the resulting MimeiId.
-    fun uploadToIPFS(inputStream: InputStream): MimeiId {
-        val fsid = client.mfOpenTempFile(sid)
-        var offset = 0
-        inputStream.use { stream ->
-            val buffer = ByteArray(CHUNK_SIZE)
-            var bytesRead: Int
-            while (stream.read(buffer).also { bytesRead = it } != -1) {
-                client.mfSetData(fsid, buffer, offset)
-                offset += bytesRead
-            }
-        }
-        return client.mfTemp2Ipfs(
-            fsid,
-            appMid
-        )    // Associate the uploaded data with the app's main Mimei
-    }
-
-    suspend fun uploadAttachments(context: Context, attachments: List<Uri>): List<MimeiId> {
-        return attachments.mapNotNull { uri ->
-            uploadFile(context, uri)
-        }
-    }
-
-    private suspend fun uploadFile(context: Context, uri: Uri): MimeiId? {
-        return withContext(Dispatchers.IO) {
-            runCatching {
-                context.contentResolver.openInputStream(uri)?.use { inputStream ->
-                    uploadToIPFS(inputStream)
-                } ?: throw FileNotFoundException("File not found for URI: $uri")
-            }.getOrElse { e ->
-                Log.e("HproseInstance.uploadFile", "Failed to upload file: $uri", e)
-                null
-            }
-        }
-    }
-
-    private suspend fun uploadFile(json: String): MimeiId =
-        withContext(Dispatchers.IO) {
-            client.mfOpenTempFile(sid).let { fsid ->
-                client.mfSetData(fsid, json.toByteArray(), 0)
-                client.mfTemp2Ipfs(fsid, appMid)
-            }
-        }
-}

@@ -9,10 +9,12 @@ junit = "4.13.2"
 junitVersion = "1.2.1"
 espressoCore = "3.6.1"
 kotlinxSerializationJson = "1.7.1"
+ktorClientCore = "2.3.5"
 lifecycleRuntimeKtx = "2.8.4"
 activityCompose = "1.9.1"
 composeBom = "2024.06.00"
 navversion = "2.7.7"
+okhttpBom = "4.12.0"
 retrofit2 = "2.11.0"
 playServicesFido = "21.1.0"
 
@@ -20,6 +22,14 @@ playServicesFido = "21.1.0"
 coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coilCompose" }
 hprose-java = { module = "org.hprose:hprose-java", version.ref = "hproseJava" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
+ktor-client-auth = { module = "io.ktor:ktor-client-auth", version.ref = "ktorClientCore" }
+ktor-client-cio = { module = "io.ktor:ktor-client-cio", version.ref = "ktorClientCore" }
+ktor-client-content-negotiation = { module = "io.ktor:ktor-client-content-negotiation", version.ref = "ktorClientCore" }
+ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktorClientCore" }
+ktor-client-logging = { module = "io.ktor:ktor-client-logging", version.ref = "ktorClientCore" }
+ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktorClientCore" }
+okhttp = { module = "com.squareup.okhttp3:okhttp" }
+okhttp-bom = { module = "com.squareup.okhttp3:okhttp-bom", version.ref = "okhttpBom" }
 retrofit2 = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit2"}
 converter-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "retrofit2"}
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
