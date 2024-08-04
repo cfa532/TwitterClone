@@ -17,5 +17,5 @@
     lapi.MMBackup(authSid, tweetid, "", "delref=true")
     lapi.MiMeiPubish(authSid, "", tweetid)
 
-    count
+    return count
 })()

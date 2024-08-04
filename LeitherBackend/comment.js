@@ -20,7 +20,7 @@
     lapi.MMBackup(sid, tweetId, "", "delref=true")
     lapi.MiMeiPubish(authSid, "", tweetid)
 
-    count
+    return count
 })()
 
 class ScorePair {

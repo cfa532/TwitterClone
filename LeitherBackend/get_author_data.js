@@ -5,5 +5,5 @@
     let mmsid = lapi.MMOpen("", authorId, "last")
 
     // get full author data and return a few attributes for preview
-    JSON.parse(lapi.Get(mmsid, "data_of_node_owner"))
+    return JSON.parse(lapi.Get(mmsid, "data_of_node_owner"))
 })()
