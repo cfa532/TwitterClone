@@ -3,54 +3,39 @@
     // request, lapi are global variables.
     // each comment is also tweet object.
 
-    const AUTHOR_MID = "tweet_author_id"
     const BOOKMARK_COUNT = "tweet_bookmark_count"
     const RETWEET_COUNT = "tweet_retweet_count"
-    const RETWEET_LIST = "tweet_retweet_list"
     const COMMENT_COUNT = "tweet_comment_count"
-    const COMMENT_LIST = "comment_list_key"
-    const LIKE_LIST = "tweet_like_list"     // users who liked this tweet
     const LIKE_COUNT = "tweet_like_count"
-    const CONTENT = "content_key"
-    const ORIGINAL_TWEET = "original_tweet_mid"
-    const ATTACHMENTS = "attachements_key"
-    const PRIVACY = "privacy_key"
 
     const APP_ID = "V6MUd0cVeuCFE7YsGLNn5ygyJlm"
     const APP_EXT = "com.example.twitterclone"
     const APP_MARK = "version 0.0.2"
 
     // Keys in App mimei database
+    const TWT_CONTENT_KEY = "core_data_of_tweet"
     const TWT_LIST_KEY = "list_of_tweets_mid"
-    console.log("upload", request["tweet"])
 
     let tweet = JSON.parse(request["tweet"])
-    let commentOnly = request["commentonly"]
+    console.log("uploaded ", request["tweet"], request["commentonly"])
 
     let authSid = lapi.BELoginAsAuthor()
     let mid = lapi.MMCreate(authSid, APP_ID, APP_EXT, tweet.content, 2, 0x07276704)
     tweet["mid"] = mid
+    tweet["timestamp"] = Date.now().toString()
+
     let mmsid = lapi.MMOpen(authSid, mid, "cur")
-    lapi.Set(mmsid, AUTHOR_MID, tweet.authorId)
-    lapi.Set(mmsid, "mid", mid)
-    lapi.Set(mmsid, "timestamp", Date.now().toString())
-    lapi.Set(mmsid, CONTENT, tweet.content)
-    if (tweet.original)
-        lapi.Set(mmsid, ORIGINAL_TWEET, tweet.original)
-    if (tweet.attachments)
-        lapi.Set(mmsid, ATTACHMENTS, tweet.attachments)
-    lapi.Set(mmsid, PRIVACY, tweet.isPrivate ? tweet.isPrivate : false)
+    lapi.Set(mmsid, TWT_CONTENT_KEY, tweet)
     console.log("tweet=", JSON.stringify(tweet))
 
     lapi.Set(mmsid, RETWEET_COUNT, 0)
     lapi.Set(mmsid, COMMENT_COUNT, 0)
-    // lapi.Set(mmsid, COMMENT_LIST, [])
     lapi.Set(mmsid, LIKE_COUNT, 0)
     lapi.Set(mmsid, BOOKMARK_COUNT, 0)
     lapi.MMBackup(authSid, mid, "", "delref=true")
     lapi.MiMeiPublish(authSid, "", mid)
 
-    if (commentOnly != "true") {
+    if (request["commentonly"] != "true") {
         // only add the tweet in author's tweet list if it is not comment only.
         // otherwise only show the comment under the original tweet
         let appMid = lapi.MMCreate(authSid, APP_ID, APP_EXT, APP_MARK, 2, 0x07276704)
