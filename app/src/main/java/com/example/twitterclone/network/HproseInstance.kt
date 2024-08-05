@@ -3,6 +3,7 @@ package com.example.twitterclone.network
 import android.content.Context
 import android.net.Uri
 import android.util.Log
+import com.example.twitterclone.R
 import com.example.twitterclone.model.MimeiId
 import com.example.twitterclone.model.ScorePair
 import com.example.twitterclone.model.ScorePairClass
@@ -63,7 +64,7 @@ interface HproseService {
 
 // Encapsulate Hprose client and related operations in a singleton object.
 object HproseInstance {
-    const val BASE_URL = "http://192.168.0.61:8081"
+    private const val BASE_URL = "http://192.168.0.61:8081"
     const val TWBE_APP_ID = "d4lRyhABgqOnqY4bURSm_T-4FZ4"
 
     private const val CHUNK_SIZE = 10 * 1024 * 1024 // 10MB in bytes
@@ -338,11 +339,14 @@ object HproseInstance {
             }
         }
 
-        fun getUrl(mid: MimeiId): String {
-            return if (mid.length > 27) {
-                "$BASE_URL/ipfs/$mid"
-            } else {
-                "$BASE_URL/mm/$mid"
+        fun getImageSource(mid: MimeiId?): Any {
+            if (mid?.isNotEmpty() == true) {
+                return if (mid.length > 27) {
+                    "$BASE_URL/ipfs/$mid"
+                } else {
+                    "$BASE_URL/mm/$mid"
+                }
             }
+            return R.drawable.ic_user_avatar
         }
     }

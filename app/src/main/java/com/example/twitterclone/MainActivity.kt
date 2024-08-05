@@ -5,7 +5,6 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.annotation.RequiresApi
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -27,11 +26,11 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import coil.compose.AsyncImage
 import com.example.twitterclone.network.HproseInstance
 import com.example.twitterclone.network.HproseInstance.appUser
-import com.example.twitterclone.network.HproseInstance.getUrl
+import com.example.twitterclone.network.HproseInstance.getImageSource
 import com.example.twitterclone.ui.compose.AppIcon
+import com.example.twitterclone.ui.compose.CircularImage
 import com.example.twitterclone.ui.compose.ComposeTweetScreen
 import com.example.twitterclone.ui.feed.TweetFeedScreen
 import com.example.twitterclone.ui.profile.PreferencesScreen
@@ -101,8 +100,8 @@ fun MainTopAppBar(navController: NavHostController) {
         },
         navigationIcon = {
             IconButton(onClick = { navController.navigate("preferences") }) {
-                AsyncImage(
-                    model = if (appUser.avatar != null) { getUrl(appUser.avatar!!) } else { R.drawable.ic_user_avatar },
+                CircularImage(
+                    model = getImageSource(appUser.avatar),
                     contentDescription = "User Avatar",
                     modifier = Modifier
                         .padding(4.dp)

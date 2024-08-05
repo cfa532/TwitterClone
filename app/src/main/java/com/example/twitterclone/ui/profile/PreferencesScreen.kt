@@ -36,8 +36,10 @@ import com.example.twitterclone.PreferencesHelper
 import com.example.twitterclone.R
 import com.example.twitterclone.model.MimeiId
 import com.example.twitterclone.network.HproseInstance
+import com.example.twitterclone.network.HproseInstance.getImageSource
 import com.example.twitterclone.network.HproseInstance.uploadToIPFS
 import com.example.twitterclone.ui.compose.AppIcon
+import com.example.twitterclone.ui.compose.CircularImage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -167,8 +169,8 @@ fun AvatarSection(avatar: String?, launcher: ManagedActivityResultLauncher<Strin
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.fillMaxWidth()
     ) {
-        AsyncImage(
-            model = if (avatar != null) { HproseInstance.getUrl(avatar) } else { R.drawable.ic_user_avatar },
+        CircularImage(
+            model = getImageSource(avatar),
             contentDescription = "User Avatar",
             modifier = Modifier
                 .size(100.dp)

@@ -10,8 +10,8 @@ import com.example.twitterclone.R
 
 @Composable
 fun AppIcon() {
-    Image(
-        painter = painterResource(id = R.drawable.ic_app_icon),
+    CircularImage(
+        model = R.drawable.ic_app_icon,
         contentDescription = "App Icon",
         modifier = Modifier.size(40.dp)
     )

@@ -8,12 +8,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImage
 import com.example.twitterclone.R
 import com.example.twitterclone.model.Tweet
-import com.example.twitterclone.model.MimeiId
-import com.example.twitterclone.model.User
-import com.example.twitterclone.network.HproseInstance
+import com.example.twitterclone.network.HproseInstance.getImageSource
+import com.example.twitterclone.ui.compose.CircularImage
 import com.example.twitterclone.viewmodel.TweetViewModel
 import kotlinx.coroutines.runBlocking
 
@@ -32,8 +30,8 @@ fun TweetItem(
         Spacer(modifier = Modifier.height(8.dp))
         // Use a Row to align author name and potential verification badge
         Row(verticalAlignment= Alignment.CenterVertically) {
-            AsyncImage(
-                model = if (author?.avatar != null) { HproseInstance.BASE_URL+"/ipfs/"+author.avatar } else { R.drawable.ic_user_avatar },
+            CircularImage(
+                model = getImageSource(author?.avatar),
                 contentDescription = "User Avatar",
                 modifier = Modifier
                     .size(24.dp)
