@@ -2,7 +2,7 @@ package com.example.twitterclone.network
 
 import android.util.Log
 import com.example.twitterclone.model.MimeiId
-import com.example.twitterclone.network.HproseInstance.TWBE_APP_ID
+import com.example.twitterclone.model.HproseInstance.TWBE_APP_ID
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
 import io.ktor.client.request.get

@@ -31,13 +31,12 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import coil.compose.AsyncImage
 import com.example.twitterclone.PreferencesHelper
 import com.example.twitterclone.R
 import com.example.twitterclone.model.MimeiId
-import com.example.twitterclone.network.HproseInstance
-import com.example.twitterclone.network.HproseInstance.getImageSource
-import com.example.twitterclone.network.HproseInstance.uploadToIPFS
+import com.example.twitterclone.model.HproseInstance
+import com.example.twitterclone.model.HproseInstance.getImageSource
+import com.example.twitterclone.model.HproseInstance.uploadToIPFS
 import com.example.twitterclone.ui.compose.AppIcon
 import com.example.twitterclone.ui.compose.CircularImage
 import kotlinx.coroutines.Dispatchers

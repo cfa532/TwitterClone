@@ -8,9 +8,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
-import com.example.twitterclone.R
 import com.example.twitterclone.model.Tweet
-import com.example.twitterclone.network.HproseInstance.getImageSource
+import com.example.twitterclone.model.HproseInstance.getImageSource
 import com.example.twitterclone.ui.compose.CircularImage
 import com.example.twitterclone.viewmodel.TweetViewModel
 import kotlinx.coroutines.runBlocking

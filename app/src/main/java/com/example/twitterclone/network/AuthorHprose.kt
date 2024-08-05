@@ -1,11 +1,8 @@
 package com.example.twitterclone.network
 
+import com.example.twitterclone.model.HproseService
 import com.example.twitterclone.model.MimeiId
-import com.example.twitterclone.model.User
 import hprose.client.HproseClient
-import kotlinx.coroutines.runBlocking
-import kotlinx.serialization.json.Json
-import java.net.URL
 
 class HprosePerAuthor(val mid: MimeiId) {
     private var baseUrl = "http://localhost:8081"

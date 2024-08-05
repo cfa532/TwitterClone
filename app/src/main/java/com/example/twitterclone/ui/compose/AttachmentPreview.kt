@@ -1,3 +1,5 @@
+package com.example.twitterclone.ui.compose
+
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Paint
@@ -28,7 +30,7 @@ import kotlinx.coroutines.withContext
 
 @RequiresApi(Build.VERSION_CODES.Q)
 @Composable
-fun AttachmentIcon(uri: Uri) {
+fun UploadFilePreview(uri: Uri) {
     val view = LocalView.current
     val viewWidth = with(LocalDensity.current) { view.width.toDp() }.value.toInt()
     val canvasSize = viewWidth / 2

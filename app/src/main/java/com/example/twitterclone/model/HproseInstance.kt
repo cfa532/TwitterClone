@@ -1,14 +1,10 @@
-package com.example.twitterclone.network
+package com.example.twitterclone.model
 
 import android.content.Context
 import android.net.Uri
 import android.util.Log
 import com.example.twitterclone.R
-import com.example.twitterclone.model.MimeiId
-import com.example.twitterclone.model.ScorePair
-import com.example.twitterclone.model.ScorePairClass
-import com.example.twitterclone.model.Tweet
-import com.example.twitterclone.model.User
+import com.example.twitterclone.network.Gadget
 import com.google.gson.Gson
 import hprose.client.HproseClient
 import kotlinx.coroutines.Dispatchers
@@ -21,6 +17,7 @@ import kotlinx.serialization.json.jsonArray
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.io.FileNotFoundException
+import java.io.IOException
 import java.io.InputStream
 import java.math.BigInteger
 import java.net.URL
@@ -230,9 +227,7 @@ object HproseInstance {
                         val method = "get_tweet"
                         val url =
                             "$BASE_URL/entry?&aid=$TWBE_APP_ID&ver=last&entry=$method&tweetid=$tweetId"
-                        val request = Request.Builder()
-                            .url(url)
-                            .build()
+                        val request = Request.Builder().url(url).build()
                         val response = httpClient.newCall(request).execute()
                         if (response.isSuccessful) {
                             response.body?.string()?.let { content ->
@@ -249,58 +244,53 @@ object HproseInstance {
     }
 
     // Store an object in a Mimei file and return its MimeiId.
-    fun uploadTweet(t: Tweet): Tweet {
-            client.mmCreate(sid, APP_ID, APP_EXT, t.content, 2, 120022788).let { mid ->
-                t.mid = mid
-                println("Creating tweet mid=$mid $t")
-                client.mmOpen(sid, mid, "cur").let {
-                    client.set(it, TWT_CONTENT_KEY, Json.encodeToString(t))
-                    client.mmBackup(
-                        sid,
-                        mid,
-                        "",
-                        "delref=true"
-                    ) // Use default memo, specify ref deletion
-                    client.mimeiPublish(sid, "", mid)       // publish tweet
-                    client.mmAddRef(
-                        sid,
-                        appMid,
-                        mid
-                    ) // Reference the object from the app's main Mimei
-                }
-
-                // add the new tweet in user's tweet list
-                client.mmOpen(sid, appMid, "cur").let {
-                    client.zAdd(it, TWT_LIST_KEY, ScorePairClass(System.currentTimeMillis(), mid))
-                    client.mmBackup(
-                        sid,
-                        appMid,
-                        "",
-                        "delref=true"
-                    ) // Use default memo, specify ref deletion
-                    client.mimeiPublish(sid, "", appMid)    // publish tweet list
-                }
-            }
-            return t
-        }
-//        val method = "upload_tweet"
-//        val tweet = Gson().toJson(t)
-//        val url = "$BASE_URL/entry?&aid=$TWBE_APP_ID&ver=last&entry=$method&tweet=$tweet&commentonly=false"
-//        val request = Request.Builder().url(url).build()
-//        return try {
-//            val response = httpClient.newCall(request).execute()
-//            if (response.isSuccessful) {
-//                t
-//            } else {
-//                null
+    fun uploadTweet(t: Tweet, isCommentOnly: Boolean = true): Tweet? {
+//            client.mmCreate(sid, APP_ID, APP_EXT, t.content, 2, 120022788).let { mid ->
+//                t.mid = mid
+//                println("Creating tweet mid=$mid $t")
+//                client.mmOpen(sid, mid, "cur").let {
+//                    client.set(it, TWT_CONTENT_KEY, Json.encodeToString(t))
+//                    client.mmBackup(
+//                        sid,
+//                        mid,
+//                        "",
+//                        "delref=true"
+//                    ) // Use default memo, specify ref deletion
+//                    client.mimeiPublish(sid, "", mid)       // publish tweet
+//                    client.mmAddRef(
+//                        sid,
+//                        appMid,
+//                        mid
+//                    ) // Reference the object from the app's main Mimei
+//                }
+//
+//                // add the new tweet in user's tweet list
+//                client.mmOpen(sid, appMid, "cur").let {
+//                    client.zAdd(it, TWT_LIST_KEY, ScorePairClass(System.currentTimeMillis(), mid))
+//                    client.mmBackup(
+//                        sid,
+//                        appMid,
+//                        "",
+//                        "delref=true"
+//                    ) // Use default memo, specify ref deletion
+//                    client.mimeiPublish(sid, "", appMid)    // publish tweet list
+//                }
 //            }
-//        } catch (e: IOException) {
-//            // Log the exception or handle it as needed
-//            Log.d("uploadTweet", e.message.toString())
-//            e.printStackTrace()
-//            null
+//            return t
 //        }
-//    }
+        val method = "upload_tweet"
+        val tweet = Json.encodeToString(t)  // Null attributes ignored
+        val url = "$BASE_URL/entry?&aid=$TWBE_APP_ID&ver=last&entry=$method&tweet=$tweet&commentonly=$isCommentOnly"
+        val request = Request.Builder().url(url).build()
+        val response = httpClient.newCall(request).execute()
+        if (response.isSuccessful) {
+            response.body.let {
+                t.mid = it.toString()
+                return t
+            }
+        }
+        return null
+    }
 
         // Upload data from an InputStream to IPFS and return the resulting MimeiId.
         fun uploadToIPFS(inputStream: InputStream): MimeiId {
