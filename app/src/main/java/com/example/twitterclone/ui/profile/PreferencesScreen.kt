@@ -4,7 +4,6 @@ import android.net.Uri
 import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -28,21 +27,21 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
-import coil.compose.rememberAsyncImagePainter
 import com.example.twitterclone.PreferencesHelper
 import com.example.twitterclone.R
+import com.example.twitterclone.model.MimeiId
 import com.example.twitterclone.network.HproseInstance
 import com.example.twitterclone.network.HproseInstance.uploadToIPFS
 import com.example.twitterclone.ui.compose.AppIcon
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import com.example.twitterclone.model.MimeiId
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -58,7 +57,10 @@ fun PreferencesScreen(navController: NavHostController, preferencesHelper: Prefe
         )
     }
     var avatar by remember { mutableStateOf<MimeiId?>(null) }
-    val user = runBlocking { HproseInstance.getUserData() }
+    val user = runBlocking {
+        withContext(Dispatchers.IO) {
+            HproseInstance.getUserPreview()
+        } }
     if (user != null) {
         username = user.username ?: username
         name = user.name ?: name
@@ -72,13 +74,15 @@ fun PreferencesScreen(navController: NavHostController, preferencesHelper: Prefe
     ) { uri ->
         uri?.let {
             coroutineScope.launch {
-                val inputStream = context.contentResolver.openInputStream(it)
-                inputStream?.let { stream ->
-                    val mimeiId = uploadToIPFS(stream)
-                    avatar = mimeiId
-                    if (user != null) {
-                        user.avatar = mimeiId
-                        HproseInstance.setUserData(user)
+                withContext(Dispatchers.IO) {
+                    val inputStream = context.contentResolver.openInputStream(it)
+                    inputStream?.let { stream ->
+                        val mimeiId = uploadToIPFS(stream)
+                        avatar = mimeiId
+                        user?.let {
+                            user.avatar = mimeiId
+                            HproseInstance.setUserData(user)
+                        }
                     }
                 }
             }
@@ -143,7 +147,10 @@ fun PreferencesScreen(navController: NavHostController, preferencesHelper: Prefe
                 if (user != null) {
                     user.username = username
                     user.name = name
-//                    HproseInstance.setUserData(user)
+                    runBlocking {
+                        withContext(Dispatchers.IO) {
+                            HproseInstance.setUserData(user)
+                        } }
                 }
             },
             Modifier.padding(start = 16.dp, end = 16.dp, top = 8.dp)
@@ -161,7 +168,7 @@ fun AvatarSection(avatar: String?, launcher: ManagedActivityResultLauncher<Strin
         modifier = Modifier.fillMaxWidth()
     ) {
         AsyncImage(
-            model = if (avatar != null) { HproseInstance.BASE_URL+"/ipfs/"+avatar } else { R.drawable.ic_user_avatar },
+            model = if (avatar != null) { HproseInstance.getUrl(avatar) } else { R.drawable.ic_user_avatar },
             contentDescription = "User Avatar",
             modifier = Modifier
                 .size(100.dp)

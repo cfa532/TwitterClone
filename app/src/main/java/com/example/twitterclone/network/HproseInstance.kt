@@ -17,7 +17,8 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonArray
-import okhttp3.*
+import okhttp3.OkHttpClient
+import okhttp3.Request
 import java.io.FileNotFoundException
 import java.io.InputStream
 import java.math.BigInteger
@@ -76,7 +77,7 @@ object HproseInstance {
 
     // Keys within the mimei of the user's database
     private const val TWT_LIST_KEY = "list_of_tweets_mid"
-    private const val OWNER_DATA_KEY = "data_of_node_owner"     // account data of user
+    private const val OWNER_DATA_KEY = "data_of_author"     // account data of user
     private const val FOLLOWINGS_KEY = "list_of_followings_mid"
     private const val FOLLOWERS_KEY = "list_of_followers_mid"
 
@@ -100,7 +101,17 @@ object HproseInstance {
         var sid: String = "",
         var mid: String = ""
     )
-
+    val appUser: User by lazy {
+        runBlocking {
+            withContext(Dispatchers.IO) {
+                val method = "get_author_core_data"
+                val url = "$BASE_URL/entry?&aid=$TWBE_APP_ID&ver=last&entry=$method&userid=$appMid"
+                val request = Request.Builder().url(url).build()
+                val response = httpClient.newCall(request).execute()
+                Json.decodeFromString<User>(response.body?.string() ?: "")
+            }
+        }
+    }
     // Initialize lazily, also used as UserId
     val appMid: MimeiId by lazy {
         runBlocking {
@@ -146,7 +157,7 @@ object HproseInstance {
 
     fun getUserPreview(userId: MimeiId = appMid): User? {
         val method = "get_author_core_data"
-        val url = "$BASE_URL/entry?&aid=$TWBE_APP_ID&ver=last&entry=$method&authorid=$userId"
+        val url = "$BASE_URL/entry?&aid=$TWBE_APP_ID&ver=last&entry=$method&userid=$userId"
         val request = Request.Builder().url(url).build()
         val response = httpClient.newCall(request).execute()
         if (!response.isSuccessful) {
@@ -164,7 +175,7 @@ object HproseInstance {
 //            val baseUrl = getUser(userId)
             client.mmOpen("", userId, "last").let {
                 client.get(it, OWNER_DATA_KEY)?.let { userData ->
-                    Json.decodeFromString<User>(userData as String)
+                    userData as User
                 }
             }
         }.onFailure { e ->
@@ -176,25 +187,14 @@ object HproseInstance {
         // use Json here, so that null attributes in User are ignored. On the server-side, only set attributes
         // that have value in incoming data.
         val method = "set_author_core_data"
-        val url = "$BASE_URL/entry?&aid=$TWBE_APP_ID&ver=last&entry=$method&author=${
+        val url = "$BASE_URL/entry?&aid=$TWBE_APP_ID&ver=last&entry=$method&user=${
             Json.encodeToString(user)
         }"
-        val request = Request.Builder()
-            .url(url)
-            .build()
+        val request = Request.Builder().url(url).build()
         val response = httpClient.newCall(request).execute()
         if (!response.isSuccessful) {
             Log.d("HproseInstance.setUserData", "Set user data error")
         }
-//        try {
-//            client.mmOpen(sid, appMid, "cur").let {
-//                client.set(it, OWNER_DATA_KEY, Gson().toJson(user))
-//                client.mmBackup(sid, appMid, "", "delref=true")
-//                client.mimeiPublish(sid, "", appMid)
-//            }
-//        } catch (e: Exception) {
-//            Log.e("HproseInstance.setUserData", e.toString())
-//        }
     }
 
     // get Ids of users who the current user is following
@@ -236,7 +236,6 @@ object HproseInstance {
                         if (response.isSuccessful) {
                             response.body?.string()?.let { content ->
                                 println(content)
-//                                tweets += Json.decodeFromString<Tweet>(content)
                                 tweets += Gson().fromJson(content, Tweet::class.java)
                             }
                         }
@@ -339,11 +338,11 @@ object HproseInstance {
             }
         }
 
-//    private suspend fun uploadFile(json: String): MimeiId =
-//        withContext(Dispatchers.IO) {
-//            client.mfOpenTempFile(sid).let { fsid ->
-//                client.mfSetData(fsid, json.toByteArray(), 0)
-//                client.mfTemp2Ipfs(fsid, appMid)
-//            }
-//        }
+        fun getUrl(mid: MimeiId): String {
+            return if (mid.length > 27) {
+                "$BASE_URL/ipfs/$mid"
+            } else {
+                "$BASE_URL/mm/$mid"
+            }
+        }
     }
