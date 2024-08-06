@@ -78,20 +78,19 @@ object HproseInstance {
     private const val FOLLOWINGS_KEY = "list_of_followings_mid"
     private const val FOLLOWERS_KEY = "list_of_followers_mid"
 
-    private val gadget = Gadget()
-    private val httpClient = OkHttpClient()
+    private val httpClient by lazy {
+        OkHttpClient.Builder()
+            .apply {
+                // Add your OkHttpClient configurations here
+            }
+            .build()
+            .also { Gadget.initialize(it) }
+    }
 
     private val client: HproseService by lazy {
         HproseClient.create("$BASE_URL/webapi/").useService(HproseService::class.java)
     }
 
-    //    private val sid: String by lazy {
-//        val ppt = client.getVarByContext("", "context_ppt", null)
-//        val result = client.login(ppt)
-//        println("Login result = $result")
-//        val sid = result["sid"].toString()
-//        sid
-//    }
     private var sid = ""
 
     @Serializable
@@ -121,7 +120,6 @@ object HproseInstance {
                 val request = Request.Builder().url(url).build()
                 val response = httpClient.newCall(request).execute()
                 val json = Json.decodeFromString<TempJson>(response.body?.string() ?: "")
-                println(json)
                 sid = json.sid
                 json.mid
             }
@@ -136,7 +134,7 @@ object HproseInstance {
             when {
                 providerLists.isNotEmpty() -> {
                     val ipAddresses = providerLists[0].jsonArray.map { it.jsonArray }
-                    gadget.getFirstReachableUri(ipAddresses, mimeiId)?.let { (url, jsonData) ->
+                    Gadget.getFirstReachableUri(ipAddresses, mimeiId)?.let { (url, jsonData) ->
                         jsonData?.let {
                             Result.success(Pair(url, Json.decodeFromString<User>(jsonData)))
                         }
@@ -327,7 +325,7 @@ object HproseInstance {
         }
     }
 
-    fun getImageSource(mid: MimeiId?): Any {
+    fun getMediaUrl(mid: MimeiId?): Any {
         if (mid?.isNotEmpty() == true) {
             return if (mid.length > 27) {
                 "$BASE_URL/ipfs/$mid"

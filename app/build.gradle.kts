@@ -52,15 +52,10 @@ android {
 }
 
 dependencies {
-
+    implementation(libs.androidx.media3.media3.exoplayer)
+    implementation(libs.media3.exoplayer)
     implementation(platform(libs.okhttp.bom))
     implementation(libs.okhttp)
-    implementation(libs.ktor.client.core)
-    implementation(libs.ktor.client.cio)
-    implementation(libs.ktor.client.logging)
-    implementation(libs.ktor.client.content.negotiation)
-    implementation(libs.ktor.client.auth)
-    implementation(libs.ktor.serialization.kotlinx.json)
     implementation(libs.coil.compose)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.retrofit2)
@@ -78,6 +73,8 @@ dependencies {
     implementation(libs.hprose.java)
     implementation(libs.play.services.fido)
     implementation(libs.androidx.appcompat)
+    implementation(libs.androidx.media3.common)
+    implementation(libs.androidx.media3.ui)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

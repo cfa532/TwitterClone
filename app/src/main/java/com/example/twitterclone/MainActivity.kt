@@ -26,9 +26,8 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.twitterclone.model.HproseInstance
 import com.example.twitterclone.model.HproseInstance.appUser
-import com.example.twitterclone.model.HproseInstance.getImageSource
+import com.example.twitterclone.model.HproseInstance.getMediaUrl
 import com.example.twitterclone.ui.compose.AppIcon
 import com.example.twitterclone.ui.compose.CircularImage
 import com.example.twitterclone.ui.compose.ComposeTweetScreen
@@ -100,7 +99,7 @@ fun MainTopAppBar(navController: NavHostController) {
         navigationIcon = {
             IconButton(onClick = { navController.navigate("preferences") }) {
                 CircularImage(
-                    model = getImageSource(appUser.avatar),
+                    model = getMediaUrl(appUser.avatar),
                     contentDescription = "User Avatar",
                     modifier = Modifier
                         .padding(4.dp)

@@ -9,10 +9,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import com.example.twitterclone.model.Tweet
-import com.example.twitterclone.model.HproseInstance.getImageSource
+import com.example.twitterclone.model.HproseInstance.getMediaUrl
 import com.example.twitterclone.ui.compose.BookmarkButton
 import com.example.twitterclone.ui.compose.CircularImage
 import com.example.twitterclone.ui.compose.LikeButton
+import com.example.twitterclone.ui.compose.MediaGrid
+import com.example.twitterclone.ui.compose.MediaItem
 import com.example.twitterclone.viewmodel.TweetViewModel
 import kotlinx.coroutines.runBlocking
 
@@ -32,7 +34,7 @@ fun TweetItem(
         // Use a Row to align author name and potential verification badge
         Row(verticalAlignment= Alignment.CenterVertically) {
             CircularImage(
-                model = getImageSource(author?.avatar),
+                model = getMediaUrl(author?.avatar),
                 contentDescription = "User Avatar",
                 modifier = Modifier
                     .size(32.dp)
@@ -43,8 +45,15 @@ fun TweetItem(
         }
         Spacer(modifier = Modifier.height(12.dp))
         Text(text = tweet.content, style = MaterialTheme.typography.bodyMedium)
-//        Spacer(modifier = Modifier.height(8.dp))
 
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(max = 400.dp) // Set a specific height for the grid
+        ) {
+            val urls = tweet.attachments.map { MediaItem.Image(getMediaUrl(it).toString()) }
+            MediaGrid(urls)
+        }
         // Use a Row to display likes and bookmarks horizontally
         Row {
             LikeButton(tweet = tweet)

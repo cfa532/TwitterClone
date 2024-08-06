@@ -59,6 +59,7 @@ class TweetFeedViewModel(
             withContext(Dispatchers.IO) {
                 HproseInstance.uploadTweet(tweet, false)?.let { newTweet ->
                     _tweets.update { currentTweets ->
+                        // add new tweet at top of the list
                         listOf(newTweet) + currentTweets
                     }
                 }

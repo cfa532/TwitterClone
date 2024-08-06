@@ -3,31 +3,30 @@ package com.example.twitterclone.network
 import android.util.Log
 import com.example.twitterclone.model.MimeiId
 import com.example.twitterclone.model.HproseInstance.TWBE_APP_ID
-import io.ktor.client.HttpClient
-import io.ktor.client.engine.cio.CIO
-import io.ktor.client.request.get
-import io.ktor.client.statement.bodyAsText
-import io.ktor.http.ContentType
-import io.ktor.http.contentType
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.JsonArray
+import okhttp3.OkHttpClient
+import okhttp3.Request
 import java.net.URL
 import java.net.UnknownHostException
 
-class Gadget (
-    private val httpClient: HttpClient = HttpClient(CIO)
-) {
+object Gadget {
+    private var httpClient: OkHttpClient? = null
+
+    fun initialize( httpClient: OkHttpClient) {
+        this.httpClient = httpClient
+    }
+
     private suspend fun isReachable(mid: MimeiId, host: String, port: Int, timeout: Int = 1000): Pair<URL, String?>? {
         return withContext(Dispatchers.IO) {
             try {
-                httpClient.get("http://$host:$port/entry?&aid=$TWBE_APP_ID&ver=last&entry=get_author_preview&authorid=$mid") {
-                    contentType(ContentType.Application.Json)
-                }.bodyAsText().let {
-                    Pair(URL("http://$host:$port"), it)
-                }
+                val url = "http://$host:$port/entry?&aid=$TWBE_APP_ID&ver=last&entry=get_author_preview&authorid=$mid"
+                val request = Request.Builder().url(url).build()
+                val response = httpClient?.newCall(request)?.execute()
+                Pair(URL("http://$host:$port"), response?.body?.string())
             } catch (e: Exception) {
                 null // Handle other exceptions
             }

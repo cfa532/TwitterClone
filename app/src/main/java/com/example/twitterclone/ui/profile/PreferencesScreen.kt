@@ -35,7 +35,7 @@ import com.example.twitterclone.PreferencesHelper
 import com.example.twitterclone.R
 import com.example.twitterclone.model.MimeiId
 import com.example.twitterclone.model.HproseInstance
-import com.example.twitterclone.model.HproseInstance.getImageSource
+import com.example.twitterclone.model.HproseInstance.getMediaUrl
 import com.example.twitterclone.model.HproseInstance.uploadToIPFS
 import com.example.twitterclone.ui.compose.AppIcon
 import com.example.twitterclone.ui.compose.CircularImage
@@ -169,7 +169,7 @@ fun AvatarSection(avatar: String?, launcher: ManagedActivityResultLauncher<Strin
         modifier = Modifier.fillMaxWidth()
     ) {
         CircularImage(
-            model = getImageSource(avatar),
+            model = getMediaUrl(avatar),
             contentDescription = "User Avatar",
             modifier = Modifier
                 .size(100.dp)
