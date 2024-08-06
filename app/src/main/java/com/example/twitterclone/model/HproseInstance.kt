@@ -246,18 +246,16 @@ object HproseInstance {
     }
 
     // Store an object in a Mimei file and return its MimeiId.
-    fun uploadTweet(t: Tweet, isCommentOnly: Boolean = false): Tweet? {
+    fun uploadTweet(t: Tweet, commentOnly: Boolean = false): Tweet? {
         val method = "upload_tweet"
         val tweet = Json.encodeToString(t)  // Null attributes ignored
         val url =
-            "$BASE_URL/entry?&aid=$TWBE_APP_ID&ver=last&entry=$method&tweet=$tweet&commentonly=$isCommentOnly"
+            "$BASE_URL/entry?&aid=$TWBE_APP_ID&ver=last&entry=$method&tweet=$tweet&commentonly=$commentOnly"
         val request = Request.Builder().url(url).build()
         val response = httpClient.newCall(request).execute()
         if (response.isSuccessful) {
-            response.body.let {
-                t.mid = it.toString()
-                return t
-            }
+            t.mid = response.body?.string() ?: return null
+            return t
         }
         return null
     }

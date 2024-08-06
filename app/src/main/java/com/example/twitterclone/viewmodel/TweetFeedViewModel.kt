@@ -48,18 +48,18 @@ class TweetFeedViewModel(
         }
     }
 
-    fun uploadTweet(content: String, isPrivate: Boolean, attachments: List<MimeiId>) {
+    fun uploadTweet(content: String, isPrivate: Boolean, attachments: List<MimeiId>, commentOnly: Boolean=false) {
         val tweet = Tweet(
             authorId = HproseInstance.appUser.mid,
             content = content,
             isPrivate = isPrivate,
-            attachments = attachments
+            attachments = attachments,
         )
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
-                HproseInstance.uploadTweet(tweet)?.let {
+                HproseInstance.uploadTweet(tweet, false)?.let { newTweet ->
                     _tweets.update { currentTweets ->
-                        currentTweets + it
+                        listOf(newTweet) + currentTweets
                     }
                 }
             }

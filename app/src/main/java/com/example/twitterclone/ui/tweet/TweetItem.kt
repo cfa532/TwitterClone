@@ -35,15 +35,15 @@ fun TweetItem(
                 model = getImageSource(author?.avatar),
                 contentDescription = "User Avatar",
                 modifier = Modifier
-                    .size(24.dp)
+                    .size(32.dp)
                     .clip(CircleShape)
             )
             Spacer(modifier = Modifier.padding(horizontal = 6.dp))
             Text(text = author?.name?: "No One", style = MaterialTheme.typography.bodyMedium)
         }
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(12.dp))
         Text(text = tweet.content, style = MaterialTheme.typography.bodyMedium)
-        Spacer(modifier = Modifier.height(8.dp))
+//        Spacer(modifier = Modifier.height(8.dp))
 
         // Use a Row to display likes and bookmarks horizontally
         Row {

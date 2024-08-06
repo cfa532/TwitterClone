@@ -124,7 +124,8 @@ fun ComposeTweetScreen(
                         viewModel.uploadTweet(
                             tweetContent,
                             isPrivate,
-                            attachments
+                            attachments,
+                            commentOnly = false
                         )
                         // clear and return to previous screen
                         selectedAttachments.clear()

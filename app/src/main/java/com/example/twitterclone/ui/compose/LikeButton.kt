@@ -11,6 +11,11 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
@@ -25,22 +30,27 @@ import kotlinx.coroutines.withContext
 
 @Composable
 fun LikeButton(tweet: Tweet) {
+    var likeCount by remember { mutableIntStateOf(tweet.likeCount) }
+    var hasLiked by remember { mutableStateOf(tweet.hasLiked) }
     IconButton(onClick = {
         runBlocking {
             withContext(Dispatchers.IO) {
                 likeTweet(tweet)
+                likeCount = tweet.likeCount
+                hasLiked = tweet.hasLiked
             }
         }
     }) {
         Row(horizontalArrangement = Arrangement.Center) {
             Icon(
-                painter = painterResource(id = R.drawable.ic_heart),
+                painter = painterResource(id = if (hasLiked) R.drawable.ic_heart_fill else R.drawable.ic_heart),
                 contentDescription = "Like",
-                modifier = Modifier.size(ButtonDefaults.IconSize)
+                modifier = Modifier.size(ButtonDefaults.IconSize),
+                tint = if (hasLiked) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary
             )
             Spacer(modifier = Modifier.width(6.dp))
             Text(
-                text = "${tweet.likeCount}",
+                text = "$likeCount",
                 style = MaterialTheme.typography.labelSmall
             )
         }
@@ -49,22 +59,27 @@ fun LikeButton(tweet: Tweet) {
 
 @Composable
 fun BookmarkButton(tweet: Tweet) {
+    var bookmarkCount by remember { mutableIntStateOf(tweet.bookmarkCount) }
+    var hasBookmarked by remember { mutableStateOf(tweet.hasBookmarked) }
     IconButton(onClick = {
         runBlocking {
             withContext(Dispatchers.IO) {
                 bookmarkTweet(tweet)
+                bookmarkCount = tweet.bookmarkCount
+                hasBookmarked = tweet.hasBookmarked
             }
         }
     }) {
         Row(horizontalArrangement = Arrangement.Center) {
             Icon(
-                painter = painterResource(id = R.drawable.ic_bookmark),
+                painter = painterResource(id = if (hasBookmarked) R.drawable.ic_bookmark_fill else R.drawable.ic_bookmark),
                 contentDescription = "Like",
-                modifier = Modifier.size(ButtonDefaults.IconSize)
+                modifier = Modifier.size(ButtonDefaults.IconSize),
+                tint = if (hasBookmarked) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary
             )
             Spacer(modifier = Modifier.width(4.dp))
             Text(
-                text = "${tweet.bookmarkCount}",
+                text = "$bookmarkCount",
                 style = MaterialTheme.typography.labelSmall
             )
         }
