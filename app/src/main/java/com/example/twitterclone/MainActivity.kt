@@ -28,6 +28,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.twitterclone.model.HproseInstance.appUser
 import com.example.twitterclone.model.HproseInstance.getMediaUrl
+import com.example.twitterclone.network.Gadget
 import com.example.twitterclone.ui.compose.AppIcon
 import com.example.twitterclone.ui.compose.CircularImage
 import com.example.twitterclone.ui.compose.ComposeTweetScreen
@@ -35,13 +36,16 @@ import com.example.twitterclone.ui.feed.TweetFeedScreen
 import com.example.twitterclone.ui.profile.PreferencesScreen
 import com.example.twitterclone.ui.theme.TwitterCloneTheme
 import com.example.twitterclone.viewmodel.TweetFeedViewModel
+import okhttp3.OkHttpClient
 
 const val CURRENT_USER_ID = "5lrADJpzRpYZ82-6jkewoa1w3jB"
+val httpClient: OkHttpClient = OkHttpClient.Builder().build()
 
 class MainActivity : ComponentActivity() {
     companion object {
         init {
             // init global data here
+            Gadget.initialize(httpClient)
         }
     }
 

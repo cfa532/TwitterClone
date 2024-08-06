@@ -52,8 +52,8 @@ android {
 }
 
 dependencies {
+
     implementation(libs.androidx.media3.media3.exoplayer)
-    implementation(libs.media3.exoplayer)
     implementation(platform(libs.okhttp.bom))
     implementation(libs.okhttp)
     implementation(libs.coil.compose)

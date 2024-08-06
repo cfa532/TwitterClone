@@ -4,6 +4,7 @@ import android.content.Context
 import android.net.Uri
 import android.util.Log
 import com.example.twitterclone.R
+import com.example.twitterclone.httpClient
 import com.example.twitterclone.network.Gadget
 import com.google.gson.Gson
 import hprose.client.HproseClient
@@ -77,15 +78,6 @@ object HproseInstance {
     private const val OWNER_DATA_KEY = "data_of_author"     // account data of user
     private const val FOLLOWINGS_KEY = "list_of_followings_mid"
     private const val FOLLOWERS_KEY = "list_of_followers_mid"
-
-    private val httpClient by lazy {
-        OkHttpClient.Builder()
-            .apply {
-                // Add your OkHttpClient configurations here
-            }
-            .build()
-            .also { Gadget.initialize(it) }
-    }
 
     private val client: HproseService by lazy {
         HproseClient.create("$BASE_URL/webapi/").useService(HproseService::class.java)

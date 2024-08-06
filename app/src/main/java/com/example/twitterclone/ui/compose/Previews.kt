@@ -67,7 +67,7 @@ fun ImagePreview(url: String) {
         contentDescription = null,
         modifier = Modifier
             .size(200.dp)
-            .clip(RoundedCornerShape(8.dp)),
+            .clip(RoundedCornerShape(4.dp)),
         contentScale = ContentScale.Crop
     )
 }
