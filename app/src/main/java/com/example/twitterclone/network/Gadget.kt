@@ -8,6 +8,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.JsonArray
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.net.URL
@@ -18,6 +19,19 @@ object Gadget {
 
     fun initialize( httpClient: OkHttpClient) {
         this.httpClient = httpClient
+    }
+
+    fun detectFileType(url: String): String? {
+        val request = Request.Builder().url(url)
+            .head() // Only fetch headers
+            .build()
+
+        val response = httpClient?.newCall(request)?.execute()
+        if (response?.isSuccessful == true) {
+            val contentType = response.header("Content-Type")
+            return contentType?.toMediaTypeOrNull()?.type
+        }
+        return null
     }
 
     private suspend fun isReachable(mid: MimeiId, host: String, port: Int, timeout: Int = 1000): Pair<URL, String?>? {

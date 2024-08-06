@@ -15,7 +15,6 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonArray
-import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.io.FileNotFoundException
 import java.io.InputStream
@@ -64,7 +63,7 @@ object HproseInstance {
     private const val BASE_URL = "http://192.168.0.61:8081"
     const val TWBE_APP_ID = "d4lRyhABgqOnqY4bURSm_T-4FZ4"
 
-    private const val CHUNK_SIZE = 10 * 1024 * 1024 // 10MB in bytes
+    private const val CHUNK_SIZE = 50 * 1024 * 1024 // 10MB in bytes
     private const val APP_ID = "V6MUd0cVeuCFE7YsGLNn5ygyJlm"
     private const val APP_EXT = "com.example.twitterclone"
     private const val APP_MARK = "version 0.0.2"
@@ -292,10 +291,9 @@ object HproseInstance {
                 offset += bytesRead
             }
         }
-        return client.mfTemp2Ipfs(
-            fsid,
-            appMid
-        )    // Associate the uploaded data with the app's main Mimei
+        val cid = client.mfTemp2Ipfs(fsid, appMid)    // Associate the uploaded data with the app's main Mimei
+        println("cid=$cid")
+        return cid
     }
 
     suspend fun uploadAttachments(context: Context, attachments: List<Uri>): List<MimeiId> {
