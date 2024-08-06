@@ -76,7 +76,6 @@ fun MainScreen(viewModel: TweetFeedViewModel = TweetFeedViewModel()) {
                 ComposeTweetScreen(
                     navController = navController,
                     viewModel = viewModel,
-                    currentUserMid = HproseInstance.appMid // Replace with actual current user ID
                 )
             }
             composable("preferences") {

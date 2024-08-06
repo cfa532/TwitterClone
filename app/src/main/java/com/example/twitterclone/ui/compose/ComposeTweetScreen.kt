@@ -38,7 +38,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavHostController
 import com.example.twitterclone.R
-import com.example.twitterclone.model.MimeiId
 import com.example.twitterclone.model.HproseInstance.uploadAttachments
 import com.example.twitterclone.viewmodel.TweetFeedViewModel
 import kotlinx.coroutines.launch
@@ -49,7 +48,6 @@ import kotlinx.coroutines.launch
 fun ComposeTweetScreen(
     navController: NavHostController,
     viewModel: TweetFeedViewModel,
-    currentUserMid: MimeiId
 ) {
     var tweetContent by remember { mutableStateOf("Hello Twitter!") }
     val selectedAttachments = remember { mutableStateListOf<Uri>() }
@@ -124,7 +122,6 @@ fun ComposeTweetScreen(
                     viewModel.viewModelScope.launch {
                         val attachments = uploadAttachments(context, selectedAttachments)
                         viewModel.uploadTweet(
-                            currentUserMid,
                             tweetContent,
                             isPrivate,
                             attachments

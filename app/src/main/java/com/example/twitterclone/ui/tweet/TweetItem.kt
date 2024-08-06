@@ -10,7 +10,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import com.example.twitterclone.model.Tweet
 import com.example.twitterclone.model.HproseInstance.getImageSource
+import com.example.twitterclone.ui.compose.BookmarkButton
 import com.example.twitterclone.ui.compose.CircularImage
+import com.example.twitterclone.ui.compose.LikeButton
 import com.example.twitterclone.viewmodel.TweetViewModel
 import kotlinx.coroutines.runBlocking
 
@@ -45,22 +47,11 @@ fun TweetItem(
 
         // Use a Row to display likes and bookmarks horizontally
         Row {
-            Text(text = "${tweet.likeCount} Likes", style = MaterialTheme.typography.labelSmall)
+            LikeButton(tweet = tweet)
             Spacer(modifier = Modifier.width(8.dp)) // Add some space between the two texts
-            Text(text = "${tweet.bookmarkCount} Bookmarks", style = MaterialTheme.typography.labelSmall)
+            BookmarkButton(tweet = tweet)
         }
 
-        Spacer(modifier = Modifier.height(8.dp))
-        Row {
-            // Consider using OutlinedButton for a less prominent look for secondary actions
-            OutlinedButton(onClick = { tweet.mid?.let { viewModel.likeTweet(it) } }) {
-                Text("Like")
-            }
-            Spacer(modifier = Modifier.width(8.dp))
-            OutlinedButton(onClick = { /* Handle reply action */ }) {
-                Text("Reply")
-            }
-        }
 
 //        originalTweet?.let {
 //            Spacer(modifier = Modifier.height(8.dp))

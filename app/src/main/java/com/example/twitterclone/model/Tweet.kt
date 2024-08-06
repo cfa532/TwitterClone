@@ -29,6 +29,10 @@ data class Tweet(
     var attachments: List<MimeiId> = emptyList(),
 
     var isPrivate: Boolean = false,     // Viewable by the author only if true.
+
+    // not saved in db, for display only
+    var hasLiked: Boolean = false,
+    var hasBookmarked: Boolean = false,
 )
 
 @Serializable

@@ -48,9 +48,9 @@ class TweetFeedViewModel(
         }
     }
 
-    fun uploadTweet(currentUserMid: MimeiId, content: String, isPrivate: Boolean, attachments: List<MimeiId>) {
+    fun uploadTweet(content: String, isPrivate: Boolean, attachments: List<MimeiId>) {
         val tweet = Tweet(
-            authorId = currentUserMid,
+            authorId = HproseInstance.appUser.mid,
             content = content,
             isPrivate = isPrivate,
             attachments = attachments

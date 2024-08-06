@@ -17,7 +17,6 @@ import kotlinx.serialization.json.jsonArray
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.io.FileNotFoundException
-import java.io.IOException
 import java.io.InputStream
 import java.math.BigInteger
 import java.net.URL
@@ -85,7 +84,8 @@ object HproseInstance {
     private val client: HproseService by lazy {
         HproseClient.create("$BASE_URL/webapi/").useService(HproseService::class.java)
     }
-//    private val sid: String by lazy {
+
+    //    private val sid: String by lazy {
 //        val ppt = client.getVarByContext("", "context_ppt", null)
 //        val result = client.login(ppt)
 //        println("Login result = $result")
@@ -95,10 +95,11 @@ object HproseInstance {
     private var sid = ""
 
     @Serializable
-    data class TempJson (
+    data class TempJson(
         var sid: String = "",
         var mid: String = ""
     )
+
     val appUser: User by lazy {
         runBlocking {
             withContext(Dispatchers.IO) {
@@ -110,8 +111,9 @@ object HproseInstance {
             }
         }
     }
+
     // Initialize lazily, also used as UserId
-    val appMid: MimeiId by lazy {
+    private val appMid: MimeiId by lazy {
         runBlocking {
             withContext(Dispatchers.IO) {
                 val method = "get_app_mid"
@@ -211,7 +213,7 @@ object HproseInstance {
     // get tweets of a given author in a given span of time
     // if end is null, get all tweets
     fun getTweetList(
-        authorId: MimeiId = appMid,
+        authorId: MimeiId,
         tweets: MutableList<Tweet>,
         startTimestamp: Long,
         endTimestamp: Long?
@@ -226,7 +228,7 @@ object HproseInstance {
                     if (tweets.none { t -> t.mid == tweetId }) {
                         val method = "get_tweet"
                         val url =
-                            "$BASE_URL/entry?&aid=$TWBE_APP_ID&ver=last&entry=$method&tweetid=$tweetId"
+                            "$BASE_URL/entry?&aid=$TWBE_APP_ID&ver=last&entry=$method&tweetid=$tweetId&userid=$authorId"
                         val request = Request.Builder().url(url).build()
                         val response = httpClient.newCall(request).execute()
                         if (response.isSuccessful) {
@@ -244,43 +246,11 @@ object HproseInstance {
     }
 
     // Store an object in a Mimei file and return its MimeiId.
-    fun uploadTweet(t: Tweet, isCommentOnly: Boolean = true): Tweet? {
-//            client.mmCreate(sid, APP_ID, APP_EXT, t.content, 2, 120022788).let { mid ->
-//                t.mid = mid
-//                println("Creating tweet mid=$mid $t")
-//                client.mmOpen(sid, mid, "cur").let {
-//                    client.set(it, TWT_CONTENT_KEY, Json.encodeToString(t))
-//                    client.mmBackup(
-//                        sid,
-//                        mid,
-//                        "",
-//                        "delref=true"
-//                    ) // Use default memo, specify ref deletion
-//                    client.mimeiPublish(sid, "", mid)       // publish tweet
-//                    client.mmAddRef(
-//                        sid,
-//                        appMid,
-//                        mid
-//                    ) // Reference the object from the app's main Mimei
-//                }
-//
-//                // add the new tweet in user's tweet list
-//                client.mmOpen(sid, appMid, "cur").let {
-//                    client.zAdd(it, TWT_LIST_KEY, ScorePairClass(System.currentTimeMillis(), mid))
-//                    client.mmBackup(
-//                        sid,
-//                        appMid,
-//                        "",
-//                        "delref=true"
-//                    ) // Use default memo, specify ref deletion
-//                    client.mimeiPublish(sid, "", appMid)    // publish tweet list
-//                }
-//            }
-//            return t
-//        }
+    fun uploadTweet(t: Tweet, isCommentOnly: Boolean = false): Tweet? {
         val method = "upload_tweet"
         val tweet = Json.encodeToString(t)  // Null attributes ignored
-        val url = "$BASE_URL/entry?&aid=$TWBE_APP_ID&ver=last&entry=$method&tweet=$tweet&commentonly=$isCommentOnly"
+        val url =
+            "$BASE_URL/entry?&aid=$TWBE_APP_ID&ver=last&entry=$method&tweet=$tweet&commentonly=$isCommentOnly"
         val request = Request.Builder().url(url).build()
         val response = httpClient.newCall(request).execute()
         if (response.isSuccessful) {
@@ -292,51 +262,81 @@ object HproseInstance {
         return null
     }
 
-        // Upload data from an InputStream to IPFS and return the resulting MimeiId.
-        fun uploadToIPFS(inputStream: InputStream): MimeiId {
-            val fsid = client.mfOpenTempFile(sid)
-            var offset = 0
-            inputStream.use { stream ->
-                val buffer = ByteArray(CHUNK_SIZE)
-                var bytesRead: Int
-                while (stream.read(buffer).also { bytesRead = it } != -1) {
-                    client.mfSetData(fsid, buffer, offset)
-                    offset += bytesRead
-                }
-            }
-            return client.mfTemp2Ipfs(
-                fsid,
-                appMid
-            )    // Associate the uploaded data with the app's main Mimei
-        }
-
-        suspend fun uploadAttachments(context: Context, attachments: List<Uri>): List<MimeiId> {
-            return attachments.mapNotNull { uri ->
-                uploadFile(context, uri)
-            }
-        }
-
-        private suspend fun uploadFile(context: Context, uri: Uri): MimeiId? {
-            return withContext(Dispatchers.IO) {
-                runCatching {
-                    context.contentResolver.openInputStream(uri)?.use { inputStream ->
-                        uploadToIPFS(inputStream)
-                    } ?: throw FileNotFoundException("File not found for URI: $uri")
-                }.getOrElse { e ->
-                    Log.e("HproseInstance.uploadFile", "Failed to upload file: $uri", e)
-                    null
-                }
-            }
-        }
-
-        fun getImageSource(mid: MimeiId?): Any {
-            if (mid?.isNotEmpty() == true) {
-                return if (mid.length > 27) {
-                    "$BASE_URL/ipfs/$mid"
-                } else {
-                    "$BASE_URL/mm/$mid"
-                }
-            }
-            return R.drawable.ic_user_avatar
+    fun likeTweet(tweet: Tweet) {
+        val method = "liked_count"
+        val url =
+            "$BASE_URL/entry?&aid=$TWBE_APP_ID&ver=last&entry=$method&tweetid=${tweet.mid}&userid=${appUser.mid}"
+        val request = Request.Builder().url(url).build()
+        val response = httpClient.newCall(request).execute()
+        if (response.isSuccessful) {
+            val responseBody = response.body?.string() ?: return
+            val gson = Gson()
+            val res = gson.fromJson(responseBody, Map::class.java) as Map<*, *>
+            tweet.hasLiked = res["hasLiked"] as Boolean
+            tweet.likeCount = (res["count"] as Double).toInt()
         }
     }
+
+    fun bookmarkTweet(tweet: Tweet) {
+        val method = "bookmark"
+        val url =
+            "$BASE_URL/entry?&aid=$TWBE_APP_ID&ver=last&entry=$method&tweetid=${tweet.mid}&userid=${appUser.mid}"
+        val request = Request.Builder().url(url).build()
+        val response = httpClient.newCall(request).execute()
+        if (response.isSuccessful) {
+            val responseBody = response.body?.string() ?: return
+            val gson = Gson()
+            val res = gson.fromJson(responseBody, Map::class.java) as Map<*, *>
+            tweet.hasBookmarked = res["hasBookmarked"] as Boolean
+            tweet.bookmarkCount = (res["count"] as Double).toInt()
+        }
+    }
+
+    // Upload data from an InputStream to IPFS and return the resulting MimeiId.
+    fun uploadToIPFS(inputStream: InputStream): MimeiId {
+        val fsid = client.mfOpenTempFile(sid)
+        var offset = 0
+        inputStream.use { stream ->
+            val buffer = ByteArray(CHUNK_SIZE)
+            var bytesRead: Int
+            while (stream.read(buffer).also { bytesRead = it } != -1) {
+                client.mfSetData(fsid, buffer, offset)
+                offset += bytesRead
+            }
+        }
+        return client.mfTemp2Ipfs(
+            fsid,
+            appMid
+        )    // Associate the uploaded data with the app's main Mimei
+    }
+
+    suspend fun uploadAttachments(context: Context, attachments: List<Uri>): List<MimeiId> {
+        return attachments.mapNotNull { uri ->
+            uploadFile(context, uri)
+        }
+    }
+
+    private suspend fun uploadFile(context: Context, uri: Uri): MimeiId? {
+        return withContext(Dispatchers.IO) {
+            runCatching {
+                context.contentResolver.openInputStream(uri)?.use { inputStream ->
+                    uploadToIPFS(inputStream)
+                } ?: throw FileNotFoundException("File not found for URI: $uri")
+            }.getOrElse { e ->
+                Log.e("HproseInstance.uploadFile", "Failed to upload file: $uri", e)
+                null
+            }
+        }
+    }
+
+    fun getImageSource(mid: MimeiId?): Any {
+        if (mid?.isNotEmpty() == true) {
+            return if (mid.length > 27) {
+                "$BASE_URL/ipfs/$mid"
+            } else {
+                "$BASE_URL/mm/$mid"
+            }
+        }
+        return R.drawable.ic_user_avatar
+    }
+}
