@@ -1,7 +1,6 @@
 package com.example.twitterclone.ui.compose
 
 import android.net.Uri
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
@@ -20,14 +19,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.PlayerView
 import coil.compose.AsyncImage
-import com.example.twitterclone.R
-import com.example.twitterclone.network.Gadget.detectFileType
+import com.example.twitterclone.network.Gadget.detectMimeTypeFromHeader
+import com.example.twitterclone.network.Gadget.downloadFileHeader
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -64,9 +62,10 @@ fun MediaItemPreview(mediaItem: MediaItem) {
 
     LaunchedEffect(mediaItem.url) {
         coroutineScope.launch {
-            val detectedFileType = withContext(Dispatchers.IO) {
-                detectFileType(mediaItem.url)
+            val header = withContext(Dispatchers.IO) {
+                downloadFileHeader(mediaItem.url)
             }
+            val detectedFileType = detectMimeTypeFromHeader(header)
             fileType.value = detectedFileType
         }
     }
@@ -75,7 +74,7 @@ fun MediaItemPreview(mediaItem: MediaItem) {
         contentAlignment = Alignment.Center
     ) {
         when (fileType.value) {
-            "image" -> {
+            "image/jpeg", "image/png" -> {
                 AsyncImage(
                     model = mediaItem.url,
                     contentDescription = null,
@@ -83,11 +82,11 @@ fun MediaItemPreview(mediaItem: MediaItem) {
                     modifier = Modifier.size(200.dp)
                 )
             }
-            "video" -> {
+            "video/mp4" -> {
                 // Implement video player here
                 VideoPreview(url = mediaItem.url)
             }
-            "audio" -> {
+            "audio/mpeg", "audio/ogg", "audio/flac", "audio/wav" ->  {
                 // Implement audio player here
                 VideoPreview(url = mediaItem.url)
             }
@@ -112,17 +111,5 @@ fun VideoPreview(url: String) {
         modifier = Modifier
             .size(200.dp)
             .clip(RoundedCornerShape(8.dp))
-    )
-}
-
-@Composable
-fun AudioPreview() {
-    Image(
-        painter = painterResource(id = R.drawable.ic_headphones), // Replace with your audio placeholder image
-        contentDescription = null,
-        modifier = Modifier
-            .size(200.dp)
-            .clip(RoundedCornerShape(8.dp)),
-        contentScale = ContentScale.Crop
     )
 }
