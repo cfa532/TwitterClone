@@ -4,8 +4,6 @@ import android.net.Uri
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -51,20 +49,14 @@ fun MediaPreviewGrid(mediaItems: List<MediaItem>) {
         modifier = Modifier.padding(0.dp, 8.dp, 0.dp),
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        items(limitedMediaList) { mediaItem ->
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-//                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                MediaItemPreview(mediaItem)
-                // Add another MediaItemPreview for the second column here
-            }
+        items (limitedMediaList) { mediaItem ->
+            MediaItemPreview(mediaItem)
         }
     }
 }
 
 @Composable
-fun MediaItemPreview( mediaItem: MediaItem ) {
+fun MediaItemPreview(mediaItem: MediaItem) {
     val fileType = remember(mediaItem.url) {
         mutableStateOf<String?>(null)
     }
@@ -97,7 +89,6 @@ fun MediaItemPreview( mediaItem: MediaItem ) {
             }
             "audio" -> {
                 // Implement audio player here
-//                AudioPreview()
                 VideoPreview(url = mediaItem.url)
             }
             else -> {
@@ -107,7 +98,6 @@ fun MediaItemPreview( mediaItem: MediaItem ) {
         }
     }
 }
-
 
 @Composable
 fun VideoPreview(url: String) {

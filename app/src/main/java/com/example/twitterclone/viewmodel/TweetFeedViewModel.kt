@@ -1,5 +1,7 @@
 package com.example.twitterclone.viewmodel
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -48,6 +50,7 @@ class TweetFeedViewModel(
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     fun uploadTweet(content: String, isPrivate: Boolean, attachments: List<MimeiId>, commentOnly: Boolean=false) {
         val tweet = Tweet(
             authorId = HproseInstance.appUser.mid,

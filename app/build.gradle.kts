@@ -11,7 +11,7 @@ android {
 
     defaultConfig {
         applicationId = "com.example.twitterclone"
-        minSdk = 26
+        minSdk = 34
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
@@ -49,15 +49,17 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
+    buildToolsVersion = "35.0.0"
 }
 
 dependencies {
+    implementation(libs.kotlinx.serialization.json.v160)
 
     implementation(libs.androidx.media3.media3.exoplayer)
     implementation(platform(libs.okhttp.bom))
     implementation(libs.okhttp)
     implementation(libs.coil.compose)
-    implementation(libs.kotlinx.serialization.json)
+//    implementation(libs.kotlinx.serialization.json)
     implementation(libs.retrofit2)
     implementation(libs.converter.gson)
     implementation(libs.androidx.navigation.compose)

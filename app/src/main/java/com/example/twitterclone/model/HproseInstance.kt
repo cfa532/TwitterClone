@@ -2,7 +2,9 @@ package com.example.twitterclone.model
 
 import android.content.Context
 import android.net.Uri
+import android.os.Build
 import android.util.Log
+import androidx.annotation.RequiresApi
 import com.example.twitterclone.R
 import com.example.twitterclone.httpClient
 import com.example.twitterclone.network.Gadget
@@ -20,6 +22,7 @@ import java.io.FileNotFoundException
 import java.io.InputStream
 import java.math.BigInteger
 import java.net.URL
+import java.net.URLEncoder
 
 // Encapsulate Hprose client and related operations in a singleton object.
 object HproseInstance {
@@ -198,9 +201,10 @@ object HproseInstance {
     }
 
     // Store an object in a Mimei file and return its MimeiId.
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     fun uploadTweet(t: Tweet, commentOnly: Boolean = false): Tweet? {
         val method = "upload_tweet"
-        val tweet = Json.encodeToString(t)  // Null attributes ignored
+        val tweet = URLEncoder.encode(Json.encodeToString(t), Charsets.UTF_8)   // Null attributes ignored
         val url =
             "$BASE_URL/entry?&aid=$TWBE_APP_ID&ver=last&entry=$method&tweet=$tweet&commentonly=$commentOnly"
         val request = Request.Builder().url(url).build()
