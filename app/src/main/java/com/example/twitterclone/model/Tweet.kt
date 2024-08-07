@@ -12,17 +12,17 @@ data class Tweet(
     val original: MimeiId?= null, // this is retweet of the original tweet
 
     var likeCount: Int = 0,     // Number of likes
-    var likes: List<MimeiId> = emptyList(),     // user list that liked the tweet
+//    var likers: List<MimeiId> = emptyList(),     // user list that liked the tweet
 
     var bookmarkCount: Int = 0, // Number of bookmarks
-    var bookmarks: List<MimeiId> = emptyList(), // user list that bookmarked the tweet
+//    var bookmarks: List<MimeiId> = emptyList(), // user list that bookmarked the tweet
 
     // List of retweets ID, without comments.
-    var retweets: List<MimeiId> = emptyList(),
+//    var retweets: List<MimeiId> = emptyList(),
     var retweetCount: Int = 0,  // Number of retweets
 
     // List of comments (tweets) Id on this tweet.
-    var comments: List<MimeiId> = emptyList(),
+//    var comments: List<MimeiId> = emptyList(),
     var commentCount: Int = 0,  // Number of comments
 
     // List of media IDs attached to the tweet. Max 4 items for now.
@@ -42,17 +42,17 @@ data class User(
     var username: String? = null,
     var avatar: MimeiId? = null, // Optional profile image URL
 
-    // List of tweet MIDs bookmarked by the user
-    var bookmarkedTweets: List<MimeiId> = emptyList(),
-
-    // List of tweet MIDs liked by the user
-    var likedTweets: List<MimeiId> = emptyList(),
-
-    // List of tweet MIDs commented to by the user
-    var repliedTweets: List<MimeiId> = emptyList(),
-
     // List of nodes authorized to the user to write tweets on.
     var nodeIds: List<MimeiId>? = null,
 
     var publicKey: String? = null,
+
+    // List of tweet MIDs bookmarked by the user
+//    var bookmarkedTweets: List<MimeiId> = emptyList(),
+
+    // List of tweet MIDs liked by the user
+//    var likedTweets: List<MimeiId> = emptyList(),
+
+    // List of tweet MIDs commented to by the user
+//    var repliedTweets: List<MimeiId> = emptyList(),
 )

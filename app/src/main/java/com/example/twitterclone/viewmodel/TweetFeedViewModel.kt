@@ -1,13 +1,11 @@
 package com.example.twitterclone.viewmodel
 
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.twitterclone.model.HproseInstance
 import com.example.twitterclone.model.MimeiId
 import com.example.twitterclone.model.Tweet
-import com.example.twitterclone.model.HproseInstance
 import com.example.twitterclone.repository.TweetRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow

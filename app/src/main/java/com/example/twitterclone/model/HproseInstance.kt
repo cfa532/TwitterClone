@@ -2,17 +2,14 @@ package com.example.twitterclone.model
 
 import android.content.Context
 import android.net.Uri
-import android.os.Build
 import android.util.Log
-import androidx.annotation.RequiresApi
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.rememberCoroutineScope
 import com.example.twitterclone.R
 import com.example.twitterclone.httpClient
 import com.example.twitterclone.network.Gadget
 import com.google.gson.Gson
 import hprose.client.HproseClient
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
@@ -26,9 +23,6 @@ import java.io.InputStream
 import java.math.BigInteger
 import java.net.URL
 import java.net.URLEncoder
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers.IO
-import kotlinx.coroutines.launch
 
 // Encapsulate Hprose client and related operations in a singleton object.
 object HproseInstance {
@@ -63,19 +57,20 @@ object HproseInstance {
     )
 
     val appUser: User by lazy {
-        CoroutineScope(IO).launch {
+        runBlocking {
+            withContext(IO) {
                 val method = "get_author_core_data"
                 val url = "$BASE_URL/entry?&aid=$TWBE_APP_ID&ver=last&entry=$method&userid=$appMid"
                 val request = Request.Builder().url(url).build()
                 val response = httpClient.newCall(request).execute()
                 Json.decodeFromString<User>(response.body?.string() ?: "")
+            }
         }
-        User(mid = "")
     }
 
     // Initialize lazily, also used as UserId
     private val appMid: MimeiId by lazy {
-        runBlocking {
+        runBlocking {   // necessary for the whole App
             withContext(IO) {
                 val method = "get_app_mid"
                 val url = "$BASE_URL/entry?&aid=$TWBE_APP_ID&ver=last&entry=$method"
@@ -267,7 +262,10 @@ object HproseInstance {
                 offset += bytesRead
             }
         }
-        val cid = client.mfTemp2Ipfs(fsid, appMid)    // Associate the uploaded data with the app's main Mimei
+        val cid = client.mfTemp2Ipfs(
+            fsid,
+            appMid
+        )    // Associate the uploaded data with the app's main Mimei
         println("cid=$cid")
         return cid
     }
