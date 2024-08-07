@@ -11,7 +11,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -26,9 +25,8 @@ import com.example.twitterclone.model.HproseInstance.bookmarkTweet
 import com.example.twitterclone.model.HproseInstance.likeTweet
 import com.example.twitterclone.model.Tweet
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlinx.coroutines.*
 
 @Composable
 fun CommentButton(tweet: Tweet) {
@@ -42,9 +40,11 @@ fun CommentButton(tweet: Tweet) {
         }
     }) {
         Row(horizontalArrangement = Arrangement.Center) {
-            Icon(painter = painterResource(id = R.drawable.ic_notice),
+            Icon(
+                painter = painterResource(id = R.drawable.ic_notice),
                 contentDescription = "comments",
-                modifier = Modifier.size(ButtonDefaults.IconSize))
+                modifier = Modifier.size(ButtonDefaults.IconSize)
+            )
             Spacer(modifier = Modifier.width(6.dp))
             Text(text = "$commentCount", style = MaterialTheme.typography.labelSmall)
         }
@@ -60,7 +60,7 @@ fun LikeButton(tweet: Tweet) {
     IconButton(onClick = {
         coroutineScope.launch {
             withContext(Dispatchers.IO) {
-            likeTweet(tweet)
+                likeTweet(tweet)
                 likeCount = tweet.likeCount
                 hasLiked = tweet.hasLiked
             }
