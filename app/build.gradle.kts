@@ -53,13 +53,12 @@ android {
 }
 
 dependencies {
-    implementation(libs.kotlinx.serialization.json.v160)
 
+    implementation(libs.kotlinx.serialization.json)
     implementation(libs.androidx.media3.media3.exoplayer)
     implementation(platform(libs.okhttp.bom))
     implementation(libs.okhttp)
     implementation(libs.coil.compose)
-//    implementation(libs.kotlinx.serialization.json)
     implementation(libs.retrofit2)
     implementation(libs.converter.gson)
     implementation(libs.androidx.navigation.compose)

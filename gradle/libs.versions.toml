@@ -26,7 +26,6 @@ androidx-media3-media3-exoplayer = { module = "androidx.media3:media3-exoplayer"
 coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coilCompose" }
 hprose-java = { module = "org.hprose:hprose-java", version.ref = "hproseJava" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
-kotlinx-serialization-json-v160 = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJsonVersion" }
 okhttp = { module = "com.squareup.okhttp3:okhttp", version = "4.12.0" }
 okhttp-bom = { module = "com.squareup.okhttp3:okhttp-bom", version.ref = "okhttpBom" }
 retrofit2 = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit2"}
