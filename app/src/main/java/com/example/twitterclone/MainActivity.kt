@@ -49,7 +49,6 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    @RequiresApi(Build.VERSION_CODES.Q)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -60,7 +59,6 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-@RequiresApi(Build.VERSION_CODES.Q)
 @Composable
 fun MainScreen(viewModel: TweetFeedViewModel = TweetFeedViewModel()) {
     val navController = rememberNavController()
@@ -121,7 +119,7 @@ fun BottomNavigationBar(navController: NavHostController) {
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
-            IconButton(onClick = { /* Navigate to Home */ }) {
+            IconButton(onClick = { navController.navigate("tweetFeed") }) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_home),
                     contentDescription = "Home",

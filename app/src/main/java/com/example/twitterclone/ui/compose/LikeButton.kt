@@ -11,10 +11,12 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -26,16 +28,39 @@ import com.example.twitterclone.model.Tweet
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 
+@Composable
+fun CommentButton(tweet: Tweet) {
+    var commentCount by remember { mutableIntStateOf(tweet.commentCount) }
+    val coroutineScope = rememberCoroutineScope()
+
+    IconButton(onClick = {
+        coroutineScope.launch {
+            withContext(Dispatchers.IO) {
+            }
+        }
+    }) {
+        Row(horizontalArrangement = Arrangement.Center) {
+            Icon(painter = painterResource(id = R.drawable.ic_notice),
+                contentDescription = "comments",
+                modifier = Modifier.size(ButtonDefaults.IconSize))
+            Spacer(modifier = Modifier.width(6.dp))
+            Text(text = "$commentCount", style = MaterialTheme.typography.labelSmall)
+        }
+    }
+}
 
 @Composable
 fun LikeButton(tweet: Tweet) {
     var likeCount by remember { mutableIntStateOf(tweet.likeCount) }
     var hasLiked by remember { mutableStateOf(tweet.hasLiked) }
+    val coroutineScope = rememberCoroutineScope()
+
     IconButton(onClick = {
-        runBlocking {
+        coroutineScope.launch {
             withContext(Dispatchers.IO) {
-                likeTweet(tweet)
+            likeTweet(tweet)
                 likeCount = tweet.likeCount
                 hasLiked = tweet.hasLiked
             }
@@ -61,8 +86,10 @@ fun LikeButton(tweet: Tweet) {
 fun BookmarkButton(tweet: Tweet) {
     var bookmarkCount by remember { mutableIntStateOf(tweet.bookmarkCount) }
     var hasBookmarked by remember { mutableStateOf(tweet.hasBookmarked) }
+    val coroutineScope = rememberCoroutineScope()
+
     IconButton(onClick = {
-        runBlocking {
+        coroutineScope.launch {
             withContext(Dispatchers.IO) {
                 bookmarkTweet(tweet)
                 bookmarkCount = tweet.bookmarkCount

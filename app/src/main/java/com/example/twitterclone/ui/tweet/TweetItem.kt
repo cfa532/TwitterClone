@@ -14,17 +14,23 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import com.example.twitterclone.model.HproseInstance.getMediaUrl
 import com.example.twitterclone.model.Tweet
+import com.example.twitterclone.model.User
 import com.example.twitterclone.ui.compose.BookmarkButton
 import com.example.twitterclone.ui.compose.CircularImage
+import com.example.twitterclone.ui.compose.CommentButton
 import com.example.twitterclone.ui.compose.LikeButton
 import com.example.twitterclone.ui.compose.MediaItem
-import com.example.twitterclone.ui.compose.MediaItemPreview
 import com.example.twitterclone.ui.compose.MediaPreviewGrid
 import com.example.twitterclone.viewmodel.TweetViewModel
 import kotlinx.coroutines.runBlocking
@@ -32,9 +38,12 @@ import kotlinx.coroutines.runBlocking
 @Composable
 fun TweetItem(
     tweet: Tweet,
+    viewModel: TweetViewModel
 ) {
-    val viewModel = TweetViewModel()
-    val author = runBlocking { viewModel.getAuthor(tweet.authorId) }
+    var author by remember { mutableStateOf<User?>(null) }
+    LaunchedEffect(key1 = tweet.authorId) {
+        author = viewModel.getAuthor(tweet.authorId)
+    }
 
     Column(
         modifier = Modifier
@@ -72,6 +81,8 @@ fun TweetItem(
             LikeButton(tweet = tweet)
             Spacer(modifier = Modifier.width(8.dp)) // Add some space between the two texts
             BookmarkButton(tweet = tweet)
+            Spacer(modifier = Modifier.width(8.dp))
+            CommentButton(tweet = tweet)
         }
 
 

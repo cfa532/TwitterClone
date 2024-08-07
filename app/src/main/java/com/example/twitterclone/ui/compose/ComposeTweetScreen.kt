@@ -43,7 +43,6 @@ import com.example.twitterclone.viewmodel.TweetFeedViewModel
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
-@RequiresApi(Build.VERSION_CODES.Q)
 @Composable
 fun ComposeTweetScreen(
     navController: NavHostController,
