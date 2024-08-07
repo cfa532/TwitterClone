@@ -50,7 +50,6 @@ class TweetFeedViewModel(
         }
     }
 
-    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     fun uploadTweet(content: String, isPrivate: Boolean, attachments: List<MimeiId>, commentOnly: Boolean=false) {
         val tweet = Tweet(
             authorId = HproseInstance.appUser.mid,

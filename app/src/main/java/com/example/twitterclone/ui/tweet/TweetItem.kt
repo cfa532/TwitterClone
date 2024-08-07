@@ -24,6 +24,7 @@ import com.example.twitterclone.ui.compose.BookmarkButton
 import com.example.twitterclone.ui.compose.CircularImage
 import com.example.twitterclone.ui.compose.LikeButton
 import com.example.twitterclone.ui.compose.MediaItem
+import com.example.twitterclone.ui.compose.MediaItemPreview
 import com.example.twitterclone.ui.compose.MediaPreviewGrid
 import com.example.twitterclone.viewmodel.TweetViewModel
 import kotlinx.coroutines.runBlocking
@@ -61,10 +62,10 @@ fun TweetItem(
                 .fillMaxWidth()
                 .heightIn(max = 400.dp) // Set a specific height for the grid
         ) {
-            val mediaItems = tweet.attachments.map {
+            val mediaItems = tweet.attachments?.map {
                 MediaItem(getMediaUrl(it).toString())
             }
-            MediaPreviewGrid(mediaItems)
+            mediaItems?.let {MediaPreviewGrid(it)}
         }
         // Use a Row to display likes and bookmarks horizontally
         Row {

@@ -26,7 +26,7 @@ data class Tweet(
     var commentCount: Int = 0,  // Number of comments
 
     // List of media IDs attached to the tweet. Max 4 items for now.
-    var attachments: List<MimeiId> = emptyList(),
+    var attachments: List<MimeiId>? = emptyList(),
 
     var isPrivate: Boolean = false,     // Viewable by the author only if true.
 
