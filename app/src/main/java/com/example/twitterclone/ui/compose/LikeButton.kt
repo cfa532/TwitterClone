@@ -11,7 +11,10 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -24,6 +27,7 @@ import com.example.twitterclone.R
 import com.example.twitterclone.model.HproseInstance.bookmarkTweet
 import com.example.twitterclone.model.HproseInstance.likeTweet
 import com.example.twitterclone.model.Tweet
+import com.example.twitterclone.viewmodel.TweetViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -52,19 +56,14 @@ fun CommentButton(tweet: Tweet) {
 }
 
 @Composable
-fun LikeButton(tweet: Tweet) {
-    var likeCount by remember { mutableIntStateOf(tweet.likeCount) }
-    var hasLiked by remember { mutableStateOf(tweet.hasLiked) }
-    val coroutineScope = rememberCoroutineScope()
+fun LikeButton(viewModel: TweetViewModel) {
+    val tweet by viewModel.tweet.collectAsState()
+    val likeCount = tweet?.likeCount ?: 0
+    val hasLiked = tweet?.hasLiked ?: false
 
     IconButton(onClick = {
-        coroutineScope.launch {
-            withContext(Dispatchers.IO) {
-                likeTweet(tweet)
-                likeCount = tweet.likeCount
-                hasLiked = tweet.hasLiked
-            }
-        }
+        viewModel.likeTweet()
+        println("Like button pressed. Current tweet: $tweet")
     }) {
         Row(horizontalArrangement = Arrangement.Center) {
             Icon(

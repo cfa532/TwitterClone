@@ -10,6 +10,9 @@ import com.example.twitterclone.model.Tweet
 import com.example.twitterclone.model.User
 import com.example.twitterclone.repository.TweetRepository
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -17,21 +20,35 @@ class TweetViewModel(
     private val tweetRepository: TweetRepository = TweetRepository()
 ) : ViewModel() {
 
-    private val _errorState = MutableLiveData<String?>(null)
-    val errorState: LiveData<String?> = _errorState
+    private val _tweet = MutableStateFlow<Tweet?>(null)
+    val tweet: StateFlow<Tweet?> = _tweet.asStateFlow()
 
-    suspend fun getAuthor(authorId: MimeiId): User? {
-        return withContext(Dispatchers.IO) {
-            HproseInstance.getUserPreview(authorId)
+    private var _author = MutableLiveData<User>()
+    val author: LiveData<User> get() = _author
+
+    fun likeTweet() {
+        viewModelScope.launch {
+            val currentTweet = _tweet.value
+            if (currentTweet != null) {
+                val likedTweet = withContext(Dispatchers.IO) {
+                    HproseInstance.likeTweet(currentTweet)
+                }
+                _tweet.value = likedTweet
+            }
         }
     }
 
-    fun likeTweet(tweetMid: MimeiId) {
+    fun getAuthor(authorId: MimeiId) {
         viewModelScope.launch {
-            val tweet = tweetRepository.getTweet(tweetMid)
-            val updatedTweet = tweet.copy(likeCount = tweet.likeCount + 1)
-            tweetRepository.updateTweet(updatedTweet)
+            val user = withContext(Dispatchers.IO) {
+                HproseInstance.getUserPreview(authorId)
+            }
+            user.let { _author.value = it }
         }
+    }
+
+    fun setTweet(tweet: Tweet) {
+        _tweet.value = tweet
     }
 
     fun retweet(tweetMid: MimeiId, authorMid: MimeiId) {

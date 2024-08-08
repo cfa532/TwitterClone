@@ -15,7 +15,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -37,13 +39,13 @@ import kotlinx.coroutines.runBlocking
 
 @Composable
 fun TweetItem(
-    tweet: Tweet,
-    viewModel: TweetViewModel
+    t: Tweet,
+    viewModel: TweetViewModel = TweetViewModel()
 ) {
-    var author by remember { mutableStateOf<User?>(null) }
-    LaunchedEffect(key1 = tweet.authorId) {
-        author = viewModel.getAuthor(tweet.authorId)
-    }
+    val author by viewModel.author.observeAsState()
+    val tweet by viewModel.tweet.collectAsState()
+    viewModel.setTweet(t)
+    viewModel.getAuthor(t.authorId)
 
     Column(
         modifier = Modifier
@@ -64,27 +66,28 @@ fun TweetItem(
             Text(text = author?.name ?: "No One", style = MaterialTheme.typography.bodyMedium)
         }
         Spacer(modifier = Modifier.height(12.dp))
-        Text(text = tweet.content, style = MaterialTheme.typography.bodyMedium)
+        tweet?.let { Text(text = it.content, style = MaterialTheme.typography.bodyMedium) }
 
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .heightIn(max = 400.dp) // Set a specific height for the grid
         ) {
-            val mediaItems = tweet.attachments?.map {
+            val mediaItems = tweet?.attachments?.map {
                 MediaItem(getMediaUrl(it).toString())
             }
             mediaItems?.let {MediaPreviewGrid(it)}
         }
         // Use a Row to display likes and bookmarks horizontally
-        Row {
-            LikeButton(tweet = tweet)
-            Spacer(modifier = Modifier.width(8.dp)) // Add some space between the two texts
-            BookmarkButton(tweet = tweet)
-            Spacer(modifier = Modifier.width(8.dp))
-            CommentButton(tweet = tweet)
+        tweet?.let {
+            Row {
+                LikeButton(viewModel)
+                Spacer(modifier = Modifier.width(8.dp)) // Add some space between the two texts
+                BookmarkButton(it)
+                Spacer(modifier = Modifier.width(8.dp))
+                CommentButton(it)
+            }
         }
-
 
 //        originalTweet?.let {
 //            Spacer(modifier = Modifier.height(8.dp))

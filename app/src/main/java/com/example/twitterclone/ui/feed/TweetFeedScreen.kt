@@ -25,7 +25,6 @@ fun TweetFeedScreen(navController: NavHostController, viewModel: TweetFeedViewMo
     ) { innerPadding ->
 
         val tweets = viewModel.tweets.collectAsState().value
-        val tweetViewModel = TweetViewModel()
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
@@ -33,7 +32,7 @@ fun TweetFeedScreen(navController: NavHostController, viewModel: TweetFeedViewMo
         )
         {
             items(tweets) { tweet ->
-                TweetItem(tweet, tweetViewModel)
+                TweetItem(tweet)
             }
         }
     }
