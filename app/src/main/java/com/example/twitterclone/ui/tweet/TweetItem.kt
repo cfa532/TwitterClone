@@ -72,7 +72,7 @@ fun TweetItem(
         // Use a Row to display likes and bookmarks horizontally
         tweet.let {
             Row {
-                LikeButton(tweet, viewModel)
+                LikeButton(it, viewModel)
                 Spacer(modifier = Modifier.width(8.dp)) // Add some space between the two texts
                 BookmarkButton(it)
                 Spacer(modifier = Modifier.width(8.dp))

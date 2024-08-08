@@ -11,10 +11,8 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -59,12 +57,18 @@ fun CommentButton(tweet: Tweet) {
 fun LikeButton(tweet: Tweet, viewModel: TweetViewModel) {
     var likeCount by remember { mutableIntStateOf(tweet.likeCount) }
     var hasLiked by remember { mutableStateOf(tweet.hasLiked) }
+    val coroutineScope = rememberCoroutineScope()
 
     IconButton(onClick = {
-        viewModel.likeTweet(tweet)
-        likeCount = tweet.likeCount
-        hasLiked = tweet.hasLiked
-        println("Like button pressed. Current tweet: $likeCount")
+        coroutineScope.launch {
+            withContext(Dispatchers.IO) {
+                likeTweet(tweet)
+                likeCount = tweet.likeCount
+                hasLiked = tweet.hasLiked
+
+                println("Like button pressed. Current tweet: $likeCount")
+            }
+        }
     }) {
         Row(horizontalArrangement = Arrangement.Center) {
             Icon(
@@ -79,6 +83,8 @@ fun LikeButton(tweet: Tweet, viewModel: TweetViewModel) {
                 style = MaterialTheme.typography.labelSmall
             )
         }
+    }
+    LaunchedEffect(tweet) {
     }
 }
 
