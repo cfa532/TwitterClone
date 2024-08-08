@@ -220,20 +220,19 @@ object HproseInstance {
 
     }
 
-    fun likeTweet(tweet: Tweet): Tweet {
+    fun likeTweet(tweet: Tweet) {
         val method = "liked_count"
         val url =
             "$BASE_URL/entry?&aid=$TWBE_APP_ID&ver=last&entry=$method&tweetid=${tweet.mid}&userid=${appUser.mid}"
         val request = Request.Builder().url(url).build()
         val response = httpClient.newCall(request).execute()
         if (response.isSuccessful) {
-            val responseBody = response.body?.string() ?: return tweet
+            val responseBody = response.body?.string() ?: return
             val gson = Gson()
             val res = gson.fromJson(responseBody, Map::class.java) as Map<*, *>
             tweet.hasLiked = res["hasLiked"] as Boolean
             tweet.likeCount = (res["count"] as Double).toInt()
         }
-        return tweet
     }
 
     fun bookmarkTweet(tweet: Tweet) {

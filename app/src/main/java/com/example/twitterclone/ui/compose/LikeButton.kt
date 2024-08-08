@@ -34,7 +34,7 @@ import kotlinx.coroutines.withContext
 
 @Composable
 fun CommentButton(tweet: Tweet) {
-    var commentCount by remember { mutableIntStateOf(tweet.commentCount) }
+    val commentCount by remember { mutableIntStateOf(tweet.commentCount) }
     val coroutineScope = rememberCoroutineScope()
 
     IconButton(onClick = {
@@ -56,14 +56,15 @@ fun CommentButton(tweet: Tweet) {
 }
 
 @Composable
-fun LikeButton(viewModel: TweetViewModel) {
-    val tweet by viewModel.tweet.collectAsState()
-    val likeCount = tweet?.likeCount ?: 0
-    val hasLiked = tweet?.hasLiked ?: false
+fun LikeButton(tweet: Tweet, viewModel: TweetViewModel) {
+    var likeCount by remember { mutableIntStateOf(tweet.likeCount) }
+    var hasLiked by remember { mutableStateOf(tweet.hasLiked) }
 
     IconButton(onClick = {
-        viewModel.likeTweet()
-        println("Like button pressed. Current tweet: $tweet")
+        viewModel.likeTweet(tweet)
+        likeCount = tweet.likeCount
+        hasLiked = tweet.hasLiked
+        println("Like button pressed. Current tweet: $likeCount")
     }) {
         Row(horizontalArrangement = Arrangement.Center) {
             Icon(

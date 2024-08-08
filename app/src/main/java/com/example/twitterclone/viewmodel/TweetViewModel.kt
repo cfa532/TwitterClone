@@ -9,6 +9,7 @@ import com.example.twitterclone.model.User
 import com.example.twitterclone.repository.TweetRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
@@ -19,19 +20,15 @@ class TweetViewModel(
 ) : ViewModel() {
 
     private val _tweet = MutableStateFlow<Tweet?>(null)
-    val tweet: StateFlow<Tweet?> get() = _tweet.asStateFlow()
+//    val tweet: StateFlow<Tweet?> get() = _tweet.asStateFlow()
 
     private val _author = MutableStateFlow<User?>(null)
     val author: StateFlow<User?> get() = _author.asStateFlow()
 
-    fun likeTweet() {
+    fun likeTweet(tweet: Tweet) {
         viewModelScope.launch {
-            val currentTweet = _tweet.value
-            if (currentTweet != null) {
-                val likedTweet = withContext(Dispatchers.IO) {
-                    HproseInstance.likeTweet(currentTweet)
-                }
-                _tweet.value = likedTweet
+            withContext(Dispatchers.IO) {
+                HproseInstance.likeTweet(tweet)
             }
         }
     }
