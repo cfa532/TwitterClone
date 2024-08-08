@@ -1,7 +1,5 @@
 package com.example.twitterclone.viewmodel
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.twitterclone.model.HproseInstance
@@ -21,10 +19,10 @@ class TweetViewModel(
 ) : ViewModel() {
 
     private val _tweet = MutableStateFlow<Tweet?>(null)
-    val tweet: StateFlow<Tweet?> = _tweet.asStateFlow()
+    val tweet: StateFlow<Tweet?> get() = _tweet.asStateFlow()
 
-    private var _author = MutableLiveData<User>()
-    val author: LiveData<User> get() = _author
+    private val _author = MutableStateFlow<User?>(null)
+    val author: StateFlow<User?> get() = _author.asStateFlow()
 
     fun likeTweet() {
         viewModelScope.launch {
@@ -38,12 +36,12 @@ class TweetViewModel(
         }
     }
 
-    fun getAuthor(authorId: MimeiId) {
+    fun setTweetAuthor() {
         viewModelScope.launch {
             val user = withContext(Dispatchers.IO) {
-                HproseInstance.getUserPreview(authorId)
+                _tweet.value?.let { HproseInstance.getUserPreview(it.authorId) }
             }
-            user.let { _author.value = it }
+            _author.value = user
         }
     }
 
