@@ -6,10 +6,12 @@
     const RETWEET_COUNT = "tweet_retweet_count"
     const COMMENT_COUNT = "tweet_comment_count"
     const LIKE_COUNT = "tweet_like_count"
-
     const TWT_CONTENT_KEY = "core_data_of_tweet"
+    const LIKE_LIST = "tweet_like_list"
+    const BOOKMARK_LIST = "tweet_bookmark_list"
 
     let tweetId = request["tweetid"]
+    let userId = request["userid"]
     console.log("tweet mid=", tweetId)
     let mmsid = lapi.MMOpen("", tweetId, "last")
     let tweet = lapi.Get(mmsid, TWT_CONTENT_KEY)
@@ -19,8 +21,13 @@
     let commentCount = lapi.Get(mmsid, COMMENT_COUNT)
     let likeCount = lapi.Get(mmsid, LIKE_COUNT)
 
+    // check if user has bookmarked or liked the tweet
+    let hasLiked = lapi.Hget(mmsid, LIKE_LIST, userId)
+    let hasBookmarked = lapi.Hget(mmsid, BOOKMARK_LIST, userId)
+
     return {
         // tweet core data
+        "mid": tweet.mid,
         "authorId": tweet.authorId,
         "content": tweet.content,
         "attachments": tweet.attachments,
@@ -30,6 +37,9 @@
         "bookmarkCount": bookmarkCount,
         "retweetCount": retweetCount,
         "commentCount": commentCount,
-        "likeCount": likeCount
+        "likeCount": likeCount,
+
+        "hasLiked": hasLiked ? true : false,
+        "hasBookmarked": hasBookmarked ? true : false
     }
 })()
