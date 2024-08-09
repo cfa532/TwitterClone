@@ -236,19 +236,21 @@ object HproseInstance {
         return tweet
     }
 
-    fun bookmarkTweet(tweet: Tweet) {
+    fun bookmarkTweet(tweet: Tweet): Tweet {
         val method = "bookmark"
         val url =
             "$BASE_URL/entry?&aid=$TWBE_APP_ID&ver=last&entry=$method&tweetid=${tweet.mid}&userid=${appUser.mid}"
         val request = Request.Builder().url(url).build()
         val response = httpClient.newCall(request).execute()
         if (response.isSuccessful) {
-            val responseBody = response.body?.string() ?: return
+            val responseBody = response.body?.string() ?: return tweet
             val gson = Gson()
             val res = gson.fromJson(responseBody, Map::class.java) as Map<*, *>
-            tweet.hasBookmarked = res["hasBookmarked"] as Boolean
-            tweet.bookmarkCount = (res["count"] as Double).toInt()
+            val hasBookmarked = res["hasBookmarked"] as Boolean
+            val bookmarkCount = (res["count"] as Double).toInt()
+            return tweet.copy(hasBookmarked = hasBookmarked, bookmarkCount = bookmarkCount)
         }
+        return tweet
     }
 
     // Upload data from an InputStream to IPFS and return the resulting MimeiId.

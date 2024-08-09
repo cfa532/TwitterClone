@@ -37,6 +37,19 @@ class TweetViewModel(
         }
     }
 
+    fun bookmarkTweet(tweet: Tweet) {
+        viewModelScope.launch {
+            try {
+                withContext(Dispatchers.Default) {
+                    _tweet.value = HproseInstance.bookmarkTweet(tweet)
+                }
+            } catch (e: Exception) {
+                // Handle the exception, e.g., log it or show a message to the user
+                e.printStackTrace()
+            }
+        }
+    }
+
     fun setTweetAuthor() {
         viewModelScope.launch {
             val user = withContext(Dispatchers.IO) {

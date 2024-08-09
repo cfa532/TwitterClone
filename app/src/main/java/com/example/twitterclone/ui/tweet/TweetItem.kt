@@ -74,9 +74,9 @@ fun TweetItem(
             Row {
                 LikeButton(it, viewModel)
                 Spacer(modifier = Modifier.width(8.dp)) // Add some space between the two texts
-                BookmarkButton(it)
+                BookmarkButton(it, viewModel)
                 Spacer(modifier = Modifier.width(8.dp))
-                CommentButton(it)
+                CommentButton(it, viewModel)
             }
         }
 

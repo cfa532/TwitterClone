@@ -30,7 +30,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 @Composable
-fun CommentButton(tweet: Tweet) {
+fun CommentButton(tweet: Tweet, viewModel: TweetViewModel) {
     val commentCount by remember { mutableIntStateOf(tweet.commentCount) }
     val coroutineScope = rememberCoroutineScope()
 
@@ -76,30 +76,22 @@ fun LikeButton(tweet: Tweet, viewModel: TweetViewModel) {
 }
 
 @Composable
-fun BookmarkButton(tweet: Tweet) {
-    var bookmarkCount by remember { mutableIntStateOf(tweet.bookmarkCount) }
-    var hasBookmarked by remember { mutableStateOf(tweet.hasBookmarked) }
-    val coroutineScope = rememberCoroutineScope()
+fun BookmarkButton(tweet: Tweet, viewModel: TweetViewModel) {
+    val t by viewModel.tweet.collectAsState(initial = tweet)
 
     IconButton(onClick = {
-        coroutineScope.launch {
-            withContext(Dispatchers.IO) {
-                bookmarkTweet(tweet)
-                bookmarkCount = tweet.bookmarkCount
-                hasBookmarked = tweet.hasBookmarked
-            }
-        }
+        viewModel.bookmarkTweet(tweet)
     }) {
         Row(horizontalArrangement = Arrangement.Center) {
             Icon(
-                painter = painterResource(id = if (hasBookmarked) R.drawable.ic_bookmark_fill else R.drawable.ic_bookmark),
+                painter = painterResource(id = if (t?.hasBookmarked == true) R.drawable.ic_bookmark_fill else R.drawable.ic_bookmark),
                 contentDescription = "Like",
                 modifier = Modifier.size(ButtonDefaults.IconSize),
-                tint = if (hasBookmarked) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary
+                tint = if (t?.hasBookmarked == true) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary
             )
             Spacer(modifier = Modifier.width(4.dp))
             Text(
-                text = "$bookmarkCount",
+                text = "${t?.bookmarkCount}",
                 style = MaterialTheme.typography.labelSmall
             )
         }
