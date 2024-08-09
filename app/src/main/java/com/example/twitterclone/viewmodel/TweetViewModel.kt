@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -20,15 +21,21 @@ class TweetViewModel(
 ) : ViewModel() {
 
     private val _tweet = MutableStateFlow<Tweet?>(null)
-//    val tweet: StateFlow<Tweet?> get() = _tweet.asStateFlow()
+    val tweet: StateFlow<Tweet?> get() = _tweet.asStateFlow()
 
     private val _author = MutableStateFlow<User?>(null)
     val author: StateFlow<User?> get() = _author.asStateFlow()
 
     fun likeTweet(tweet: Tweet) {
         viewModelScope.launch {
-            withContext(Dispatchers.IO) {
-                HproseInstance.likeTweet(tweet)
+            try {
+                withContext(Dispatchers.IO) {
+                    _tweet.value = HproseInstance.likeTweet(tweet)
+//                    _tweet.value = _tweet.value?.copy(likeCount = updatedTweet.likeCount, hasLiked = updatedTweet.hasLiked)
+                }
+            } catch (e: Exception) {
+                // Handle the exception, e.g., log it or show a message to the user
+                e.printStackTrace()
             }
         }
     }

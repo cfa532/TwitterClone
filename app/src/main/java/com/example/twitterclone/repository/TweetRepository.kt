@@ -1,9 +1,13 @@
 package com.example.twitterclone.repository
 
+import com.example.twitterclone.model.HproseInstance
 import com.example.twitterclone.model.MimeiId
 import com.example.twitterclone.model.Tweet
+import hprose.client.HproseClient
 
-class TweetRepository {
+class TweetRepository (
+) {
+    private val hproseClient = HproseInstance
     private val tweets = mutableListOf<Tweet>()
 
     fun addTweet(tweet: Tweet): List<Tweet> {
@@ -12,6 +16,7 @@ class TweetRepository {
     }
 
     fun getTweet(tweetMid: MimeiId): Tweet {
+        hproseClient.appUser
         return tweets.find { it.mid == tweetMid } ?: throw IllegalArgumentException("Tweet not found")
     }
 
