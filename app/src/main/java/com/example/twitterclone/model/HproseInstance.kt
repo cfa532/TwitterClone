@@ -8,9 +8,7 @@ import com.example.twitterclone.httpClient
 import com.example.twitterclone.network.Gadget
 import com.google.gson.Gson
 import hprose.client.HproseClient
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers.IO
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
@@ -231,8 +229,8 @@ object HproseInstance {
             val responseBody = response.body?.string() ?: return tweet
             val gson = Gson()
             val res = gson.fromJson(responseBody, Map::class.java) as Map<*, *>
-//            tweet.hasLiked = res["hasLiked"] as Boolean
-//            tweet.likeCount = (res["count"] as Double).toInt()
+
+            // return a new object for recomposition to work.
             return tweet.copy(hasLiked = res["hasLiked"] as Boolean, likeCount = (res["count"] as Double).toInt())
         }
         return tweet

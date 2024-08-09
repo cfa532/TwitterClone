@@ -11,7 +11,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -24,7 +23,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.example.twitterclone.R
 import com.example.twitterclone.model.HproseInstance.bookmarkTweet
-import com.example.twitterclone.model.HproseInstance.likeTweet
 import com.example.twitterclone.model.Tweet
 import com.example.twitterclone.viewmodel.TweetViewModel
 import kotlinx.coroutines.Dispatchers
@@ -57,20 +55,16 @@ fun CommentButton(tweet: Tweet) {
 @Composable
 fun LikeButton(tweet: Tweet, viewModel: TweetViewModel) {
     val t by viewModel.tweet.collectAsState(initial = tweet)
-    var likeCount by remember { mutableIntStateOf(tweet.likeCount) }
-    var hasLiked by remember { mutableStateOf(tweet.hasLiked) }
-    val coroutineScope = rememberCoroutineScope()
+
     IconButton(onClick = {
         viewModel.likeTweet(tweet)
-        println("Like button: $t")
-
     }) {
         Row(horizontalArrangement = Arrangement.Center) {
             Icon(
-                painter = painterResource(id = if (hasLiked) R.drawable.ic_heart_fill else R.drawable.ic_heart),
+                painter = painterResource(id = if (t?.hasLiked == true) R.drawable.ic_heart_fill else R.drawable.ic_heart),
                 contentDescription = "Like",
                 modifier = Modifier.size(ButtonDefaults.IconSize),
-                tint = if (hasLiked) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary
+                tint = if (t?.hasLiked == true) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary
             )
             Spacer(modifier = Modifier.width(6.dp))
             Text(

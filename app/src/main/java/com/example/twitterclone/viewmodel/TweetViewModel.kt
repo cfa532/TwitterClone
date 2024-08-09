@@ -9,10 +9,8 @@ import com.example.twitterclone.model.User
 import com.example.twitterclone.repository.TweetRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -31,7 +29,6 @@ class TweetViewModel(
             try {
                 withContext(Dispatchers.IO) {
                     _tweet.value = HproseInstance.likeTweet(tweet)
-//                    _tweet.value = _tweet.value?.copy(likeCount = updatedTweet.likeCount, hasLiked = updatedTweet.hasLiked)
                 }
             } catch (e: Exception) {
                 // Handle the exception, e.g., log it or show a message to the user
