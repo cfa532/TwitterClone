@@ -3,6 +3,7 @@ package com.example.twitterclone.model
 import android.content.Context
 import android.net.Uri
 import android.util.Log
+import androidx.compose.runtime.rememberCoroutineScope
 import com.example.twitterclone.R
 import com.example.twitterclone.httpClient
 import com.example.twitterclone.network.Gadget
@@ -212,6 +213,24 @@ object HproseInstance {
             return t
         }
         return null
+    }
+
+    fun retweetCount(tweet: Tweet): Tweet {
+        val method = "retweet_count"
+        val url =
+            "$BASE_URL/entry?&aid=$TWBE_APP_ID&ver=last&entry=$method&tweetid=${tweet.mid}"
+        val request = Request.Builder().url(url).build()
+        println(request.url)
+        val response = httpClient.newCall(request).execute()
+        if (response.isSuccessful) {
+            val responseBody = response.body?.string() ?: return tweet
+            val gson = Gson()
+            val count = gson.fromJson(responseBody, Int::class.java) as Int
+
+            // return a new object for recomposition to work.
+            return tweet.copy(retweetCount = count)
+        }
+        return tweet
     }
 
     fun addComment() {

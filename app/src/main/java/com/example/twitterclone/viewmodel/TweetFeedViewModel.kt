@@ -18,10 +18,11 @@ class TweetFeedViewModel(
     private val tweetRepository: TweetRepository = TweetRepository(),
 ) : ViewModel() {
 
-    private var startTimestamp = mutableLongStateOf(System.currentTimeMillis())     // current time
-    private var endTimestamp = mutableLongStateOf(System.currentTimeMillis() - 1000 * 60 * 60 * 72)     // previous time
     private val _tweets = MutableStateFlow<List<Tweet>>(emptyList())
     val tweets: StateFlow<List<Tweet>> get() = _tweets
+
+    private var startTimestamp = mutableLongStateOf(System.currentTimeMillis())     // current time
+    private var endTimestamp = mutableLongStateOf(System.currentTimeMillis() - 1000 * 60 * 60 * 72)     // previous time
 
     init {
 //        getTweets(startTimestamp.longValue, endTimestamp.longValue)
@@ -48,20 +49,12 @@ class TweetFeedViewModel(
         }
     }
 
-    fun uploadTweet(content: String, isPrivate: Boolean, attachments: List<MimeiId>, commentOnly: Boolean=false) {
-        val tweet = Tweet(
-            authorId = HproseInstance.appUser.mid,
-            content = content,
-            isPrivate = isPrivate,
-            attachments = attachments,
-        )
-        viewModelScope.launch {
-            withContext(Dispatchers.IO) {
-                HproseInstance.uploadTweet(tweet, false)?.let { newTweet ->
-                    _tweets.update { currentTweets ->
-                        // add new tweet at top of the list
-                        listOf(newTweet) + currentTweets
-                    }
+    fun uploadTweet(tweet: Tweet) {
+        viewModelScope.launch(Dispatchers.IO) {
+            HproseInstance.uploadTweet(tweet, false)?.let { newTweet ->
+                _tweets.update { currentTweets ->
+                    // add new tweet at top of the list
+                    listOf(newTweet) + currentTweets
                 }
             }
         }

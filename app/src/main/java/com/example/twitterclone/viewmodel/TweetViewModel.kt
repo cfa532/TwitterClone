@@ -3,6 +3,8 @@ package com.example.twitterclone.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.twitterclone.model.HproseInstance
+import com.example.twitterclone.model.HproseInstance.appUser
+import com.example.twitterclone.model.HproseInstance.uploadTweet
 import com.example.twitterclone.model.MimeiId
 import com.example.twitterclone.model.Tweet
 import com.example.twitterclone.model.User
@@ -24,12 +26,23 @@ class TweetViewModel(
     private val _author = MutableStateFlow<User?>(null)
     val author: StateFlow<User?> get() = _author.asStateFlow()
 
+    fun retweet(tweet: Tweet) {
+        viewModelScope.launch(Dispatchers.Default) {
+            val retweet = Tweet(
+                content = "",
+                timestamp = System.currentTimeMillis(),
+                authorId = appUser.mid,
+                original = tweet.mid
+            )
+//            uploadTweet(retweet)
+            _tweet.value = HproseInstance.retweetCount(tweet)
+        }
+    }
+
     fun likeTweet(tweet: Tweet) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             try {
-                withContext(Dispatchers.IO) {
-                    _tweet.value = HproseInstance.likeTweet(tweet)
-                }
+                _tweet.value = HproseInstance.likeTweet(tweet)
             } catch (e: Exception) {
                 // Handle the exception, e.g., log it or show a message to the user
                 e.printStackTrace()
@@ -38,11 +51,9 @@ class TweetViewModel(
     }
 
     fun bookmarkTweet(tweet: Tweet) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.Default) {
             try {
-                withContext(Dispatchers.Default) {
-                    _tweet.value = HproseInstance.bookmarkTweet(tweet)
-                }
+                _tweet.value = HproseInstance.bookmarkTweet(tweet)
             } catch (e: Exception) {
                 // Handle the exception, e.g., log it or show a message to the user
                 e.printStackTrace()
@@ -61,18 +72,5 @@ class TweetViewModel(
 
     fun setTweet(tweet: Tweet) {
         _tweet.value = tweet
-    }
-
-    fun retweet(tweetMid: MimeiId, authorMid: MimeiId) {
-        viewModelScope.launch {
-            val originalTweet = tweetRepository.getTweet(tweetMid)
-            val retweet = Tweet(
-                content = originalTweet.content,
-                timestamp = System.currentTimeMillis(),
-                authorId = authorMid,
-                original = originalTweet.mid
-            )
-            tweetRepository.addTweet(retweet)   // update tweet with Id returned from server
-        }
     }
 }

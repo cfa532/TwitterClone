@@ -28,6 +28,7 @@ import com.example.twitterclone.ui.compose.CommentButton
 import com.example.twitterclone.ui.compose.LikeButton
 import com.example.twitterclone.ui.compose.MediaItem
 import com.example.twitterclone.ui.compose.MediaPreviewGrid
+import com.example.twitterclone.ui.compose.RetweetButton
 import com.example.twitterclone.viewmodel.TweetViewModel
 
 @Composable
@@ -71,12 +72,16 @@ fun TweetItem(
         }
         // Use a Row to display likes and bookmarks horizontally
         tweet.let {
-            Row {
+            Row(
+                modifier = Modifier.fillMaxWidth()
+            ) {
                 LikeButton(it, viewModel)
                 Spacer(modifier = Modifier.width(8.dp)) // Add some space between the two texts
                 BookmarkButton(it, viewModel)
                 Spacer(modifier = Modifier.width(8.dp))
                 CommentButton(it, viewModel)
+                Spacer(modifier = Modifier.width(8.dp))
+                RetweetButton(it, viewModel)
             }
         }
 

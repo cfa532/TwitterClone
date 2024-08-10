@@ -31,14 +31,10 @@ import kotlinx.coroutines.withContext
 
 @Composable
 fun CommentButton(tweet: Tweet, viewModel: TweetViewModel) {
-    val commentCount by remember { mutableIntStateOf(tweet.commentCount) }
-    val coroutineScope = rememberCoroutineScope()
+    val t by viewModel.tweet.collectAsState(initial = tweet)
 
     IconButton(onClick = {
-        coroutineScope.launch {
-            withContext(Dispatchers.IO) {
-            }
-        }
+        // open comment
     }) {
         Row(horizontalArrangement = Arrangement.Center) {
             Icon(
@@ -47,7 +43,28 @@ fun CommentButton(tweet: Tweet, viewModel: TweetViewModel) {
                 modifier = Modifier.size(ButtonDefaults.IconSize)
             )
             Spacer(modifier = Modifier.width(6.dp))
-            Text(text = "$commentCount", style = MaterialTheme.typography.labelSmall)
+            Text(text = "${t?.commentCount}", style = MaterialTheme.typography.labelSmall)
+        }
+    }
+}
+
+@Composable
+fun RetweetButton(tweet: Tweet, viewModel: TweetViewModel) {
+    val t by viewModel.tweet.collectAsState(initial = tweet)
+
+    IconButton(onClick = {
+        t?.let { viewModel.retweet(it) }
+    }) {
+        Row(horizontalArrangement = Arrangement.Center) {
+            Icon(
+                painter = painterResource(id = R.drawable.ic_squarepath),
+                contentDescription = "forward",
+                modifier = Modifier.size(ButtonDefaults.IconSize))
+            Spacer(modifier = Modifier.width(6.dp))
+            Text(
+                text = "${t?.retweetCount}",
+                style = MaterialTheme.typography.labelSmall
+            )
         }
     }
 }
@@ -57,7 +74,7 @@ fun LikeButton(tweet: Tweet, viewModel: TweetViewModel) {
     val t by viewModel.tweet.collectAsState(initial = tweet)
 
     IconButton(onClick = {
-        viewModel.likeTweet(tweet)
+        t?.let { viewModel.likeTweet(it) }
     }) {
         Row(horizontalArrangement = Arrangement.Center) {
             Icon(
@@ -80,7 +97,7 @@ fun BookmarkButton(tweet: Tweet, viewModel: TweetViewModel) {
     val t by viewModel.tweet.collectAsState(initial = tweet)
 
     IconButton(onClick = {
-        viewModel.bookmarkTweet(tweet)
+        t?.let { viewModel.bookmarkTweet(it) }
     }) {
         Row(horizontalArrangement = Arrangement.Center) {
             Icon(
