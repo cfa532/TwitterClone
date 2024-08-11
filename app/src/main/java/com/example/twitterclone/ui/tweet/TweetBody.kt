@@ -41,7 +41,8 @@ fun TweetBody(tweet: Tweet, viewModel: TweetViewModel) {
             .heightIn(max = 400.dp) // Set a specific height for the grid
     ) {
         val mediaItems = tweet.attachments?.map {
-            MediaItem(getMediaUrl(it).toString())
+            tweet.author?.baseUrl?.let { it1 -> getMediaUrl(it, it1).toString() }
+                ?.let { it2 -> MediaItem(it2) }
         }
         mediaItems?.let { MediaPreviewGrid(it) }
     }
@@ -66,13 +67,15 @@ fun TweetBody(tweet: Tweet, viewModel: TweetViewModel) {
 fun TweetHeader(tweet: Tweet) {
     // Use a Row to align author name and potential verification badge
     Row(verticalAlignment = Alignment.CenterVertically) {
-        CircularImage(
-            model = getMediaUrl(tweet.author?.avatar),
-            contentDescription = "User Avatar",
-            modifier = Modifier
-                .size(32.dp)
-                .clip(CircleShape)
-        )
+        tweet.author?.baseUrl?.let { getMediaUrl(tweet.author?.avatar, it) }?.let {
+            CircularImage(
+                model = it,
+                contentDescription = "User Avatar",
+                modifier = Modifier
+                    .size(32.dp)
+                    .clip(CircleShape)
+            )
+        }
         Spacer(modifier = Modifier.padding(horizontal = 6.dp))
         Text(text = tweet.author?.name ?: "No One", style = MaterialTheme.typography.bodyMedium)
     }

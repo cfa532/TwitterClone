@@ -24,7 +24,7 @@ import java.net.URLEncoder
 
 // Encapsulate Hprose client and related operations in a singleton object.
 object HproseInstance {
-    private const val BASE_URL = "http://192.168.0.61:8081"
+    private const val BASE_URL = "http://10.0.2.2:8081"
     const val TWBE_APP_ID = "d4lRyhABgqOnqY4bURSm_T-4FZ4"
 
     private const val CHUNK_SIZE = 50 * 1024 * 1024 // 10MB in bytes
@@ -61,7 +61,10 @@ object HproseInstance {
                 val url = "$BASE_URL/entry?&aid=$TWBE_APP_ID&ver=last&entry=$method&userid=$appMid"
                 val request = Request.Builder().url(url).build()
                 val response = httpClient.newCall(request).execute()
-                Json.decodeFromString<User>(response.body?.string() ?: "")
+                val user = Json.decodeFromString<User>(response.body?.string() ?: "")
+                user.baseUrl = BASE_URL
+                InMemoryData.users.add(user)
+                user
             }
         }
     }
@@ -184,7 +187,7 @@ object HproseInstance {
                 tweet.isPrivate = false
 
                 tweet.originalTweetId?.let {
-                    val rt = InMemoryData.tweets.value.find { t -> t.mid == tweet.originalTweetId }
+                    val rt = InMemoryData._tweets.value.find { t -> t.mid == tweet.originalTweetId }
                     rt?.let { it1 ->
                         // isPrivate could be null, means its
                         tweet.originalAuthor = it1.author
@@ -203,9 +206,9 @@ object HproseInstance {
                     ori.isPrivate = true
                     tweet.originalTweet = ori
                     tweet.originalAuthor = author
-                    InMemoryData.tweets.update { listOf(ori) }
+                    InMemoryData._tweets.update { listOf(ori) }
                 }
-                InMemoryData.tweets.update { listOf(tweet) }
+                InMemoryData._tweets.update { listOf(tweet) }
                 return tweet
             }
         }
@@ -223,7 +226,7 @@ object HproseInstance {
         t.hasBookmarked = null
         val json = URLEncoder.encode(Json.encodeToString(t), "utf-8")   // Null attributes ignored
         val url =
-            "$BASE_URL/entry?&aid=$TWBE_APP_ID&ver=last&entry=$method&tweet=$json&commentonly=$commentOnly"
+            "${appUser.baseUrl}/entry?&aid=$TWBE_APP_ID&ver=last&entry=$method&tweet=$json&commentonly=$commentOnly"
         println("UploadTweet: $url")
         val request = Request.Builder().url(url).build()
         val response = httpClient.newCall(request).execute()
@@ -234,10 +237,11 @@ object HproseInstance {
         return null
     }
 
-    fun retweetCount(tweet: Tweet): Tweet {
+    fun retweetCount(tweet: Tweet): Tweet? {
+        val author = tweet.author ?: return null
         val method = "retweet_count"
         val url =
-            "$BASE_URL/entry?&aid=$TWBE_APP_ID&ver=last&entry=$method&tweetid=${tweet.mid}"
+            "${author.baseUrl}/entry?&aid=$TWBE_APP_ID&ver=last&entry=$method&tweetid=${tweet.mid}"
         val request = Request.Builder().url(url).build()
         println(request.url)
         val response = httpClient.newCall(request).execute()
@@ -256,10 +260,11 @@ object HproseInstance {
 
     }
 
-    fun likeTweet(tweet: Tweet): Tweet {
+    fun likeTweet(tweet: Tweet): Tweet? {
+        val author = tweet.author ?: return null
         val method = "liked_count"
         val url =
-            "$BASE_URL/entry?&aid=$TWBE_APP_ID&ver=last&entry=$method&tweetid=${tweet.mid}&userid=${appUser.mid}"
+            "${author.baseUrl}/entry?&aid=$TWBE_APP_ID&ver=last&entry=$method&tweetid=${tweet.mid}&userid=${appUser.mid}"
         val request = Request.Builder().url(url).build()
         val response = httpClient.newCall(request).execute()
         if (response.isSuccessful) {
@@ -274,10 +279,11 @@ object HproseInstance {
         return tweet
     }
 
-    fun bookmarkTweet(tweet: Tweet): Tweet {
+    fun bookmarkTweet(tweet: Tweet): Tweet? {
+        val author = tweet.author ?: return null
         val method = "bookmark"
         val url =
-            "$BASE_URL/entry?&aid=$TWBE_APP_ID&ver=last&entry=$method&tweetid=${tweet.mid}&userid=${appUser.mid}"
+            "${author.baseUrl}/entry?&aid=$TWBE_APP_ID&ver=last&entry=$method&tweetid=${tweet.mid}&userid=${appUser.mid}"
         val request = Request.Builder().url(url).build()
         val response = httpClient.newCall(request).execute()
         if (response.isSuccessful) {
@@ -330,12 +336,12 @@ object HproseInstance {
         }
     }
 
-    fun getMediaUrl(mid: MimeiId?): Any {
+    fun getMediaUrl(mid: MimeiId?, baseUrl: String): Any {
         if (mid?.isNotEmpty() == true) {
             return if (mid.length > 27) {
-                "$BASE_URL/ipfs/$mid"
+                "$baseUrl/ipfs/$mid"
             } else {
-                "$BASE_URL/mm/$mid"
+                "$baseUrl/mm/$mid"
             }
         }
         return R.drawable.ic_user_avatar

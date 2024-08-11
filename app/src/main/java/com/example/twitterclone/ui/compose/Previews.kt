@@ -38,7 +38,7 @@ import kotlinx.coroutines.withContext
 data class MediaItem( val url: String )
 
 @Composable
-fun MediaPreviewGrid(mediaItems: List<MediaItem>) {
+fun MediaPreviewGrid(mediaItems: List<MediaItem?>) {
     val maxItems = 4 // 2 rows * 2 columns = 4 items
     val limitedMediaList = mediaItems.take(maxItems)
 
@@ -48,7 +48,9 @@ fun MediaPreviewGrid(mediaItems: List<MediaItem>) {
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         items (limitedMediaList) { mediaItem ->
-            MediaItemPreview(mediaItem)
+            if (mediaItem != null) {
+                MediaItemPreview(mediaItem)
+            }
         }
     }
 }

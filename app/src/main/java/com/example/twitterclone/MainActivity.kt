@@ -99,13 +99,15 @@ fun MainTopAppBar(navController: NavHostController) {
         },
         navigationIcon = {
             IconButton(onClick = { navController.navigate("preferences") }) {
-                CircularImage(
-                    model = getMediaUrl(appUser.avatar),
-                    contentDescription = "User Avatar",
-                    modifier = Modifier
-                        .padding(4.dp)
-                        .size(40.dp)
-                )
+                appUser.baseUrl?.let { getMediaUrl(appUser.avatar, it) }?.let {
+                    CircularImage(
+                        model = it,
+                        contentDescription = "User Avatar",
+                        modifier = Modifier
+                            .padding(4.dp)
+                            .size(40.dp)
+                    )
+                }
             }
         }
     )

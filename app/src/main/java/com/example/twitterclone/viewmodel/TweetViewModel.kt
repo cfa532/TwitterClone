@@ -40,14 +40,14 @@ class TweetViewModel(
                     originalAuthorId = tweet.authorId)
             }
             uploadTweet(retweet)
-            _tweet.value = HproseInstance.retweetCount(tweet)
+            _tweet.value = HproseInstance.retweetCount(tweet) ?: _tweet.value
         }
     }
 
     fun likeTweet(tweet: Tweet) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                _tweet.value = HproseInstance.likeTweet(tweet)
+                _tweet.value = HproseInstance.likeTweet(tweet) ?: _tweet.value
             } catch (e: Exception) {
                 e.printStackTrace()
             }
@@ -57,7 +57,7 @@ class TweetViewModel(
     fun bookmarkTweet(tweet: Tweet) {
         viewModelScope.launch(Dispatchers.Default) {
             try {
-                _tweet.value = HproseInstance.bookmarkTweet(tweet)
+                _tweet.value = HproseInstance.bookmarkTweet(tweet) ?: _tweet.value
             } catch (e: Exception) {
                 e.printStackTrace()
             }
