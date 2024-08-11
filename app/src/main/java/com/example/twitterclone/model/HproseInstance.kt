@@ -94,6 +94,7 @@ object HproseInstance {
             println(providerLists)
             val ipAddresses = providerLists[0].jsonArray.map { it.jsonArray }
             Gadget.getFirstReachableUri(ipAddresses, userId)?.let { u ->
+                println("Get user=$u")
                 InMemoryData.users.add(u)
             }
         }

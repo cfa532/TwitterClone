@@ -23,6 +23,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 //)
 
 object InMemoryData {
-    var users: MutableList<User> = emptyList<User>().toMutableList()
+    var users: MutableSet<User> = emptySet<User>().toMutableSet()
     var tweets: MutableStateFlow<List<Tweet>> = MutableStateFlow(emptyList())
 }

@@ -45,7 +45,6 @@ class MainActivity : ComponentActivity() {
     companion object {
         init {
             // init global data here
-            Gadget.initialize(httpClient)
         }
     }
 

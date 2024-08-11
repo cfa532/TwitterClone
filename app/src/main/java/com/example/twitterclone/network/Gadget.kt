@@ -9,8 +9,13 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.jsonArray
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -19,11 +24,6 @@ import java.net.URL
 import java.net.UnknownHostException
 
 object Gadget {
-    private var httpClient: OkHttpClient? = null
-
-    fun initialize( httpClient: OkHttpClient) {
-        this.httpClient = httpClient
-    }
 
     fun downloadFileHeader(url: String, byteCount: Int = 1024): ByteArray? {
         val client = OkHttpClient()
@@ -73,17 +73,17 @@ object Gadget {
         return true
     }
 
-    private fun isReachable(mid: MimeiId, uri: URL, timeout: Int = 1000): User? {
+    private fun isReachable(mid: MimeiId, ip: String, timeout: Int = 1000): User? {
         try {
             val method = "get_author_core_data"
             val url =
-                "http://${uri.path}/entry?&aid=$TWBE_APP_ID&ver=last&entry=$method&userid=$mid"
+                "http://$ip/entry?&aid=$TWBE_APP_ID&ver=last&entry=$method&userid=$mid"
             val request = Request.Builder().url(url).build()
             val response = com.example.twitterclone.httpClient.newCall(request).execute()
             if (response.isSuccessful) {
                 val responseBody = response.body?.string() ?: return null
                 val user = Json.decodeFromString<User>(responseBody)
-                user.baseUrl = uri.path
+                user.baseUrl = "http://$ip"
                 return user
             }
         } catch (e: Exception) {
@@ -96,22 +96,20 @@ object Gadget {
     suspend fun getFirstReachableUri(ipList: List<JsonArray>, mid: MimeiId): User? = coroutineScope {
         val deferreds = ipList.map { ip ->
             async {
-                val uri = getUriFromIp(ip[0].toString().replace("^\"|\"$".toRegex(), ""))
-                isReachable(mid, uri)
+                val addr = removeParentheses(ip[0])
+                isReachable(mid, addr)
             }
         }
         deferreds.awaitAll().firstOrNull { it != null }
     }
 
-    // ip is in the format of "125.229.161.122:8081" or "[2001:b011:e606:98c5:3be9:a5f3:39c4:ff36]:8081"
-    private fun getUriFromIp(ip: String): URL {
-        val (host, port) = if (ip.startsWith("[")) { // IPv6 address
-            val parts = ip.substring(1, ip.length - 1).split("]:")
-            parts[0] to parts[1].toInt()
-        } else { // IPv4 address
-            val parts = ip.split(":")
-            parts[0] to parts[1].toInt()
+
+    private fun removeParentheses(jsonElement: JsonElement): String {
+        return when (jsonElement) {
+            is JsonPrimitive -> jsonElement.content
+            is JsonObject -> jsonElement.toString() // For objects, you might want to handle specific properties
+            is JsonArray -> jsonElement.joinToString(", ") { removeParentheses(it) } // Recursively handle array elements
+            else -> "" // Handle other types as needed
         }
-        return URL("http://$host:$port")
     }
 }
