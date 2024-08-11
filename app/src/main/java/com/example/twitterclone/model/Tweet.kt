@@ -9,7 +9,18 @@ data class Tweet(
     val authorId: MimeiId,        // mid of the author, is also the mimei database Id
     var content: String,
     val timestamp: Long = System.currentTimeMillis(),
-    val original: MimeiId?= null, // this is retweet of the original tweet
+
+    val originalTweetId: MimeiId? = null, // this is retweet id of the original tweet
+    val originalAuthorId: MimeiId? = null,  // authorId of the forwarded tweet
+
+    // the following five attributes are for display only. Not stored in database.
+    var author: User? = null,
+    var originalAuthor: User? = null,
+    var originalTweet: Tweet? = null,        // the original tweet for display only.
+
+    // if the current user has liked or bookmarked this tweet
+    var hasLiked: Boolean? = false,
+    var hasBookmarked: Boolean? = false,
 
     var likeCount: Int = 0,     // Number of likes
 //    var likers: List<MimeiId> = emptyList(),     // user list that liked the tweet
@@ -29,10 +40,6 @@ data class Tweet(
     var attachments: List<MimeiId>? = emptyList(),
 
     var isPrivate: Boolean = false,     // Viewable by the author only if true.
-
-    // not saved in db, for display only
-    var hasLiked: Boolean = false,
-    var hasBookmarked: Boolean = false,
 )
 
 @Serializable
@@ -41,10 +48,13 @@ data class User(
     var name: String? = null,
     var username: String? = null,
     var avatar: MimeiId? = null, // Optional profile image URL
+    var baseUrl: String? = null,    // most recent url used to access user data
+    var bookmarkCount: Int = 0,
+    var likeCount: Int = 0,
+    var commentCount: Int = 0,
 
     // List of nodes authorized to the user to write tweets on.
     var nodeIds: List<MimeiId>? = null,
-
     var publicKey: String? = null,
 
     // List of tweet MIDs bookmarked by the user

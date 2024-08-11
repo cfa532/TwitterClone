@@ -32,7 +32,7 @@ fun TweetFeedScreen(navController: NavHostController, viewModel: TweetFeedViewMo
         )
         {
             items(tweets) { tweet ->
-                TweetItem(tweet)
+                if (!tweet.isPrivate) TweetItem(tweet)
             }
         }
     }

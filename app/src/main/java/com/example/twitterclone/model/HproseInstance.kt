@@ -3,13 +3,13 @@ package com.example.twitterclone.model
 import android.content.Context
 import android.net.Uri
 import android.util.Log
-import androidx.compose.runtime.rememberCoroutineScope
 import com.example.twitterclone.R
 import com.example.twitterclone.httpClient
 import com.example.twitterclone.network.Gadget
 import com.google.gson.Gson
 import hprose.client.HproseClient
 import kotlinx.coroutines.Dispatchers.IO
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
@@ -20,7 +20,6 @@ import okhttp3.Request
 import java.io.FileNotFoundException
 import java.io.InputStream
 import java.math.BigInteger
-import java.net.URL
 import java.net.URLEncoder
 
 // Encapsulate Hprose client and related operations in a singleton object.
@@ -82,51 +81,29 @@ object HproseInstance {
         }
     }
 
-    // operation too heavy
-    private suspend fun getUser(mimeiId: MimeiId): Result<Pair<URL, User>> {
-        val providerData = client.getVar("", "mmprovsips", mimeiId)
-        return try {
-            val providerLists = Json.parseToJsonElement(providerData).jsonArray
-            when {
-                providerLists.isNotEmpty() -> {
-                    val ipAddresses = providerLists[0].jsonArray.map { it.jsonArray }
-                    Gadget.getFirstReachableUri(ipAddresses, mimeiId)?.let { (url, jsonData) ->
-                        jsonData?.let {
-                            Result.success(Pair(url, Json.decodeFromString<User>(jsonData)))
-                        }
-                            ?: Result.failure(InvalidProviderDataException("Missing user data for $mimeiId"))
-                    }
-                        ?: Result.failure(ProviderNotFoundException("No reachable provider found for $mimeiId"))
-                }
-
-                else -> Result.failure(InvalidProviderDataException("Invalid provider data for $mimeiId: $providerData"))
+    // Get base url where user data can be accessed, and user data
+     suspend fun getUserBase(userId: MimeiId): User? {
+        // check if user data has been read
+        val user = InMemoryData.users.find { it.mid == userId }
+        if (user != null) {
+            return user
+        }
+        val providerData = client.getVar("", "mmprovsips", userId)
+        val providerLists = Json.parseToJsonElement(providerData).jsonArray
+        if (providerLists.isNotEmpty()) {
+            println(providerLists)
+            val ipAddresses = providerLists[0].jsonArray.map { it.jsonArray }
+            Gadget.getFirstReachableUri(ipAddresses, userId)?.let { u ->
+                InMemoryData.users.add(u)
             }
-        } catch (e: Exception) {
-            Result.failure(e)
         }
+        return null
     }
 
-    class ProviderNotFoundException(message: String) : Exception(message)
-    class InvalidProviderDataException(message: String) : Exception(message)
-
-    fun getUserPreview(userId: MimeiId = appMid): User? {
-        val method = "get_author_core_data"
-        val url = "$BASE_URL/entry?&aid=$TWBE_APP_ID&ver=last&entry=$method&userid=$userId"
-        val request = Request.Builder().url(url).build()
-        val response = httpClient.newCall(request).execute()
-        if (!response.isSuccessful) {
-            return null
-        }
-        val responseBody = response.body?.string() ?: ""
-        if (responseBody == "")
-            return null
-        return Json.decodeFromString<User>(responseBody)
-    }
-
-    fun getUserData(userId: MimeiId = appMid): User? {
+    suspend fun getUserData(userId: MimeiId = appMid): User? {
         return runCatching {
             // get each user data based on its node ip
-//            val baseUrl = getUser(userId)
+            val user = getUserBase(userId) ?: return null
             client.mmOpen("", userId, "last").let {
                 client.get(it, OWNER_DATA_KEY)?.let { userData ->
                     userData as User
@@ -166,8 +143,8 @@ object HproseInstance {
 
     // get tweets of a given author in a given span of time
     // if end is null, get all tweets
-    fun getTweetList(
-        authorId: MimeiId,
+    suspend fun getTweetList(
+        authorId: MimeiId,      // author ID of the tweets
         tweets: MutableList<Tweet>,
         startTimestamp: Long,
         endTimestamp: Long?
@@ -180,17 +157,7 @@ object HproseInstance {
                 if (score <= startTimestamp && (endTimestamp == null || score > endTimestamp)) {
                     // check if the tweet is in the tweets already.
                     if (tweets.none { t -> t.mid == tweetId }) {
-                        val method = "get_tweet"
-                        val url =
-                            "$BASE_URL/entry?&aid=$TWBE_APP_ID&ver=last&entry=$method&tweetid=$tweetId&userid=$authorId"
-                        val request = Request.Builder().url(url).build()
-                        val response = httpClient.newCall(request).execute()
-                        if (response.isSuccessful) {
-                            response.body?.string()?.let { content ->
-                                println(content)
-                                tweets += Gson().fromJson(content, Tweet::class.java)
-                            }
-                        }
+                        getTweet(tweetId, authorId)?.let {t -> tweets += t }
                     }
                 }
             }
@@ -199,18 +166,69 @@ object HproseInstance {
         Log.e("HproseInstance.getTweets", e.toString())
     }
 
+    private suspend fun getTweet(tweetId: MimeiId, authorId: MimeiId): Tweet? {
+        var author = getUserBase(authorId)?: return null
+        val method = "get_tweet"
+        val userId = appUser.mid    // current app user，check if it has liked or bookmarked
+
+        // there should be a function to get baseUrl of the tweet's author
+        var url =
+            "${author.baseUrl}/entry?&aid=$TWBE_APP_ID&ver=last&entry=$method&tweetid=$tweetId&userid=$userId"
+        var request = Request.Builder().url(url).build()
+        var response = httpClient.newCall(request).execute()
+        if (response.isSuccessful) {
+            response.body?.string()?.let { content ->
+                val tweet = Gson().fromJson(content, Tweet::class.java)
+                tweet.author = author
+                tweet.isPrivate = false
+
+                tweet.originalTweetId?.let {
+                    val rt = InMemoryData.tweets.value.find { t -> t.mid == tweet.originalTweetId }
+                    rt?.let { it1 ->
+                        // isPrivate could be null, means its
+                        tweet.originalAuthor = it1.author
+                        tweet.originalTweet = it1;
+                        return tweet
+                    }
+                    author = tweet.originalAuthorId?.let { it1 -> getUserBase(it1) } ?: return null
+                    url =
+                        "${author.baseUrl}/entry?&aid=$TWBE_APP_ID&ver=last&entry=$method&tweetid=$it&userid=$userId"
+                    request = Request.Builder().url(url).build()
+                    response = httpClient.newCall(request).execute()
+                    if (!response.isSuccessful) {
+                        return null
+                    }
+                    val ori = Gson().fromJson(content, Tweet::class.java)
+                    ori.isPrivate = true
+                    tweet.originalTweet = ori
+                    tweet.originalAuthor = author
+                    InMemoryData.tweets.update { listOf(ori) }
+                }
+                InMemoryData.tweets.update { listOf(tweet) }
+                return tweet
+            }
+        }
+        return null
+    }
+
     // Store an object in a Mimei file and return its MimeiId.
-    fun uploadTweet(t: Tweet, commentOnly: Boolean = false): Tweet? {
+    fun uploadTweet(tweet: Tweet, commentOnly: Boolean = false): Tweet? {
         val method = "upload_tweet"
-        val tweet = URLEncoder.encode(Json.encodeToString(t), "utf-8")   // Null attributes ignored
+
+        // make a copy of input tweet and remove attributes that is for display only.
+        val t = tweet.copy()
+        t.originalTweet = null
+        t.hasLiked = null
+        t.hasBookmarked = null
+        val json = URLEncoder.encode(Json.encodeToString(t), "utf-8")   // Null attributes ignored
         val url =
-            "$BASE_URL/entry?&aid=$TWBE_APP_ID&ver=last&entry=$method&tweet=$tweet&commentonly=$commentOnly"
+            "$BASE_URL/entry?&aid=$TWBE_APP_ID&ver=last&entry=$method&tweet=$json&commentonly=$commentOnly"
         println("UploadTweet: $url")
         val request = Request.Builder().url(url).build()
         val response = httpClient.newCall(request).execute()
         if (response.isSuccessful) {
-            t.mid = response.body?.string() ?: return null
-            return t
+            tweet.mid = response.body?.string() ?: return null
+            return tweet
         }
         return null
     }
@@ -242,12 +260,12 @@ object HproseInstance {
         val url =
             "$BASE_URL/entry?&aid=$TWBE_APP_ID&ver=last&entry=$method&tweetid=${tweet.mid}&userid=${appUser.mid}"
         val request = Request.Builder().url(url).build()
-        println(request.url)
         val response = httpClient.newCall(request).execute()
         if (response.isSuccessful) {
             val responseBody = response.body?.string() ?: return tweet
             val gson = Gson()
             val res = gson.fromJson(responseBody, Map::class.java) as Map<*, *>
+
 
             // return a new object for recomposition to work.
             return tweet.copy(hasLiked = res["hasLiked"] as Boolean, likeCount = (res["count"] as Double).toInt())

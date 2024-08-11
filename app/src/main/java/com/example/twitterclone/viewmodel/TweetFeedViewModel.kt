@@ -4,10 +4,12 @@ import androidx.compose.runtime.mutableLongStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.twitterclone.model.HproseInstance
+import com.example.twitterclone.model.InMemoryData
 import com.example.twitterclone.model.MimeiId
 import com.example.twitterclone.model.Tweet
 import com.example.twitterclone.repository.TweetRepository
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
@@ -18,7 +20,8 @@ class TweetFeedViewModel(
     private val tweetRepository: TweetRepository = TweetRepository(),
 ) : ViewModel() {
 
-    private val _tweets = MutableStateFlow<List<Tweet>>(emptyList())
+//    private val _tweets = MutableStateFlow<List<Tweet>>(emptyList())
+    private val _tweets = InMemoryData.tweets
     val tweets: StateFlow<List<Tweet>> get() = _tweets
 
     private var startTimestamp = mutableLongStateOf(System.currentTimeMillis())     // current time
@@ -35,14 +38,12 @@ class TweetFeedViewModel(
     ) {
         viewModelScope.launch {
             val followings = HproseInstance.getFollowings()
-            followings.forEach { userId ->
-                withContext(Dispatchers.IO) {
-                    val tweetsList = _tweets.value.filter { it.authorId == userId }.toMutableList()
-                    HproseInstance.getTweetList(userId, tweetsList, startTimestamp, endTimestamp)
-                    tweetsList
-                }.also { newTweets ->
-                    _tweets.update { currentTweets -> // Use update to ensure thread safety
-                        currentTweets + newTweets
+            coroutineScope {  // Create a child coroutine scope
+                followings.forEach { userId ->
+                    launch(Dispatchers.IO) {
+                        val tweetsList = _tweets.value.filter { it.authorId == userId }.toMutableList()
+                        HproseInstance.getTweetList(userId, tweetsList, startTimestamp, endTimestamp)
+                        _tweets.update { currentTweets -> currentTweets + tweetsList }
                     }
                 }
             }
