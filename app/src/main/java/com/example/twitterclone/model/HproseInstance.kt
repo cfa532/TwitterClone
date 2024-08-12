@@ -55,7 +55,7 @@ object HproseInstance {
     )
 
     val appUser: User by lazy {
-        runBlocking {
+        InMemoryData.users.find { it.mid == appMid } ?: runBlocking {
             withContext(IO) {
                 val method = "get_author_core_data"
                 val url = "$BASE_URL/entry?&aid=$TWBE_APP_ID&ver=last&entry=$method&userid=$appMid"
@@ -85,20 +85,19 @@ object HproseInstance {
     }
 
     // Get base url where user data can be accessed, and user data
-     suspend fun getUserBase(userId: MimeiId): User? {
+    private suspend fun getUserBase(userId: MimeiId): User? {
         // check if user data has been read
-        val user = InMemoryData.users.find { it.mid == userId }
-        if (user != null) {
-            return user
-        }
+        InMemoryData.users.find { it.mid == userId }?.let { user -> return user }
+
         val providerData = client.getVar("", "mmprovsips", userId)
         val providerLists = Json.parseToJsonElement(providerData).jsonArray
         if (providerLists.isNotEmpty()) {
             println(providerLists)
             val ipAddresses = providerLists[0].jsonArray.map { it.jsonArray }
             Gadget.getFirstReachableUri(ipAddresses, userId)?.let { u ->
-                println("Get user=$u")
                 InMemoryData.users.add(u)
+                println("Get userbase=${InMemoryData.users}")
+                return u
             }
         }
         return null
@@ -122,7 +121,7 @@ object HproseInstance {
         // use Json here, so that null attributes in User are ignored. On the server-side, only set attributes
         // that have value in incoming data.
         val method = "set_author_core_data"
-        val url = "$BASE_URL/entry?&aid=$TWBE_APP_ID&ver=last&entry=$method&user=${
+        val url = "${user.baseUrl}/entry?&aid=$TWBE_APP_ID&ver=last&entry=$method&user=${
             Json.encodeToString(user)
         }"
         val request = Request.Builder().url(url).build()
@@ -161,7 +160,7 @@ object HproseInstance {
                 if (score <= startTimestamp && (endTimestamp == null || score > endTimestamp)) {
                     // check if the tweet is in the tweets already.
                     if (tweets.none { t -> t.mid == tweetId }) {
-                        getTweet(tweetId, authorId)?.let {t -> tweets += t }
+                        getTweet(tweetId, authorId)?.let { t -> tweets += t }
                     }
                 }
             }
@@ -171,18 +170,18 @@ object HproseInstance {
     }
 
     private suspend fun getTweet(tweetId: MimeiId, authorId: MimeiId): Tweet? {
-        var author = getUserBase(authorId)?: return null
+        var author = getUserBase(authorId) ?: return null
         val method = "get_tweet"
-        val userId = appUser.mid    // current app user，check if it has liked or bookmarked
 
         // there should be a function to get baseUrl of the tweet's author
         var url =
-            "${author.baseUrl}/entry?&aid=$TWBE_APP_ID&ver=last&entry=$method&tweetid=$tweetId&userid=$userId"
+            "${author.baseUrl}/entry?&aid=$TWBE_APP_ID&ver=last&entry=$method&tweetid=$tweetId&userid=${appUser.mid}"
         var request = Request.Builder().url(url).build()
         var response = httpClient.newCall(request).execute()
         if (response.isSuccessful) {
-            response.body?.string()?.let { content ->
-                val tweet = Gson().fromJson(content, Tweet::class.java)
+            response.body?.string()?.let { json ->
+                println("getTweet=$json")
+                val tweet = Gson().fromJson(json, Tweet::class.java)
                 tweet.author = author
                 tweet.isPrivate = false
 
@@ -196,17 +195,20 @@ object HproseInstance {
                     }
                     author = tweet.originalAuthorId?.let { it1 -> getUserBase(it1) } ?: return null
                     url =
-                        "${author.baseUrl}/entry?&aid=$TWBE_APP_ID&ver=last&entry=$method&tweetid=$it&userid=$userId"
+                        "${author.baseUrl}/entry?&aid=$TWBE_APP_ID&ver=last&entry=$method&tweetid=$it&userid=${appUser.mid}"
                     request = Request.Builder().url(url).build()
                     response = httpClient.newCall(request).execute()
                     if (!response.isSuccessful) {
                         return null
                     }
-                    val ori = Gson().fromJson(content, Tweet::class.java)
-                    ori.isPrivate = true
-                    tweet.originalTweet = ori
-                    tweet.originalAuthor = author
-                    InMemoryData._tweets.update { listOf(ori) }
+                    response.body?.string()?.let { content ->
+                        println("getOriTweet=$content")
+                        val ori = Gson().fromJson(content, Tweet::class.java)
+                        ori.isPrivate = true
+                        tweet.originalTweet = ori
+                        tweet.originalAuthor = author
+                        InMemoryData._tweets.update { listOf(ori) }
+                    }
                 }
                 InMemoryData._tweets.update { listOf(tweet) }
                 return tweet
@@ -227,7 +229,6 @@ object HproseInstance {
         val json = URLEncoder.encode(Json.encodeToString(t), "utf-8")   // Null attributes ignored
         val url =
             "${appUser.baseUrl}/entry?&aid=$TWBE_APP_ID&ver=last&entry=$method&tweet=$json&commentonly=$commentOnly"
-        println("UploadTweet: $url")
         val request = Request.Builder().url(url).build()
         val response = httpClient.newCall(request).execute()
         if (response.isSuccessful) {
@@ -274,7 +275,10 @@ object HproseInstance {
 
 
             // return a new object for recomposition to work.
-            return tweet.copy(hasLiked = res["hasLiked"] as Boolean, likeCount = (res["count"] as Double).toInt())
+            return tweet.copy(
+                hasLiked = res["hasLiked"] as Boolean,
+                likeCount = (res["count"] as Double).toInt()
+            )
         }
         return tweet
     }

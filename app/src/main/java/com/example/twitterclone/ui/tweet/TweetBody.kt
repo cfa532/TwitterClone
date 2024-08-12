@@ -1,6 +1,8 @@
 package com.example.twitterclone.ui.tweet
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -30,43 +32,48 @@ import com.example.twitterclone.viewmodel.TweetViewModel
 @Composable
 fun TweetBody(tweet: Tweet, viewModel: TweetViewModel) {
     // Tweet Header
-    TweetHeader(tweet)
-
-    Text(text = tweet.content, style = MaterialTheme.typography.bodyMedium)
-
-    // attached media files
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .heightIn(max = 400.dp) // Set a specific height for the grid
+    TweetHeader(tweet, viewModel)
+    Spacer(modifier = Modifier.padding(8.dp))
+    Column(
+        modifier = Modifier.padding(start = 12.dp)
     ) {
-        val mediaItems = tweet.attachments?.map {
-            tweet.author?.baseUrl?.let { it1 -> getMediaUrl(it, it1).toString() }
-                ?.let { it2 -> MediaItem(it2) }
-        }
-        mediaItems?.let { MediaPreviewGrid(it) }
-    }
-
-    // Use a Row to display likes and bookmarks horizontally
-    tweet.let {
-        Row(
-            modifier = Modifier.fillMaxWidth()
+        Text(text = tweet.content, style = MaterialTheme.typography.bodyMedium)
+        // attached media files
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(max = 800.dp) // Set a specific height for the grid
         ) {
-            LikeButton(it, viewModel)
-            Spacer(modifier = Modifier.width(8.dp)) // Add some space between the two texts
-            BookmarkButton(it, viewModel)
-            Spacer(modifier = Modifier.width(8.dp))
-            CommentButton(it, viewModel)
-            Spacer(modifier = Modifier.width(8.dp))
-            RetweetButton(it, viewModel)
+            val mediaItems = tweet.attachments?.map {
+                tweet.author?.baseUrl?.let { it1 -> getMediaUrl(it, it1).toString() }
+                    ?.let { it2 -> MediaItem(it2) }
+            }
+            mediaItems?.let { MediaPreviewGrid(it) }
+        }
+
+        // Use a Row to display likes and bookmarks horizontally
+        tweet.let {
+            Row(
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                LikeButton(it, viewModel)
+                Spacer(modifier = Modifier.width(8.dp)) // Add some space between the two texts
+                BookmarkButton(it, viewModel)
+                Spacer(modifier = Modifier.width(8.dp))
+                CommentButton(it, viewModel)
+                Spacer(modifier = Modifier.width(8.dp))
+                RetweetButton(it, viewModel)
+            }
         }
     }
 }
 
 @Composable
-fun TweetHeader(tweet: Tweet) {
+fun TweetHeader(tweet: Tweet, viewModel: TweetViewModel) {
     // Use a Row to align author name and potential verification badge
-    Row(verticalAlignment = Alignment.CenterVertically) {
+    Row(verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Start
+    ) {
         tweet.author?.baseUrl?.let { getMediaUrl(tweet.author?.avatar, it) }?.let {
             CircularImage(
                 model = it,

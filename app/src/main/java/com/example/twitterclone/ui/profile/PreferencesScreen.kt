@@ -127,14 +127,16 @@ fun AvatarSection(avatar: MimeiId?, launcher: ManagedActivityResultLauncher<Stri
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.fillMaxWidth()
     ) {
-        CircularImage(
-            model = HproseInstance.getMediaUrl(avatar),
-            contentDescription = "User Avatar",
-            modifier = Modifier
-                .size(100.dp)
-                .clip(CircleShape)
-                .padding(8.dp)
-        )
+        appUser.baseUrl?.let { HproseInstance.getMediaUrl(avatar, it) }?.let {
+            CircularImage(
+                model = it,
+                contentDescription = "User Avatar",
+                modifier = Modifier
+                    .size(100.dp)
+                    .clip(CircleShape)
+                    .padding(8.dp)
+            )
+        }
         Button(onClick = { launcher.launch("image/*") }) {
             Text("Upload Avatar")
         }

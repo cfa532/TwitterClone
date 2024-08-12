@@ -94,13 +94,12 @@ object Gadget {
 
     // In Pair<URL, String?>?, where String is JSON of Mimei content
     suspend fun getFirstReachableUri(ipList: List<JsonArray>, mid: MimeiId): User? = coroutineScope {
-        val deferreds = ipList.map { ip ->
+        val ips = ipList.map { ip ->
             async {
-                val addr = removeParentheses(ip[0])
-                isReachable(mid, addr)
+                isReachable(mid, removeParentheses(ip[0]))
             }
         }
-        deferreds.awaitAll().firstOrNull { it != null }
+        ips.awaitAll().firstOrNull { it != null }
     }
 
 

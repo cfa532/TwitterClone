@@ -1,11 +1,16 @@
 package com.example.twitterclone.viewmodel
 
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.twitterclone.model.HproseInstance
 import com.example.twitterclone.model.HproseInstance.appUser
 import com.example.twitterclone.model.HproseInstance.uploadTweet
 import com.example.twitterclone.model.Tweet
+import com.example.twitterclone.model.User
 import com.example.twitterclone.repository.TweetRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -20,7 +25,7 @@ class TweetViewModel(
     private val _tweet = MutableStateFlow<Tweet?>(null)
     val tweet: StateFlow<Tweet?> get() = _tweet.asStateFlow()
 
-   fun retweet(tweet: Tweet) {
+    fun retweet(tweet: Tweet) {
         viewModelScope.launch(Dispatchers.Default) {
             val retweet = if (tweet.content == "" && tweet.originalTweet != null) {
                 // the tweet to be forwarded is a retweet itself. Find the original tweet to forward.

@@ -11,6 +11,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
@@ -23,13 +26,11 @@ fun TweetItem(
     viewModel: TweetViewModel = TweetViewModel()
 ) {
     viewModel.setTweet(tweet)
-
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(16.dp)
     ) {
-        Spacer(modifier = Modifier.height(8.dp))
 
         // Content body
         if (tweet.originalTweetId != null) {
@@ -47,7 +48,7 @@ fun TweetItem(
                 }
             } else {
                 // retweet with comments
-                TweetHeader(tweet)
+                TweetHeader(tweet, viewModel)
                 Text(
                     text = tweet.content,
                     fontSize = MaterialTheme.typography.labelSmall.fontSize,
@@ -63,7 +64,6 @@ fun TweetItem(
             }
         } else {
             // original tweet by current user.
-            Spacer(modifier = Modifier.height(12.dp))
             TweetBody(tweet, viewModel)
         }
     }
