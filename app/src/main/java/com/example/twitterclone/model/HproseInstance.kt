@@ -170,14 +170,14 @@ object HproseInstance {
     }
 
     private suspend fun getTweet(tweetId: MimeiId, authorId: MimeiId): Tweet? {
-        var author = getUserBase(authorId) ?: return null
+        val author = getUserBase(authorId) ?: return null
         val method = "get_tweet"
 
         // there should be a function to get baseUrl of the tweet's author
-        var url =
+        val url =
             "${author.baseUrl}/entry?&aid=$TWBE_APP_ID&ver=last&entry=$method&tweetid=$tweetId&userid=${appUser.mid}"
-        var request = Request.Builder().url(url).build()
-        var response = httpClient.newCall(request).execute()
+        val request = Request.Builder().url(url).build()
+        val response = httpClient.newCall(request).execute()
         if (response.isSuccessful) {
             response.body?.string()?.let { json ->
                 println("getTweet=$json")
@@ -188,27 +188,14 @@ object HproseInstance {
                 tweet.originalTweetId?.let {
                     val rt = InMemoryData._tweets.value.find { t -> t.mid == tweet.originalTweetId }
                     rt?.let { it1 ->
-                        // isPrivate could be null, means its
+                        // isPrivate could be null
                         tweet.originalAuthor = it1.author
                         tweet.originalTweet = it1;
                         return tweet
                     }
-                    author = tweet.originalAuthorId?.let { it1 -> getUserBase(it1) } ?: return null
-                    url =
-                        "${author.baseUrl}/entry?&aid=$TWBE_APP_ID&ver=last&entry=$method&tweetid=$it&userid=${appUser.mid}"
-                    request = Request.Builder().url(url).build()
-                    response = httpClient.newCall(request).execute()
-                    if (!response.isSuccessful) {
-                        return null
-                    }
-                    response.body?.string()?.let { content ->
-                        println("getOriTweet=$content")
-                        val ori = Gson().fromJson(content, Tweet::class.java)
-                        ori.isPrivate = true
-                        tweet.originalTweet = ori
-                        tweet.originalAuthor = author
-                        InMemoryData._tweets.update { listOf(ori) }
-                    }
+                    tweet.originalTweet = tweet.originalAuthorId?.let { it1 -> getTweet(it, it1) } ?: return null
+                    tweet.originalAuthor = tweet.originalTweet!!.author
+                    InMemoryData._tweets.update { listOf(tweet.originalTweet!!) }
                 }
                 InMemoryData._tweets.update { listOf(tweet) }
                 return tweet

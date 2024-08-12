@@ -40,9 +40,8 @@ fun TweetItem(
                     text = "Forwarded by you",
                     fontSize = MaterialTheme.typography.labelSmall.fontSize,
                     color = MaterialTheme.colorScheme.tertiary,
-                    modifier = Modifier.padding(start = 12.dp)
+                    modifier = Modifier.padding(start = 2.dp)
                 )
-
                 tweet.originalTweet?.let {
                     TweetBody(it, viewModel)
                 }
@@ -55,11 +54,8 @@ fun TweetItem(
                     color = MaterialTheme.colorScheme.secondary,
                     modifier = Modifier.padding(start = 12.dp)
                 )
-                Box(modifier = Modifier
-                    .padding(horizontal = 20.dp)
-                    .border(BorderStroke(2.dp, Color.Gray))
-                ) {
-                    TweetBody(tweet, viewModel)
+                tweet.originalTweet?.let {
+                    TweetBody(it, viewModel)
                 }
             }
         } else {

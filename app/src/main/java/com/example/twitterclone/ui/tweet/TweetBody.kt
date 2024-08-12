@@ -44,7 +44,7 @@ fun TweetBody(tweet: Tweet, viewModel: TweetViewModel) {
                 .fillMaxWidth()
                 .heightIn(max = 800.dp) // Set a specific height for the grid
         ) {
-            val mediaItems = tweet.attachments?.map {
+            val mediaItems = tweet.attachments?.mapNotNull {
                 tweet.author?.baseUrl?.let { it1 -> getMediaUrl(it, it1).toString() }
                     ?.let { it2 -> MediaItem(it2) }
             }
