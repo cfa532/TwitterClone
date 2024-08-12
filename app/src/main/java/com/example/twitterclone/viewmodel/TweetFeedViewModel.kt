@@ -16,7 +16,6 @@ import kotlinx.coroutines.launch
 class TweetFeedViewModel(
     private val tweetRepository: TweetRepository = TweetRepository(),
 ) : ViewModel() {
-
     private val _tweets = MutableStateFlow<List<Tweet>>(emptyList())
     val tweets: StateFlow<List<Tweet>> get() = _tweets
 

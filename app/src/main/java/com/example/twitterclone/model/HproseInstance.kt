@@ -220,6 +220,7 @@ object HproseInstance {
         val response = httpClient.newCall(request).execute()
         if (response.isSuccessful) {
             tweet.mid = response.body?.string() ?: return null
+            tweet.author = appUser
             return tweet
         }
         return null
