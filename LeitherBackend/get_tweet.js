@@ -21,7 +21,7 @@
     let commentCount = lapi.Get(mmsid, COMMENT_COUNT)
     let likeCount = lapi.Get(mmsid, LIKE_COUNT)
 
-    // check if user has bookmarked or liked the tweet
+    // check if the viewer has bookmarked or liked the tweet
     let hasLiked = lapi.Hget(mmsid, LIKE_LIST, userId)
     let hasBookmarked = lapi.Hget(mmsid, BOOKMARK_LIST, userId)
 
@@ -32,7 +32,8 @@
         "content": tweet.content,
         "attachments": tweet.attachments,
         "isPrivate": tweet.isPrivate,
-        "original": tweet.original,
+        "originalTweetId": tweet.originalTweetId,
+        "originalAuthorId": tweet.originalAuthorId,
 
         "bookmarkCount": bookmarkCount,
         "retweetCount": retweetCount,
