@@ -20,7 +20,7 @@
     console.log("uploaded ", request["tweet"], request["commentonly"])
 
     let authSid = lapi.BELoginAsAuthor()
-    let mid = lapi.MMCreate(authSid, APP_ID, APP_EXT, tweet.content, 2, 0x07276704)
+    let mid = lapi.MMCreate(authSid, APP_ID, APP_EXT, "{{auto}}", 2, 0x07276704)
     tweet["mid"] = mid
     tweet["timestamp"] = Date.now().toString()
 
