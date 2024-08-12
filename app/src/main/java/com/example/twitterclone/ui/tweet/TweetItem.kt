@@ -25,15 +25,15 @@ fun TweetItem(
     tweet: Tweet,
     viewModel: TweetViewModel = TweetViewModel()
 ) {
-    viewModel.setTweet(tweet)
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp)
+            .padding(8.dp)
     ) {
 
         // Content body
         if (tweet.originalTweetId != null) {
+            tweet.originalTweet?.let { viewModel.setTweet(it) }
             if (tweet.content == "") {
                 // this is a retweet of another tweet.
                 Text(
@@ -60,6 +60,7 @@ fun TweetItem(
             }
         } else {
             // original tweet by current user.
+            viewModel.setTweet(tweet)
             TweetBody(tweet, viewModel)
         }
     }
