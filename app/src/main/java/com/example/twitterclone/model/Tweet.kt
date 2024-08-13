@@ -3,6 +3,10 @@ package com.example.twitterclone.model
 import kotlinx.serialization.Serializable
 typealias MimeiId = String      // 27 or 64 character long string
 
+enum class UserFavorites {
+    TWEET, BOOKMARK, RETWEET
+}
+
 @Serializable
 data class Tweet(
     var mid: MimeiId? = null,   // mid of the tweet
@@ -13,14 +17,16 @@ data class Tweet(
     val originalTweetId: MimeiId? = null, // this is retweet id of the original tweet
     val originalAuthorId: MimeiId? = null,  // authorId of the forwarded tweet
 
-    // the following five attributes are for display only. Not stored in database.
+    // the following six attributes are for display only. Not stored in database.
     var author: User? = null,
     var originalAuthor: User? = null,
     var originalTweet: Tweet? = null,        // the original tweet for display only.
 
     // if the current user has liked or bookmarked this tweet
-    var hasLiked: Boolean? = false,
-    var hasBookmarked: Boolean? = false,
+//    var hasLiked: Boolean? = false,
+//    var hasBookmarked: Boolean? = false,
+//    var hasRetweeted: Boolean? = false,
+    var favorites: MutableList<Boolean>? = mutableListOf(false, false, false),
 
     var likeCount: Int = 0,     // Number of likes
 //    var likers: List<MimeiId> = emptyList(),     // user list that liked the tweet

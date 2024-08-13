@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.dp
 import com.example.twitterclone.R
 import com.example.twitterclone.model.HproseInstance.bookmarkTweet
 import com.example.twitterclone.model.Tweet
+import com.example.twitterclone.model.UserFavorites
 import com.example.twitterclone.viewmodel.TweetViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -72,16 +73,17 @@ fun RetweetButton(tweet: Tweet, viewModel: TweetViewModel) {
 @Composable
 fun LikeButton(tweet: Tweet, viewModel: TweetViewModel) {
     val t by viewModel.tweet.collectAsState(initial = tweet)
+    val hasLiked = t?.favorites?.get(UserFavorites.TWEET.ordinal)
 
     IconButton(onClick = {
         t?.let { viewModel.likeTweet(it) }
     }) {
         Row(horizontalArrangement = Arrangement.Center) {
             Icon(
-                painter = painterResource(id = if (t?.hasLiked == true) R.drawable.ic_heart_fill else R.drawable.ic_heart),
+                painter = painterResource(id = if (hasLiked == true) R.drawable.ic_heart_fill else R.drawable.ic_heart),
                 contentDescription = "Like",
                 modifier = Modifier.size(ButtonDefaults.IconSize),
-                tint = if (t?.hasLiked == true) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary
+                tint = if (hasLiked == true) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary
             )
             Spacer(modifier = Modifier.width(6.dp))
             Text(
@@ -95,16 +97,16 @@ fun LikeButton(tweet: Tweet, viewModel: TweetViewModel) {
 @Composable
 fun BookmarkButton(tweet: Tweet, viewModel: TweetViewModel) {
     val t by viewModel.tweet.collectAsState(initial = tweet)
-
+    val hasBookmarked = t?.favorites?.get(UserFavorites.BOOKMARK.ordinal)
     IconButton(onClick = {
         t?.let { viewModel.bookmarkTweet(it) }
     }) {
         Row(horizontalArrangement = Arrangement.Center) {
             Icon(
-                painter = painterResource(id = if (t?.hasBookmarked == true) R.drawable.ic_bookmark_fill else R.drawable.ic_bookmark),
+                painter = painterResource(id = if (hasBookmarked == true) R.drawable.ic_bookmark_fill else R.drawable.ic_bookmark),
                 contentDescription = "Like",
                 modifier = Modifier.size(ButtonDefaults.IconSize),
-                tint = if (t?.hasBookmarked == true) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary
+                tint = if (hasBookmarked == true) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary
             )
             Spacer(modifier = Modifier.width(4.dp))
             Text(

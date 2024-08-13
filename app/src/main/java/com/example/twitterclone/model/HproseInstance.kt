@@ -213,8 +213,8 @@ object HproseInstance {
         t.originalTweet = null
         t.author = null
         t.originalAuthor = null
-        t.hasLiked = null
-        t.hasBookmarked = null
+        t.favorites = null
+
         val json = URLEncoder.encode(Json.encodeToString(t), "utf-8")
         val url =
             "${appUser.baseUrl}/entry?&aid=$TWBE_APP_ID&ver=last&entry=$method&tweet=$json&commentonly=$commentOnly"
@@ -234,8 +234,8 @@ object HproseInstance {
         t.originalTweet = null
         t.author = null
         t.originalAuthor = null
-        t.hasLiked = null
-        t.hasBookmarked = null
+        t.favorites = null
+
         val json = URLEncoder.encode(Json.encodeToString(t), "utf-8")
         val url =
             "${appUser.baseUrl}/entry?&aid=$TWBE_APP_ID&ver=last&entry=$method&retweet=$json"
@@ -261,10 +261,9 @@ object HproseInstance {
             val gson = Gson()
             val res = gson.fromJson(responseBody, Map::class.java) as Map<*, *>
 
-
             // return a new object for recomposition to work.
+            tweet.favorites?.set(UserFavorites.TWEET.ordinal, res["hasLiked"] as Boolean)
             return tweet.copy(
-                hasLiked = res["hasLiked"] as Boolean,
                 likeCount = (res["count"] as Double).toInt()
             )
         }
@@ -282,9 +281,9 @@ object HproseInstance {
             val responseBody = response.body?.string() ?: return tweet
             val gson = Gson()
             val res = gson.fromJson(responseBody, Map::class.java) as Map<*, *>
-            val hasBookmarked = res["hasBookmarked"] as Boolean
-            val bookmarkCount = (res["count"] as Double).toInt()
-            return tweet.copy(hasBookmarked = hasBookmarked, bookmarkCount = bookmarkCount)
+
+            tweet.favorites?.set(UserFavorites.BOOKMARK.ordinal, res["hasBookmarked"] as Boolean)
+            return tweet.copy(bookmarkCount = (res["count"] as Double).toInt())
         }
         return tweet
     }
