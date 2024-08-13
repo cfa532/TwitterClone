@@ -24,16 +24,17 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import com.example.twitterclone.R
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-@RequiresApi(Build.VERSION_CODES.Q)
 @Composable
 fun UploadFilePreview(uri: Uri) {
     val view = LocalView.current
     val viewWidth = with(LocalDensity.current) { view.width.toDp() }.value.toInt()
-    val canvasSize = viewWidth / 2
+    val canvasSize = viewWidth / 2 - 20
     var imageBitmap by remember { mutableStateOf<ImageBitmap?>(null) }
     val contentResolver = LocalContext.current.contentResolver
 
@@ -85,7 +86,7 @@ fun UploadFilePreview(uri: Uri) {
         )
     } ?: run {
         Icon(
-            imageVector = Icons.Default.Favorite,
+            painter = painterResource(id = R.drawable.ic_photo_plus),
             contentDescription = "Attached File",
             modifier = Modifier.size(canvasSize.dp)
         )

@@ -55,6 +55,8 @@ fun TweetBody(tweet: Tweet, viewModel: TweetViewModel) {
         tweet.let {
             Row(
                 modifier = Modifier.fillMaxWidth()
+//                    .padding(start = 0.dp, end = 20.dp),
+//                horizontalArrangement = Arrangement.SpaceBetween,
             ) {
                 LikeButton(it, viewModel)
                 Spacer(modifier = Modifier.width(8.dp)) // Add some space between the two texts
