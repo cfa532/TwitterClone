@@ -211,9 +211,11 @@ object HproseInstance {
         // make a copy of input tweet and remove attributes that is for display only.
         val t = tweet.copy()
         t.originalTweet = null
+        t.author = null
+        t.originalAuthor = null
         t.hasLiked = null
         t.hasBookmarked = null
-        val json = URLEncoder.encode(Json.encodeToString(t), "utf-8")   // Null attributes ignored
+        val json = URLEncoder.encode(Json.encodeToString(t), "utf-8")
         val url =
             "${appUser.baseUrl}/entry?&aid=$TWBE_APP_ID&ver=last&entry=$method&tweet=$json&commentonly=$commentOnly"
         val request = Request.Builder().url(url).build()
@@ -226,27 +228,25 @@ object HproseInstance {
         return null
     }
 
-    fun retweetCount(tweet: Tweet): Tweet? {
-        val author = tweet.author ?: return null
-        val method = "retweet_count"
+    fun toggleRetweet(tweet: Tweet): Tweet? {
+        val method = "retweet"
+        val t = tweet.copy()
+        t.originalTweet = null
+        t.author = null
+        t.originalAuthor = null
+        t.hasLiked = null
+        t.hasBookmarked = null
+        val json = URLEncoder.encode(Json.encodeToString(t), "utf-8")
         val url =
-            "${author.baseUrl}/entry?&aid=$TWBE_APP_ID&ver=last&entry=$method&tweetid=${tweet.mid}"
+            "${appUser.baseUrl}/entry?&aid=$TWBE_APP_ID&ver=last&entry=$method&retweet=$json"
         val request = Request.Builder().url(url).build()
-        println(request.url)
         val response = httpClient.newCall(request).execute()
         if (response.isSuccessful) {
-            val responseBody = response.body?.string() ?: return tweet
+            val responseBody = response.body?.string() ?: return null
             val gson = Gson()
-            val count = gson.fromJson(responseBody, Int::class.java) as Int
-
-            // return a new object for recomposition to work.
-            return tweet.copy(retweetCount = count)
+            return gson.fromJson(responseBody, Tweet::class.java)
         }
-        return tweet
-    }
-
-    fun addComment() {
-
+        return null
     }
 
     fun likeTweet(tweet: Tweet): Tweet? {

@@ -1,16 +1,12 @@
 package com.example.twitterclone.viewmodel
 
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.twitterclone.model.HproseInstance
 import com.example.twitterclone.model.HproseInstance.appUser
-import com.example.twitterclone.model.HproseInstance.uploadTweet
+import com.example.twitterclone.model.HproseInstance.toggleRetweet
+import com.example.twitterclone.model.InMemoryData
 import com.example.twitterclone.model.Tweet
-import com.example.twitterclone.model.User
 import com.example.twitterclone.repository.TweetRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -44,8 +40,13 @@ class TweetViewModel(
                     originalTweetId = tweet.mid,
                     originalAuthorId = tweet.authorId)
             }
-            uploadTweet(retweet)
-            _tweet.value = HproseInstance.retweetCount(tweet) ?: _tweet.value
+            toggleRetweet(retweet)?.let {
+                _tweet.value = if (it.mid != null) {
+                    tweet.copy(retweetCount = _tweet.value?.retweetCount?.plus(1) ?: 0)
+                } else {
+                    tweet.copy(retweetCount = _tweet.value?.retweetCount?.minus(1) ?: 0)
+                }
+            }
         }
     }
 
