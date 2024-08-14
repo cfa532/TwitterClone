@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -27,7 +26,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -43,19 +41,18 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import coil.compose.rememberAsyncImagePainter
-import coil.compose.rememberImagePainter
 import com.example.twitterclone.PreferencesHelper
 import com.example.twitterclone.R
 import com.example.twitterclone.model.HproseInstance
 import com.example.twitterclone.model.HproseInstance.appUser
+import com.example.twitterclone.model.HproseInstance.getMediaUrl
 import com.example.twitterclone.model.MimeiId
 import com.example.twitterclone.model.User
 import com.example.twitterclone.ui.compose.AppIcon
-import com.example.twitterclone.ui.compose.CircularImage
-import com.example.twitterclone.viewmodel.TweetViewModel
+import com.example.twitterclone.ui.compose.ProfileTopAppBar
+import com.example.twitterclone.viewmodel.ProfileViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -63,10 +60,12 @@ import kotlinx.coroutines.withContext
 fun PreferencesScreen(
     navController: NavHostController,
     preferencesHelper: PreferencesHelper,
+    viewModel: ProfileViewModel = ProfileViewModel()
 ) {
-    var username by rememberSaveable { mutableStateOf(preferencesHelper.getUsername()?.takeIf { it.isNotEmpty() } ?: "NoOne") }
+    var username by rememberSaveable { mutableStateOf(preferencesHelper.getUsername() ?: "NoOne") }
     var name by rememberSaveable { mutableStateOf(preferencesHelper.getName() ?: "No One") }
-    var avatar by rememberSaveable { mutableStateOf<MimeiId?>(appUser.avatar) }
+    var profile by rememberSaveable { mutableStateOf(preferencesHelper.getProfile() ?: "My cool profile") }
+    var avatar by rememberSaveable { mutableStateOf(appUser.avatar) }
     val user by remember { mutableStateOf<User?>(appUser) }
 
 //    appUser.avatar?.let { avatar = it }
@@ -100,7 +99,7 @@ fun PreferencesScreen(
             .fillMaxWidth()
             .padding(16.dp)
     ) {
-        PreferencesTopAppBar(navController)
+        ProfileTopAppBar(navController)
         Spacer(modifier = Modifier.height(16.dp))
         Text("Preferences", style = MaterialTheme.typography.labelSmall)
         Spacer(modifier = Modifier.height(16.dp))
@@ -109,37 +108,13 @@ fun PreferencesScreen(
         PreferencesForm(
             username = username,
             name = name,
+            profile = profile,
             onUsernameChange = { newUsername -> username = newUsername },
             onNameChange = { newName -> name = newName },
+            onProfileChange = { newProfile -> profile = newProfile}
         )
-        SaveButton(preferencesHelper, username, name, user, coroutineScope)
+        SaveButton(preferencesHelper, username, name, profile, user, coroutineScope)
     }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun PreferencesTopAppBar(navController: NavHostController) {
-    TopAppBar(
-        title = {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.Center
-            ) {
-                AppIcon()
-            }
-        },
-        navigationIcon = {
-            IconButton(onClick = { navController.popBackStack() }) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_back),
-                    contentDescription = "Back",
-                    modifier = Modifier
-                        .size(40.dp)
-                        .padding(8.dp)
-                )
-            }
-        }
-    )
 }
 
 @Composable
@@ -148,21 +123,18 @@ fun AvatarSection(avatar: MimeiId?, launcher: ManagedActivityResultLauncher<Stri
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.fillMaxWidth()
     ) {
-        Button(
-            onClick = { launcher.launch("image/*") },
-            modifier = Modifier
-                .size(100.dp)
-                .clip(CircleShape)
-                .padding(0.dp)
-        ) {
-            Image(
-                painter = rememberAsyncImagePainter(appUser.baseUrl?.let { HproseInstance.getMediaUrl(
-                    avatar, it) }),
-                contentDescription = "User Avatar",
-                contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxSize()
-                    .clip(CircleShape) // Clip the image to match the button's shape
-            )
+        IconButton(onClick = { launcher.launch("image/*") } ) {
+            appUser.baseUrl?.let { getMediaUrl(appUser.avatar, it) }?.let {
+                Image(
+                    painter = rememberAsyncImagePainter(appUser.baseUrl?.let { getMediaUrl(
+                        appUser.avatar, it) }),
+                    contentDescription = "User Avatar",
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .size(100.dp)
+                        .clip(CircleShape)
+                )
+            }
         }
     }
 }
@@ -171,8 +143,10 @@ fun AvatarSection(avatar: MimeiId?, launcher: ManagedActivityResultLauncher<Stri
 fun PreferencesForm(
     username: String,
     name: String,
+    profile: String,
     onUsernameChange: (String) -> Unit,
     onNameChange: (String) -> Unit,
+    onProfileChange: (String) -> Unit,
 ) {
     Column {
         TextField(
@@ -188,6 +162,13 @@ fun PreferencesForm(
             label = { Text("Name") },
             modifier = Modifier.fillMaxWidth(),
         )
+        Spacer(modifier = Modifier.height(8.dp))
+        TextField(
+            value = profile,
+            onValueChange = onProfileChange,
+            label = { Text("Name") },
+            modifier = Modifier.fillMaxWidth(),
+        )
     }
 }
 
@@ -196,6 +177,7 @@ fun SaveButton(
     preferencesHelper: PreferencesHelper,
     username: String,
     name: String,
+    profile: String,
     user: User?,
     coroutineScope: CoroutineScope
 ) {
@@ -203,10 +185,11 @@ fun SaveButton(
         onClick = {
             preferencesHelper.saveUsername(username)
             preferencesHelper.saveName(name)
-
+            preferencesHelper.saveProfile(profile)
             user?.let {
                 it.username = username
                 it.name = name
+                it.profile = profile
                 coroutineScope.launch(Dispatchers.Default) {
                     HproseInstance.setUserData(it)
                 }

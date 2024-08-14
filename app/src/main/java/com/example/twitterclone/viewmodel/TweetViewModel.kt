@@ -14,10 +14,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-class TweetViewModel(
-    private val tweetRepository: TweetRepository = TweetRepository()
-) : ViewModel() {
-
+class TweetViewModel() : ViewModel()
+{
     private val _tweet = MutableStateFlow<Tweet?>(null)
     val tweet: StateFlow<Tweet?> get() = _tweet.asStateFlow()
 

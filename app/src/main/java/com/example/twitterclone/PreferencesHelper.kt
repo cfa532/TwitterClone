@@ -6,12 +6,12 @@ import android.content.SharedPreferences
 class PreferencesHelper(context: Context) {
     private val sharedPreferences: SharedPreferences = context.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
 
-    fun saveEntryUrl(url: String) {
-        sharedPreferences.edit().putString("entryUrl", url).apply()
+    fun saveProfile(url: String) {
+        sharedPreferences.edit().putString("profile", url).apply()
     }
 
-    fun getEntryUrl(): String? {
-        return sharedPreferences.getString("entryUrl", null)
+    fun getProfile(): String? {
+        return sharedPreferences.getString("profile", null)
     }
 
     fun saveUsername(username: String) {

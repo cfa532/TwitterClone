@@ -58,6 +58,10 @@ data class User(
     var bookmarkCount: Int = 0,
     var likeCount: Int = 0,
     var commentCount: Int = 0,
+    var profile: String? = null,
+    var timestamp: Long = System.currentTimeMillis(),
+    var fansCount: Int = 0,
+    var followingCount: Int = 0,
 
     // List of nodes authorized to the user to write tweets on.
     var nodeIds: List<MimeiId>? = null,

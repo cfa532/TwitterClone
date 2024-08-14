@@ -5,12 +5,14 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -19,6 +21,8 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
@@ -26,6 +30,8 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import coil.compose.rememberAsyncImagePainter
+import com.example.twitterclone.model.HproseInstance
 import com.example.twitterclone.model.HproseInstance.appUser
 import com.example.twitterclone.model.HproseInstance.getMediaUrl
 import com.example.twitterclone.network.Gadget
@@ -34,6 +40,7 @@ import com.example.twitterclone.ui.compose.CircularImage
 import com.example.twitterclone.ui.compose.ComposeTweetScreen
 import com.example.twitterclone.ui.feed.TweetFeedScreen
 import com.example.twitterclone.ui.profile.PreferencesScreen
+import com.example.twitterclone.ui.profile.UserProfileScreen
 import com.example.twitterclone.ui.theme.TwitterCloneTheme
 import com.example.twitterclone.viewmodel.TweetFeedViewModel
 import okhttp3.OkHttpClient
@@ -79,7 +86,8 @@ fun MainScreen(viewModel: TweetFeedViewModel = TweetFeedViewModel()) {
                 )
             }
             composable("preferences") {
-                PreferencesScreen(navController, preferencesHelper)
+                UserProfileScreen(appUser, navController )
+//                PreferencesScreen(navController, preferencesHelper)
             }
         }
     }
@@ -100,12 +108,14 @@ fun MainTopAppBar(navController: NavHostController) {
         navigationIcon = {
             IconButton(onClick = { navController.navigate("preferences") }) {
                 appUser.baseUrl?.let { getMediaUrl(appUser.avatar, it) }?.let {
-                    CircularImage(
-                        model = it,
+                    Image(
+                        painter = rememberAsyncImagePainter(appUser.baseUrl?.let { getMediaUrl(
+                            appUser.avatar, it) }),
                         contentDescription = "User Avatar",
+                        contentScale = ContentScale.Crop,
                         modifier = Modifier
-                            .padding(4.dp)
                             .size(40.dp)
+                            .clip(CircleShape)
                     )
                 }
             }

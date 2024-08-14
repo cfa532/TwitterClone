@@ -89,11 +89,11 @@ object HproseInstance {
         // check if user data has been read
         InMemoryData.users.find { it.mid == userId }?.let { user -> return user }
 
-        val providerData = client.getVar("", "mmprovsips", userId)
-        val providerLists = Json.parseToJsonElement(providerData).jsonArray
-        if (providerLists.isNotEmpty()) {
-            println(providerLists)
-            val ipAddresses = providerLists[0].jsonArray.map { it.jsonArray }
+        val providers = client.getVar("", "mmprovsips", userId)
+        val providerList = Json.parseToJsonElement(providers).jsonArray
+        if (providerList.isNotEmpty()) {
+            println(providerList)
+            val ipAddresses = providerList[0].jsonArray.map { it.jsonArray }
             Gadget.getFirstReachableUri(ipAddresses, userId)?.let { u ->
                 InMemoryData.users.add(u)
                 println("Get userbase=${InMemoryData.users}")
