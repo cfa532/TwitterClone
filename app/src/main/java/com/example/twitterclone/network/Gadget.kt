@@ -1,6 +1,7 @@
 package com.example.twitterclone.network
 
 import android.util.Log
+import com.example.twitterclone.httpClient
 import com.example.twitterclone.model.HproseInstance.TWBE_APP_ID
 import com.example.twitterclone.model.MimeiId
 import com.example.twitterclone.model.User
@@ -79,7 +80,7 @@ object Gadget {
             val url =
                 "http://$ip/entry?&aid=$TWBE_APP_ID&ver=last&entry=$method&userid=$mid"
             val request = Request.Builder().url(url).build()
-            val response = com.example.twitterclone.httpClient.newCall(request).execute()
+            val response = httpClient.newCall(request).execute()
             if (response.isSuccessful) {
                 val responseBody = response.body?.string() ?: return null
                 val user = Json.decodeFromString<User>(responseBody)

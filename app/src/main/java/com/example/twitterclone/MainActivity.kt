@@ -86,7 +86,7 @@ fun MainScreen(viewModel: TweetFeedViewModel = TweetFeedViewModel()) {
                 )
             }
             composable("preferences") {
-                UserProfileScreen(appUser, navController )
+                UserProfileScreen(appUser, navController, viewModel )
 //                PreferencesScreen(navController, preferencesHelper)
             }
         }

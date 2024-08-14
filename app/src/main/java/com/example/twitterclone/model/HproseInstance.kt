@@ -9,7 +9,6 @@ import com.example.twitterclone.network.Gadget
 import com.google.gson.Gson
 import hprose.client.HproseClient
 import kotlinx.coroutines.Dispatchers.IO
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
@@ -184,14 +183,16 @@ object HproseInstance {
                 tweet.author = author
 
                 if (tweet.originalTweetId != null) {
-                    val cachedTweet = InMemoryData._tweets.value.find { it.mid == tweet.originalTweetId }
+                    val cachedTweet =
+                        InMemoryData._tweets.value.find { it.mid == tweet.originalTweetId }
                     if (cachedTweet != null) {
                         // isPrivate could be null
                         tweet.originalAuthor = cachedTweet.author
                         tweet.originalTweet = cachedTweet;
                     } else {
                         tweet.originalTweet =
-                            tweet.originalAuthorId?.let { getTweet(tweet.originalTweetId, it) } ?: return null
+                            tweet.originalAuthorId?.let { getTweet(tweet.originalTweetId, it) }
+                                ?: return null
                         tweet.originalAuthor = tweet.originalTweet!!.author
                     }
                 }
