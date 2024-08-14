@@ -23,7 +23,6 @@ fun TweetFeedScreen(navController: NavHostController, viewModel: TweetFeedViewMo
         topBar = { MainTopAppBar(navController) },
         bottomBar = { BottomNavigationBar(navController) }
     ) { innerPadding ->
-
         val tweets = viewModel.tweets.collectAsState().value
         LazyColumn(
             modifier = Modifier

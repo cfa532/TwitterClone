@@ -72,7 +72,7 @@ fun UserProfileScreen(
                 text = user.name ?: "No one",
                 style = MaterialTheme.typography.headlineSmall
             )
-            Text(text = "@${user.username}" ?: "@NoOne")
+            Text(text = "@" + (user.username?: "NoOne"))
             Text(text = user.profile ?: "Profile") // Replace with actual resume
         }
         // Add more user details here, like following/followers count

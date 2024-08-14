@@ -4,6 +4,7 @@ import androidx.compose.runtime.mutableLongStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.twitterclone.model.HproseInstance
+import com.example.twitterclone.model.InMemoryData
 import com.example.twitterclone.model.Tweet
 import com.example.twitterclone.repository.TweetRepository
 import kotlinx.coroutines.Dispatchers
@@ -13,10 +14,10 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class TweetFeedViewModel(
-    private val tweetRepository: TweetRepository = TweetRepository(),
-) : ViewModel() {
-    private val _tweets = MutableStateFlow<List<Tweet>>(emptyList())
+class TweetFeedViewModel() : ViewModel()
+{
+//    private val _tweets = MutableStateFlow<List<Tweet>>(emptyList())
+    private val _tweets = InMemoryData._tweets
     val tweets: StateFlow<List<Tweet>> get() = _tweets
 
     private var startTimestamp = mutableLongStateOf(System.currentTimeMillis())     // current time

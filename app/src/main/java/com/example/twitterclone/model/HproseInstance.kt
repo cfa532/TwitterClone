@@ -159,9 +159,7 @@ object HproseInstance {
                 val tweetId = sp["member"] as MimeiId
                 if (score <= startTimestamp && (endTimestamp == null || score > endTimestamp)) {
                     // check if the tweet is in the tweets already.
-                    if (tweets.none { t -> t.mid == tweetId }) {
-                        getTweet(tweetId, authorId)?.let { t -> tweets += t }
-                    }
+                    getTweet(tweetId, authorId)?.let { t -> tweets += t }
                 }
             }
         }
@@ -170,10 +168,11 @@ object HproseInstance {
     }
 
     private suspend fun getTweet(tweetId: MimeiId, authorId: MimeiId): Tweet? {
-        val author = getUserBase(authorId) ?: return null
-        val method = "get_tweet"
+        // if the tweet is fetched already, return null
+        InMemoryData._tweets.value.find { it.mid == tweetId }?.let { return null }
 
-        // there should be a function to get baseUrl of the tweet's author
+        val author = getUserBase(authorId) ?: return null   // cannot get author data, return null
+        val method = "get_tweet"
         val url =
             "${author.baseUrl}/entry?&aid=$TWBE_APP_ID&ver=last&entry=$method&tweetid=$tweetId&userid=${appUser.mid}"
         val request = Request.Builder().url(url).build()
@@ -183,21 +182,19 @@ object HproseInstance {
                 println("getTweet=$json")
                 val tweet = Gson().fromJson(json, Tweet::class.java)
                 tweet.author = author
-                tweet.isPrivate = false
 
-                tweet.originalTweetId?.let {
-                    val rt = InMemoryData._tweets.value.find { t -> t.mid == tweet.originalTweetId }
-                    rt?.let { it1 ->
+                if (tweet.originalTweetId != null) {
+                    val cachedTweet = InMemoryData._tweets.value.find { it.mid == tweet.originalTweetId }
+                    if (cachedTweet != null) {
                         // isPrivate could be null
-                        tweet.originalAuthor = it1.author
-                        tweet.originalTweet = it1;
-                        return tweet
+                        tweet.originalAuthor = cachedTweet.author
+                        tweet.originalTweet = cachedTweet;
+                    } else {
+                        tweet.originalTweet =
+                            tweet.originalAuthorId?.let { getTweet(tweet.originalTweetId, it) } ?: return null
+                        tweet.originalAuthor = tweet.originalTweet!!.author
                     }
-                    tweet.originalTweet = tweet.originalAuthorId?.let { it1 -> getTweet(it, it1) } ?: return null
-                    tweet.originalAuthor = tweet.originalTweet!!.author
-                    InMemoryData._tweets.update { listOf(tweet.originalTweet!!) }
                 }
-                InMemoryData._tweets.update { listOf(tweet) }
                 return tweet
             }
         }
@@ -228,6 +225,7 @@ object HproseInstance {
         return null
     }
 
+    // retweet or cancel retweet
     fun toggleRetweet(tweet: Tweet): Tweet? {
         val method = "retweet"
         val t = tweet.copy()
