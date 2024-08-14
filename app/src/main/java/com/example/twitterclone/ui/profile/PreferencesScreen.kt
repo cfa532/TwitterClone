@@ -4,14 +4,19 @@ import android.net.Uri
 import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -32,10 +37,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import coil.compose.rememberAsyncImagePainter
+import coil.compose.rememberImagePainter
 import com.example.twitterclone.PreferencesHelper
 import com.example.twitterclone.R
 import com.example.twitterclone.model.HproseInstance
@@ -44,17 +52,24 @@ import com.example.twitterclone.model.MimeiId
 import com.example.twitterclone.model.User
 import com.example.twitterclone.ui.compose.AppIcon
 import com.example.twitterclone.ui.compose.CircularImage
+import com.example.twitterclone.viewmodel.TweetViewModel
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 @Composable
-fun PreferencesScreen(navController: NavHostController, preferencesHelper: PreferencesHelper) {
+fun PreferencesScreen(
+    navController: NavHostController,
+    preferencesHelper: PreferencesHelper,
+) {
     var username by rememberSaveable { mutableStateOf(preferencesHelper.getUsername()?.takeIf { it.isNotEmpty() } ?: "NoOne") }
     var name by rememberSaveable { mutableStateOf(preferencesHelper.getName() ?: "No One") }
-    var avatar by rememberSaveable { mutableStateOf<MimeiId?>(null) }
+    var avatar by rememberSaveable { mutableStateOf<MimeiId?>(appUser.avatar) }
     val user by remember { mutableStateOf<User?>(appUser) }
 
+//    appUser.avatar?.let { avatar = it }
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
     val launcher = rememberLauncherForActivityResult(
@@ -91,7 +106,13 @@ fun PreferencesScreen(navController: NavHostController, preferencesHelper: Prefe
         Spacer(modifier = Modifier.height(16.dp))
         AvatarSection(avatar, launcher)
         Spacer(modifier = Modifier.height(16.dp))
-        SaveButton(preferencesHelper, username, name, user)
+        PreferencesForm(
+            username = username,
+            name = name,
+            onUsernameChange = { newUsername -> username = newUsername },
+            onNameChange = { newName -> name = newName },
+        )
+        SaveButton(preferencesHelper, username, name, user, coroutineScope)
     }
 }
 
@@ -127,18 +148,21 @@ fun AvatarSection(avatar: MimeiId?, launcher: ManagedActivityResultLauncher<Stri
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.fillMaxWidth()
     ) {
-        appUser.baseUrl?.let { HproseInstance.getMediaUrl(avatar, it) }?.let {
-            CircularImage(
-                model = it,
+        Button(
+            onClick = { launcher.launch("image/*") },
+            modifier = Modifier
+                .size(100.dp)
+                .clip(CircleShape)
+                .padding(0.dp)
+        ) {
+            Image(
+                painter = rememberAsyncImagePainter(appUser.baseUrl?.let { HproseInstance.getMediaUrl(
+                    avatar, it) }),
                 contentDescription = "User Avatar",
-                modifier = Modifier
-                    .size(100.dp)
-                    .clip(CircleShape)
-                    .padding(8.dp)
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxSize()
+                    .clip(CircleShape) // Clip the image to match the button's shape
             )
-        }
-        Button(onClick = { launcher.launch("image/*") }) {
-            Text("Upload Avatar")
         }
     }
 }
@@ -149,7 +173,6 @@ fun PreferencesForm(
     name: String,
     onUsernameChange: (String) -> Unit,
     onNameChange: (String) -> Unit,
-    onEntryUrlChange: (String) -> Unit
 ) {
     Column {
         TextField(
@@ -173,7 +196,8 @@ fun SaveButton(
     preferencesHelper: PreferencesHelper,
     username: String,
     name: String,
-    user: User?
+    user: User?,
+    coroutineScope: CoroutineScope
 ) {
     Button(
         onClick = {
@@ -183,12 +207,15 @@ fun SaveButton(
             user?.let {
                 it.username = username
                 it.name = name
-                HproseInstance.setUserData(it)
+                coroutineScope.launch(Dispatchers.Default) {
+                    HproseInstance.setUserData(it)
+                }
             }
         },
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp)
+            .width(intrinsicSize = IntrinsicSize.Min)
     ) {
         Text("Save")
     }
