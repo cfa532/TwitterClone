@@ -73,7 +73,7 @@ fun UserProfileScreen(
             )
             Row(modifier = Modifier.padding(bottom = 4.dp)) {
                 Button(
-                    onClick = { /*TODO*/ },
+                    onClick = { navController.navigate("preferences") },
                     modifier = Modifier.width(IntrinsicSize.Min)
                 ) {
                     Text("Edit")
@@ -89,9 +89,12 @@ fun UserProfileScreen(
             Column(modifier = Modifier.padding(start = 16.dp, end = 16.dp)) {
             Text(
                 text = user.name ?: "No one",
-                style = MaterialTheme.typography.headlineSmall
+                style = MaterialTheme.typography.titleLarge
             )
-            Text(text = "@" + (user.username ?: "NoOne"))
+            Text(text = "@" + (user.username ?: "NoOne"),
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.tertiary,
+                modifier = Modifier.padding(start = 0.dp))
             Text(text = user.profile ?: "Profile") // Replace with actual resume
             // Add more user details here, like following/followers count
             }

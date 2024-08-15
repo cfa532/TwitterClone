@@ -5,12 +5,11 @@ import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -18,13 +17,11 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Button
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -35,6 +32,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -48,7 +46,6 @@ import com.example.twitterclone.model.HproseInstance.appUser
 import com.example.twitterclone.model.HproseInstance.getMediaUrl
 import com.example.twitterclone.model.MimeiId
 import com.example.twitterclone.model.User
-import com.example.twitterclone.ui.compose.AppIcon
 import com.example.twitterclone.ui.compose.ProfileTopAppBar
 import com.example.twitterclone.viewmodel.ProfileViewModel
 import kotlinx.coroutines.CoroutineScope
@@ -101,8 +98,6 @@ fun PreferencesScreen(
     ) {
         ProfileTopAppBar(navController)
         Spacer(modifier = Modifier.height(16.dp))
-        Text("Preferences", style = MaterialTheme.typography.labelSmall)
-        Spacer(modifier = Modifier.height(16.dp))
         AvatarSection(avatar, launcher)
         Spacer(modifier = Modifier.height(16.dp))
         PreferencesForm(
@@ -123,18 +118,19 @@ fun AvatarSection(avatar: MimeiId?, launcher: ManagedActivityResultLauncher<Stri
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.fillMaxWidth()
     ) {
-        IconButton(onClick = { launcher.launch("image/*") } ) {
-            appUser.baseUrl?.let { getMediaUrl(appUser.avatar, it) }?.let {
-                Image(
-                    painter = rememberAsyncImagePainter(appUser.baseUrl?.let { getMediaUrl(
-                        appUser.avatar, it) }),
-                    contentDescription = "User Avatar",
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .size(100.dp)
-                        .clip(CircleShape)
-                )
-            }
+        Box(
+            modifier = Modifier
+                .size(100.dp) // Adjust the size as needed
+                .clip(CircleShape)
+                .clickable(onClick = { launcher.launch("image/*") })
+        ) {
+            Image(
+                painter = rememberAsyncImagePainter(appUser.baseUrl?.let { getMediaUrl(
+                    avatar, it) }),
+                contentDescription = null,
+                contentScale = ContentScale.Crop, // Ensure the image area is as large as possible within the round button
+                modifier = Modifier.size(100.dp) // Ensure the image fits the button size
+            )
         }
     }
 }

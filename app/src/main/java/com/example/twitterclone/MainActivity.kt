@@ -85,9 +85,11 @@ fun MainScreen(viewModel: TweetFeedViewModel = TweetFeedViewModel()) {
                     viewModel = viewModel,
                 )
             }
-            composable("preferences") {
+            composable("userProfile") {
                 UserProfileScreen(appUser, navController, viewModel )
-//                PreferencesScreen(navController, preferencesHelper)
+            }
+            composable("preferences") {
+                PreferencesScreen(navController, preferencesHelper)
             }
         }
     }
@@ -106,7 +108,7 @@ fun MainTopAppBar(navController: NavHostController) {
             }
         },
         navigationIcon = {
-            IconButton(onClick = { navController.navigate("preferences") }) {
+            IconButton(onClick = { navController.navigate("userProfile") }) {
                 appUser.baseUrl?.let { getMediaUrl(appUser.avatar, it) }?.let {
                     Image(
                         painter = rememberAsyncImagePainter(appUser.baseUrl?.let { getMediaUrl(
