@@ -19,8 +19,8 @@ import kotlinx.coroutines.launch
 
 class TweetFeedViewModel() : ViewModel()
 {
-    //    private val _tweets = InMemoryData._tweets
-    private val _tweets = MutableStateFlow<List<Tweet>>(emptyList())
+    private val _tweets = InMemoryData._tweets
+//    private val _tweets = MutableStateFlow<List<Tweet>>(emptyList())
     val tweets: StateFlow<List<Tweet>> get() = _tweets
 
     private var startTimestamp = mutableLongStateOf(System.currentTimeMillis())     // current time

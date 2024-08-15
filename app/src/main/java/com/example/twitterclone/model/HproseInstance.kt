@@ -9,6 +9,8 @@ import com.example.twitterclone.network.Gadget
 import com.google.gson.Gson
 import hprose.client.HproseClient
 import kotlinx.coroutines.Dispatchers.IO
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
@@ -226,24 +228,61 @@ object HproseInstance {
         return null
     }
 
-    // retweet or cancel retweet
-    fun toggleRetweet(tweet: Tweet): Tweet? {
-        val method = "retweet"
-        val t = tweet.copy()
-        t.originalTweet = null
-        t.author = null
-        t.originalAuthor = null
-        t.favorites = null
-
-        val json = URLEncoder.encode(Json.encodeToString(t), "utf-8")
+    private fun deleteTweet(tweetId: MimeiId) {
+        val method = "delete_tweet"
         val url =
-            "${appUser.baseUrl}/entry?&aid=$TWBE_APP_ID&ver=last&entry=$method&retweet=$json"
+            "${appUser.baseUrl}/entry?&aid=$TWBE_APP_ID&ver=last&entry=$method&tweetid=$tweetId&authorid=${appUser.mid}"
         val request = Request.Builder().url(url).build()
         val response = httpClient.newCall(request).execute()
         if (response.isSuccessful) {
-            val responseBody = response.body?.string() ?: return null
-            val gson = Gson()
-            return gson.fromJson(responseBody, Tweet::class.java)
+            InMemoryData._tweets.update { currentTweets ->
+                currentTweets.filterNot { it.mid == tweetId }
+            }
+        }
+    }
+
+    // retweet or cancel retweet
+    fun toggleRetweet(tweet: Tweet /* original tweet */): Tweet? {
+        val method = "toggle_retweet"
+        val hasRetweeted = tweet.favorites?.get(UserFavorites.RETWEET.ordinal) ?: return null
+        val url = StringBuilder("${tweet.author?.baseUrl}/entry?&aid=$TWBE_APP_ID&ver=last&entry=$method")
+            .append("&tweetid=${tweet.mid}")
+            .append("&userid=${appUser.mid}")
+
+        if (hasRetweeted) {
+            // remove the retweet. Get retweetId first
+            val request = Request.Builder().url(url.toString()).build()
+            val response = httpClient.newCall(request).execute()
+            if (response.isSuccessful) {
+                val responseBody = response.body?.string() ?: return null
+                val gson = Gson()
+                val res = gson.fromJson(responseBody, Map::class.java) as Map<*, *>
+                deleteTweet(res["retweetId"] as MimeiId)
+                tweet.favorites!![UserFavorites.RETWEET.ordinal] = false
+                return tweet.copy(retweetCount = (res["count"] as Double).toInt())
+            }
+        } else {
+            var retweet = Tweet(
+                content = "",
+                timestamp = System.currentTimeMillis(),
+                authorId = appUser.mid,
+                originalTweetId = tweet.mid,
+                originalAuthorId = tweet.authorId
+            )
+            retweet = uploadTweet(retweet) ?: return null
+            url.append("&retweetid=${retweet.mid}")
+            val request = Request.Builder().url(url.toString()).build()
+            val response = httpClient.newCall(request).execute()
+            if (response.isSuccessful) {
+                val responseBody = response.body?.string() ?: return null
+                val gson = Gson()
+                val res = gson.fromJson(responseBody, Map::class.java) as Map<*, *>
+                tweet.favorites!![UserFavorites.RETWEET.ordinal] = true
+
+                retweet.author = appUser
+                retweet.originalTweet = tweet
+                return tweet.copy(retweetCount = (res["count"] as Double).toInt())
+            }
         }
         return null
     }
@@ -305,25 +344,6 @@ object HproseInstance {
         )    // Associate the uploaded data with the app's main Mimei
         println("cid=$cid")
         return cid
-    }
-
-    suspend fun uploadAttachments(context: Context, attachments: List<Uri>): List<MimeiId> {
-        return attachments.mapNotNull { uri ->
-            uploadFile(context, uri)
-        }
-    }
-
-    private suspend fun uploadFile(context: Context, uri: Uri): MimeiId? {
-        return withContext(IO) {
-            runCatching {
-                context.contentResolver.openInputStream(uri)?.use { inputStream ->
-                    uploadToIPFS(inputStream)
-                } ?: throw FileNotFoundException("File not found for URI: $uri")
-            }.getOrElse { e ->
-                Log.e("HproseInstance.uploadFile", "Failed to upload file: $uri", e)
-                null
-            }
-        }
     }
 
     fun getMediaUrl(mid: MimeiId?, baseUrl: String): Any {

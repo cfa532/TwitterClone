@@ -1,11 +1,15 @@
 package com.example.twitterclone.network
 
+import android.content.Context
+import android.net.Uri
 import android.util.Log
 import com.example.twitterclone.httpClient
 import com.example.twitterclone.model.HproseInstance.TWBE_APP_ID
+import com.example.twitterclone.model.HproseInstance.uploadToIPFS
 import com.example.twitterclone.model.MimeiId
 import com.example.twitterclone.model.User
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
@@ -20,11 +24,26 @@ import kotlinx.serialization.json.jsonArray
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import java.io.FileNotFoundException
 import java.io.IOException
 import java.net.URL
 import java.net.UnknownHostException
 
 object Gadget {
+    suspend fun uploadAttachments(context: Context, attachments: List<Uri>): List<MimeiId> {
+        return attachments.mapNotNull { uri ->
+            withContext(IO) {
+                runCatching {
+                    context.contentResolver.openInputStream(uri)?.use { inputStream ->
+                        uploadToIPFS(inputStream)
+                    } ?: throw FileNotFoundException("File not found for URI: $uri")
+                }.getOrElse { e ->
+                    Log.e("HproseInstance.uploadFile", "Failed to upload file: $uri", e)
+                    null
+                }
+            }
+        }
+    }
 
     fun downloadFileHeader(url: String, byteCount: Int = 1024): ByteArray? {
         val client = OkHttpClient()

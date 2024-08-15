@@ -54,6 +54,7 @@ android {
 
 dependencies {
 
+    implementation(libs.logging.interceptor)
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.androidx.media3.media3.exoplayer)

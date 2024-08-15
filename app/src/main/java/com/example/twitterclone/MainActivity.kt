@@ -44,14 +44,21 @@ import com.example.twitterclone.ui.profile.UserProfileScreen
 import com.example.twitterclone.ui.theme.TwitterCloneTheme
 import com.example.twitterclone.viewmodel.TweetFeedViewModel
 import okhttp3.OkHttpClient
+import okhttp3.logging.HttpLoggingInterceptor
 
 const val CURRENT_USER_ID = "5lrADJpzRpYZ82-6jkewoa1w3jB"
-val httpClient: OkHttpClient = OkHttpClient.Builder().build()
+var httpClient: OkHttpClient = OkHttpClient()
 
 class MainActivity : ComponentActivity() {
     companion object {
         init {
             // init global data here
+            val loggingInterceptor = HttpLoggingInterceptor().apply {
+                level = HttpLoggingInterceptor.Level.BODY
+            }
+            httpClient = OkHttpClient.Builder()
+                .addInterceptor(loggingInterceptor)
+                .build()
         }
     }
 

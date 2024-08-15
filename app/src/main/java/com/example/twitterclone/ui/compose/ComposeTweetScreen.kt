@@ -40,8 +40,8 @@ import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavHostController
 import com.example.twitterclone.R
 import com.example.twitterclone.model.HproseInstance
-import com.example.twitterclone.model.HproseInstance.uploadAttachments
 import com.example.twitterclone.model.Tweet
+import com.example.twitterclone.network.Gadget.uploadAttachments
 import com.example.twitterclone.viewmodel.TweetFeedViewModel
 import kotlinx.coroutines.launch
 
