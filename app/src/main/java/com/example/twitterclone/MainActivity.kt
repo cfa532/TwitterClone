@@ -1,16 +1,13 @@
 package com.example.twitterclone
 
-import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.BottomAppBar
@@ -31,12 +28,9 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import coil.compose.rememberAsyncImagePainter
-import com.example.twitterclone.model.HproseInstance
-import com.example.twitterclone.model.HproseInstance.appUser
-import com.example.twitterclone.model.HproseInstance.getMediaUrl
-import com.example.twitterclone.network.Gadget
+import com.example.twitterclone.repository.HproseInstance.appUser
+import com.example.twitterclone.repository.HproseInstance.getMediaUrl
 import com.example.twitterclone.ui.compose.AppIcon
-import com.example.twitterclone.ui.compose.CircularImage
 import com.example.twitterclone.ui.compose.ComposeTweetScreen
 import com.example.twitterclone.ui.feed.TweetFeedScreen
 import com.example.twitterclone.ui.profile.PreferencesScreen

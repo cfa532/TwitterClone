@@ -19,7 +19,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -30,8 +29,8 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import coil.compose.rememberAsyncImagePainter
-import com.example.twitterclone.model.HproseInstance
-import com.example.twitterclone.model.HproseInstance.appUser
+import com.example.twitterclone.repository.HproseInstance
+import com.example.twitterclone.repository.HproseInstance.appUser
 import com.example.twitterclone.model.User
 import com.example.twitterclone.ui.compose.ProfileTopAppBar
 import com.example.twitterclone.ui.tweet.TweetItem
@@ -108,7 +107,7 @@ fun UserProfileScreen(
             )
             {
                 items(tweetsByAuthor) { tweet ->
-                    if (!tweet.isPrivate) TweetItem(tweet)
+                    if (!tweet.isPrivate) TweetItem(tweet, viewModel)
                 }
             }
         }

@@ -13,20 +13,23 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.example.twitterclone.R
 import com.example.twitterclone.model.Tweet
 import com.example.twitterclone.model.UserFavorites
+import com.example.twitterclone.viewmodel.TweetFeedViewModel
 import com.example.twitterclone.viewmodel.TweetViewModel
 
 @Composable
-fun CommentButton(tweet: Tweet, viewModel: TweetViewModel) {
+fun CommentButton(tweet: Tweet, viewModel: TweetViewModel, tweetFeedViewModel: TweetFeedViewModel) {
     val t by viewModel.tweet.collectAsState(initial = tweet)
 
     IconButton(onClick = {
-        // open comment
     }) {
         Row(horizontalArrangement = Arrangement.Center) {
             Icon(
@@ -41,12 +44,12 @@ fun CommentButton(tweet: Tweet, viewModel: TweetViewModel) {
 }
 
 @Composable
-fun RetweetButton(tweet: Tweet, viewModel: TweetViewModel) {
+fun RetweetButton(tweet: Tweet, viewModel: TweetViewModel, tweetFeedViewModel: TweetFeedViewModel) {
     val t by viewModel.tweet.collectAsState(initial = tweet)
     val hasRetweeted = t?.favorites?.get(UserFavorites.RETWEET.ordinal)
 
     IconButton(onClick = {
-        t?.let { viewModel.toggleRetweet(it) }
+        t?.let { tweetFeedViewModel.toggleRetweet(it) }
     }) {
         Row(horizontalArrangement = Arrangement.Center) {
             Icon(

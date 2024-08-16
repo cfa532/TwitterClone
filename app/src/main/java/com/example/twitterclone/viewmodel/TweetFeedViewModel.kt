@@ -1,26 +1,21 @@
 package com.example.twitterclone.viewmodel
 
 import androidx.compose.runtime.mutableLongStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.twitterclone.model.HproseInstance
-import com.example.twitterclone.model.InMemoryData
-import com.example.twitterclone.model.MimeiId
+import com.example.twitterclone.repository.HproseInstance
 import com.example.twitterclone.model.Tweet
-import com.example.twitterclone.repository.TweetRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class TweetFeedViewModel() : ViewModel()
 {
-    private val _tweets = InMemoryData._tweets
-//    private val _tweets = MutableStateFlow<List<Tweet>>(emptyList())
+//    private val _tweets = InMemoryData._tweets
+    private val _tweets = MutableStateFlow<List<Tweet>>(emptyList())
     val tweets: StateFlow<List<Tweet>> get() = _tweets
 
     private var startTimestamp = mutableLongStateOf(System.currentTimeMillis())     // current time
@@ -29,6 +24,23 @@ class TweetFeedViewModel() : ViewModel()
     init {
 //        getTweets(startTimestamp.longValue, endTimestamp.longValue)
         getTweets(startTimestamp.longValue)
+    }
+
+    fun toggleRetweet(tweet: Tweet) {
+        var originalTweet: Tweet = tweet
+        viewModelScope.launch(Dispatchers.Default) {
+            tweet.originalTweet?.let {
+                // the tweet to be forwarded is a retweet itself. Find the original tweet to forward.
+                if (tweet.content == "") {
+                    originalTweet = it
+                } else {
+                    // update timestamp of the old retweet to move it forward.
+                }
+            }
+            HproseInstance.toggleRetweet( originalTweet )?.let {
+//                _tweet.value = it
+            }
+        }
     }
 
     private fun getTweets(

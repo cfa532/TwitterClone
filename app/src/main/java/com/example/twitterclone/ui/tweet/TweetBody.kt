@@ -18,7 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
-import com.example.twitterclone.model.HproseInstance.getMediaUrl
+import com.example.twitterclone.repository.HproseInstance.getMediaUrl
 import com.example.twitterclone.model.Tweet
 import com.example.twitterclone.ui.compose.BookmarkButton
 import com.example.twitterclone.ui.compose.CircularImage
@@ -27,12 +27,13 @@ import com.example.twitterclone.ui.compose.LikeButton
 import com.example.twitterclone.ui.compose.MediaItem
 import com.example.twitterclone.ui.compose.MediaPreviewGrid
 import com.example.twitterclone.ui.compose.RetweetButton
+import com.example.twitterclone.viewmodel.TweetFeedViewModel
 import com.example.twitterclone.viewmodel.TweetViewModel
 
 @Composable
-fun TweetBody(tweet: Tweet, viewModel: TweetViewModel) {
+fun TweetBody(tweet: Tweet, tweetViewModel: TweetViewModel, tweetFeedViewModel: TweetFeedViewModel) {
     // Tweet Header
-    TweetHeader(tweet, viewModel)
+    TweetHeader(tweet, tweetViewModel)
     Spacer(modifier = Modifier.padding(8.dp))
     Column(
         modifier = Modifier.padding(start = 12.dp)
@@ -58,13 +59,13 @@ fun TweetBody(tweet: Tweet, viewModel: TweetViewModel) {
 //                    .padding(start = 0.dp, end = 20.dp),
 //                horizontalArrangement = Arrangement.SpaceBetween,
             ) {
-                LikeButton(it, viewModel)
+                LikeButton(it, tweetViewModel)
                 Spacer(modifier = Modifier.width(8.dp)) // Add some space between the two texts
-                BookmarkButton(it, viewModel)
+                BookmarkButton(it, tweetViewModel)
                 Spacer(modifier = Modifier.width(8.dp))
-                CommentButton(it, viewModel)
+                CommentButton(it, tweetViewModel, tweetFeedViewModel)
                 Spacer(modifier = Modifier.width(8.dp))
-                RetweetButton(it, viewModel)
+                RetweetButton(it, tweetViewModel, tweetFeedViewModel)
             }
         }
     }

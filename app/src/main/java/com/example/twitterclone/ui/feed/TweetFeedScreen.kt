@@ -18,7 +18,8 @@ import com.example.twitterclone.viewmodel.TweetFeedViewModel
 import com.example.twitterclone.viewmodel.TweetViewModel
 
 @Composable
-fun TweetFeedScreen(navController: NavHostController, viewModel: TweetFeedViewModel) {
+fun TweetFeedScreen(navController: NavHostController,
+                    viewModel: TweetFeedViewModel = TweetFeedViewModel()) {
     Scaffold(
         topBar = { MainTopAppBar(navController) },
         bottomBar = { BottomNavigationBar(navController) }
@@ -31,7 +32,7 @@ fun TweetFeedScreen(navController: NavHostController, viewModel: TweetFeedViewMo
         )
         {
             items(tweets) { tweet ->
-                if (!tweet.isPrivate) TweetItem(tweet)
+                if (!tweet.isPrivate) TweetItem(tweet, viewModel)
             }
         }
     }

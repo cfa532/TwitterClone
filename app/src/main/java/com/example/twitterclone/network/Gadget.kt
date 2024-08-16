@@ -4,30 +4,24 @@ import android.content.Context
 import android.net.Uri
 import android.util.Log
 import com.example.twitterclone.httpClient
-import com.example.twitterclone.model.HproseInstance.TWBE_APP_ID
-import com.example.twitterclone.model.HproseInstance.uploadToIPFS
+import com.example.twitterclone.repository.HproseInstance.TWBE_APP_ID
+import com.example.twitterclone.repository.HproseInstance.uploadToIPFS
 import com.example.twitterclone.model.MimeiId
 import com.example.twitterclone.model.User
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
-import kotlinx.serialization.json.jsonArray
-import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.io.FileNotFoundException
 import java.io.IOException
-import java.net.URL
-import java.net.UnknownHostException
 
 object Gadget {
     suspend fun uploadAttachments(context: Context, attachments: List<Uri>): List<MimeiId> {

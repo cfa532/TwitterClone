@@ -1,9 +1,7 @@
 package com.example.twitterclone.repository
 
-import com.example.twitterclone.model.HproseInstance
 import com.example.twitterclone.model.MimeiId
 import com.example.twitterclone.model.Tweet
-import hprose.client.HproseClient
 
 class TweetRepository (
 ) {

@@ -1,5 +1,7 @@
-package com.example.twitterclone.model
+package com.example.twitterclone.repository
 
+import com.example.twitterclone.model.Tweet
+import com.example.twitterclone.model.User
 import kotlinx.coroutines.flow.MutableStateFlow
 
 object InMemoryData {

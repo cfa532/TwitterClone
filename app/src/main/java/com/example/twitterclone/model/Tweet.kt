@@ -3,10 +3,6 @@ package com.example.twitterclone.model
 import kotlinx.serialization.Serializable
 typealias MimeiId = String      // 27 or 64 character long string
 
-enum class UserFavorites {
-    TWEET, BOOKMARK, RETWEET
-}
-
 @Serializable
 data class Tweet(
     var mid: MimeiId? = null,   // mid of the tweet

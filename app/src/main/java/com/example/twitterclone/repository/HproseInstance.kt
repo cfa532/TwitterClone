@@ -1,15 +1,16 @@
-package com.example.twitterclone.model
+package com.example.twitterclone.repository
 
-import android.content.Context
-import android.net.Uri
 import android.util.Log
 import com.example.twitterclone.R
 import com.example.twitterclone.httpClient
+import com.example.twitterclone.model.MimeiId
+import com.example.twitterclone.model.ScorePair
+import com.example.twitterclone.model.Tweet
+import com.example.twitterclone.model.User
 import com.example.twitterclone.network.Gadget
 import com.google.gson.Gson
 import hprose.client.HproseClient
 import kotlinx.coroutines.Dispatchers.IO
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
@@ -18,10 +19,15 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonArray
 import okhttp3.Request
-import java.io.FileNotFoundException
 import java.io.InputStream
 import java.math.BigInteger
 import java.net.URLEncoder
+
+object UserFavorites {
+    const val TWEET = 0
+    const val BOOKMARK = 1
+    const val RETWEET = 2
+}
 
 // Encapsulate Hprose client and related operations in a singleton object.
 object HproseInstance {
@@ -31,7 +37,7 @@ object HproseInstance {
     private const val CHUNK_SIZE = 50 * 1024 * 1024 // 10MB in bytes
     private const val APP_ID = "V6MUd0cVeuCFE7YsGLNn5ygyJlm"
     private const val APP_EXT = "com.example.twitterclone"
-    private const val APP_MARK = "version 0.0.2"
+    private const val APP_MARK = "version 0.0.3"
 
     // Keys within the mimei of each tweet
     private const val TWT_CONTENT_KEY = "core_data_of_tweet"  // content key within the Mimei
@@ -209,13 +215,11 @@ object HproseInstance {
         val method = "upload_tweet"
 
         // make a copy of input tweet and remove attributes that is for display only.
-        val t = tweet.copy()
-        t.originalTweet = null
-        t.author = null
-        t.originalAuthor = null
-        t.favorites = null
+//        val t = Tweet(mid = tweet.mid, authorId = tweet.authorId, content = tweet.content,
+//            timestamp = tweet.timestamp, attachments = tweet.attachments, originalTweetId = tweet.originalTweetId,
+//            originalAuthorId = tweet.originalAuthorId)
 
-        val json = URLEncoder.encode(Json.encodeToString(t), "utf-8")
+        val json = URLEncoder.encode(Json.encodeToString(tweet), "utf-8")
         val url =
             "${appUser.baseUrl}/entry?&aid=$TWBE_APP_ID&ver=last&entry=$method&tweet=$json&commentonly=$commentOnly"
         val request = Request.Builder().url(url).build()
@@ -244,7 +248,7 @@ object HproseInstance {
     // retweet or cancel retweet
     fun toggleRetweet(tweet: Tweet /* original tweet */): Tweet? {
         val method = "toggle_retweet"
-        val hasRetweeted = tweet.favorites?.get(UserFavorites.RETWEET.ordinal) ?: return null
+        val hasRetweeted = tweet.favorites?.get(UserFavorites.RETWEET) ?: return null
         val url = StringBuilder("${tweet.author?.baseUrl}/entry?&aid=$TWBE_APP_ID&ver=last&entry=$method")
             .append("&tweetid=${tweet.mid}")
             .append("&userid=${appUser.mid}")
@@ -258,26 +262,26 @@ object HproseInstance {
                 val gson = Gson()
                 val res = gson.fromJson(responseBody, Map::class.java) as Map<*, *>
                 deleteTweet(res["retweetId"] as MimeiId)
-                tweet.favorites!![UserFavorites.RETWEET.ordinal] = false
+                tweet.favorites!![UserFavorites.RETWEET] = false
                 return tweet.copy(retweetCount = (res["count"] as Double).toInt())
             }
         } else {
             var retweet = Tweet(
                 content = "",
-                timestamp = System.currentTimeMillis(),
                 authorId = appUser.mid,
                 originalTweetId = tweet.mid,
                 originalAuthorId = tweet.authorId
             )
             retweet = uploadTweet(retweet) ?: return null
             url.append("&retweetid=${retweet.mid}")
+
             val request = Request.Builder().url(url.toString()).build()
             val response = httpClient.newCall(request).execute()
             if (response.isSuccessful) {
                 val responseBody = response.body?.string() ?: return null
                 val gson = Gson()
                 val res = gson.fromJson(responseBody, Map::class.java) as Map<*, *>
-                tweet.favorites!![UserFavorites.RETWEET.ordinal] = true
+                tweet.favorites!![UserFavorites.RETWEET] = true
 
                 retweet.author = appUser
                 retweet.originalTweet = tweet
@@ -300,7 +304,7 @@ object HproseInstance {
             val res = gson.fromJson(responseBody, Map::class.java) as Map<*, *>
 
             // return a new object for recomposition to work.
-            tweet.favorites?.set(UserFavorites.TWEET.ordinal, res["hasLiked"] as Boolean)
+            tweet.favorites?.set(UserFavorites.TWEET, res["hasLiked"] as Boolean)
             return tweet.copy(
                 likeCount = (res["count"] as Double).toInt()
             )
@@ -320,7 +324,7 @@ object HproseInstance {
             val gson = Gson()
             val res = gson.fromJson(responseBody, Map::class.java) as Map<*, *>
 
-            tweet.favorites?.set(UserFavorites.BOOKMARK.ordinal, res["hasBookmarked"] as Boolean)
+            tweet.favorites?.set(UserFavorites.BOOKMARK, res["hasBookmarked"] as Boolean)
             return tweet.copy(bookmarkCount = (res["count"] as Double).toInt())
         }
         return tweet
