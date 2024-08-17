@@ -1,5 +1,6 @@
 package com.example.twitterclone
 
+import android.app.Application
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -38,11 +39,17 @@ import com.example.twitterclone.ui.profile.UserProfileScreen
 import com.example.twitterclone.ui.theme.TwitterCloneTheme
 import com.example.twitterclone.viewmodel.TweetFeedViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import dagger.hilt.android.HiltAndroidApp
+import dagger.hilt.android.qualifiers.ApplicationContext
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 
 const val CURRENT_USER_ID = "5lrADJpzRpYZ82-6jkewoa1w3jB"
 var httpClient: OkHttpClient = OkHttpClient()
+
+@HiltAndroidApp
+class Tweet : Application() {
+}
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
