@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.twitterclone.repository.HproseInstance
 import com.example.twitterclone.model.Tweet
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -13,11 +14,13 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 
 data class TweetFeedState(val tweets: List<Tweet>)
 
-class TweetFeedViewModel() : ViewModel()
+@HiltViewModel
+class TweetFeedViewModel @Inject constructor() : ViewModel()
 {
 //    private val _tweets = InMemoryData._tweets
     private val _tweets = MutableStateFlow<List<Tweet>>(emptyList())

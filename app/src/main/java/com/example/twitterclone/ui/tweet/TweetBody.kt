@@ -63,9 +63,9 @@ fun TweetBody(tweet: Tweet, tweetViewModel: TweetViewModel, tweetFeedViewModel: 
                 Spacer(modifier = Modifier.width(8.dp)) // Add some space between the two texts
                 BookmarkButton(it, tweetViewModel)
                 Spacer(modifier = Modifier.width(8.dp))
-                CommentButton(it, tweetViewModel, tweetFeedViewModel)
+                CommentButton(it, tweetViewModel)
                 Spacer(modifier = Modifier.width(8.dp))
-                RetweetButton(it, tweetViewModel, tweetFeedViewModel)
+                RetweetButton(it, tweetViewModel)
             }
         }
     }

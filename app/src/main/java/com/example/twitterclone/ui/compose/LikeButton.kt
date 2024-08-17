@@ -16,6 +16,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.twitterclone.R
 import com.example.twitterclone.model.Tweet
 import com.example.twitterclone.repository.UserFavorites
@@ -23,8 +24,9 @@ import com.example.twitterclone.viewmodel.TweetFeedViewModel
 import com.example.twitterclone.viewmodel.TweetViewModel
 
 @Composable
-fun CommentButton(tweet: Tweet, viewModel: TweetViewModel, tweetFeedViewModel: TweetFeedViewModel) {
+fun CommentButton(tweet: Tweet, viewModel: TweetViewModel) {
     val t by viewModel.tweet.collectAsState(initial = tweet)
+    val tweetFeedViewModel: TweetFeedViewModel = hiltViewModel()
 
     IconButton(onClick = {
     }) {
@@ -41,7 +43,8 @@ fun CommentButton(tweet: Tweet, viewModel: TweetViewModel, tweetFeedViewModel: T
 }
 
 @Composable
-fun RetweetButton(tweet: Tweet, viewModel: TweetViewModel, tweetFeedViewModel: TweetFeedViewModel) {
+fun RetweetButton(tweet: Tweet, viewModel: TweetViewModel) {
+    val tweetFeedViewModel: TweetFeedViewModel = hiltViewModel()
     val t by viewModel.tweet.collectAsState(initial = tweet)
     val hasRetweeted = t?.favorites?.get(UserFavorites.RETWEET)
 
