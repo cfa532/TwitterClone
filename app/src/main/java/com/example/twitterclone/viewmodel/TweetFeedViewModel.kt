@@ -1,5 +1,6 @@
 package com.example.twitterclone.viewmodel
 
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -9,8 +10,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+
+
+data class TweetFeedState(val tweets: List<Tweet>)
 
 class TweetFeedViewModel() : ViewModel()
 {
@@ -24,6 +29,10 @@ class TweetFeedViewModel() : ViewModel()
     init {
 //        getTweets(startTimestamp.longValue, endTimestamp.longValue)
         getTweets(startTimestamp.longValue)
+    }
+
+    fun addTweet(tweet: Tweet) {
+        _tweets.update { currentTweets -> listOf(tweet) + currentTweets }
     }
 
     fun toggleRetweet(tweet: Tweet) {

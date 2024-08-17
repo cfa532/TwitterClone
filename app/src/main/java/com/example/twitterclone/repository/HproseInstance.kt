@@ -176,7 +176,7 @@ object HproseInstance {
 
     private suspend fun getTweet(tweetId: MimeiId, authorId: MimeiId): Tweet? {
         // if the tweet is fetched already, return null
-        InMemoryData._tweets.value.find { it.mid == tweetId }?.let { return null }
+//        InMemoryData._tweets.value.find { it.mid == tweetId }?.let { return null }
 
         val author = getUserBase(authorId) ?: return null   // cannot get author data, return null
         val method = "get_tweet"
@@ -191,18 +191,19 @@ object HproseInstance {
                 tweet.author = author
 
                 if (tweet.originalTweetId != null) {
-                    val cachedTweet =
-                        InMemoryData._tweets.value.find { it.mid == tweet.originalTweetId }
-                    if (cachedTweet != null) {
-                        // isPrivate could be null
-                        tweet.originalAuthor = cachedTweet.author
-                        tweet.originalTweet = cachedTweet;
-                    } else {
-                        tweet.originalTweet =
-                            tweet.originalAuthorId?.let { getTweet(tweet.originalTweetId, it) }
-                                ?: return null
-                        tweet.originalAuthor = tweet.originalTweet!!.author
-                    }
+                    return null
+//                    val cachedTweet =
+//                        InMemoryData._tweets.value.find { it.mid == tweet.originalTweetId }
+//                    if (cachedTweet != null) {
+//                        // isPrivate could be null
+//                        tweet.originalAuthor = cachedTweet.author
+//                        tweet.originalTweet = cachedTweet;
+//                    } else {
+//                        tweet.originalTweet =
+//                            tweet.originalAuthorId?.let { getTweet(tweet.originalTweetId, it) }
+//                                ?: return null
+//                        tweet.originalAuthor = tweet.originalTweet!!.author
+//                    }
                 }
                 return tweet
             }
@@ -239,9 +240,9 @@ object HproseInstance {
         val request = Request.Builder().url(url).build()
         val response = httpClient.newCall(request).execute()
         if (response.isSuccessful) {
-            InMemoryData._tweets.update { currentTweets ->
-                currentTweets.filterNot { it.mid == tweetId }
-            }
+//            InMemoryData._tweets.update { currentTweets ->
+//                currentTweets.filterNot { it.mid == tweetId }
+//            }
         }
     }
 

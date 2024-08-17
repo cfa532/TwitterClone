@@ -13,15 +13,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.example.twitterclone.R
 import com.example.twitterclone.model.Tweet
-import com.example.twitterclone.model.UserFavorites
+import com.example.twitterclone.repository.UserFavorites
 import com.example.twitterclone.viewmodel.TweetFeedViewModel
 import com.example.twitterclone.viewmodel.TweetViewModel
 
@@ -46,7 +43,7 @@ fun CommentButton(tweet: Tweet, viewModel: TweetViewModel, tweetFeedViewModel: T
 @Composable
 fun RetweetButton(tweet: Tweet, viewModel: TweetViewModel, tweetFeedViewModel: TweetFeedViewModel) {
     val t by viewModel.tweet.collectAsState(initial = tweet)
-    val hasRetweeted = t?.favorites?.get(UserFavorites.RETWEET.ordinal)
+    val hasRetweeted = t?.favorites?.get(UserFavorites.RETWEET)
 
     IconButton(onClick = {
         t?.let { tweetFeedViewModel.toggleRetweet(it) }
@@ -69,7 +66,7 @@ fun RetweetButton(tweet: Tweet, viewModel: TweetViewModel, tweetFeedViewModel: T
 @Composable
 fun LikeButton(tweet: Tweet, viewModel: TweetViewModel) {
     val t by viewModel.tweet.collectAsState(initial = tweet)
-    val hasLiked = t?.favorites?.get(UserFavorites.TWEET.ordinal)
+    val hasLiked = t?.favorites?.get(UserFavorites.TWEET)
 
     IconButton(onClick = {
         t?.let { viewModel.likeTweet(it) }
@@ -93,7 +90,7 @@ fun LikeButton(tweet: Tweet, viewModel: TweetViewModel) {
 @Composable
 fun BookmarkButton(tweet: Tweet, viewModel: TweetViewModel) {
     val t by viewModel.tweet.collectAsState(initial = tweet)
-    val hasBookmarked = t?.favorites?.get(UserFavorites.BOOKMARK.ordinal)
+    val hasBookmarked = t?.favorites?.get(UserFavorites.BOOKMARK)
     IconButton(onClick = {
         t?.let { viewModel.bookmarkTweet(it) }
     }) {
