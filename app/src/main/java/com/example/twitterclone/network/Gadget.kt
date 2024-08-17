@@ -3,11 +3,9 @@ package com.example.twitterclone.network
 import android.content.Context
 import android.net.Uri
 import android.util.Log
-import com.example.twitterclone.httpClient
-import com.example.twitterclone.repository.HproseInstance.TWBE_APP_ID
-import com.example.twitterclone.repository.HproseInstance.uploadToIPFS
 import com.example.twitterclone.model.MimeiId
 import com.example.twitterclone.model.User
+import com.example.twitterclone.repository.HproseInstance
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -29,7 +27,7 @@ object Gadget {
             withContext(IO) {
                 runCatching {
                     context.contentResolver.openInputStream(uri)?.use { inputStream ->
-                        uploadToIPFS(inputStream)
+                        HproseInstance.uploadToIPFS(inputStream)
                     } ?: throw FileNotFoundException("File not found for URI: $uri")
                 }.getOrElse { e ->
                     Log.e("HproseInstance.uploadFile", "Failed to upload file: $uri", e)
@@ -87,30 +85,11 @@ object Gadget {
         return true
     }
 
-    private fun isReachable(mid: MimeiId, ip: String, timeout: Int = 1000): User? {
-        try {
-            val method = "get_author_core_data"
-            val url =
-                "http://$ip/entry?&aid=$TWBE_APP_ID&ver=last&entry=$method&userid=$mid"
-            val request = Request.Builder().url(url).build()
-            val response = httpClient.newCall(request).execute()
-            if (response.isSuccessful) {
-                val responseBody = response.body?.string() ?: return null
-                val user = Json.decodeFromString<User>(responseBody)
-                user.baseUrl = "http://$ip"
-                return user
-            }
-        } catch (e: Exception) {
-            Log.e("Gadget.isReachable", e.toString())
-        }
-        return null
-    }
-
     // In Pair<URL, String?>?, where String is JSON of Mimei content
     suspend fun getFirstReachableUri(ipList: List<JsonArray>, mid: MimeiId): User? = coroutineScope {
         val ips = ipList.map { ip ->
             async {
-                isReachable(mid, removeParentheses(ip[0]))
+                HproseInstance.isReachable(mid, removeParentheses(ip[0]))
             }
         }
         ips.awaitAll().firstOrNull { it != null }

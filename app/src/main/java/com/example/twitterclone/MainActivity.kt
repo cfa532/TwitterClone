@@ -29,6 +29,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import coil.compose.rememberAsyncImagePainter
+import com.example.twitterclone.model.User
 import com.example.twitterclone.repository.HproseInstance.appUser
 import com.example.twitterclone.repository.HproseInstance.getMediaUrl
 import com.example.twitterclone.ui.compose.AppIcon
@@ -40,15 +41,20 @@ import com.example.twitterclone.ui.theme.TwitterCloneTheme
 import com.example.twitterclone.viewmodel.TweetFeedViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import dagger.hilt.android.HiltAndroidApp
-import dagger.hilt.android.qualifiers.ApplicationContext
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 
 const val CURRENT_USER_ID = "5lrADJpzRpYZ82-6jkewoa1w3jB"
-var httpClient: OkHttpClient = OkHttpClient()
+//var httpClient: OkHttpClient = OkHttpClient()
+
+class AppContainer {
+
+    var users: MutableSet<User> = emptySet<User>().toMutableSet()
+}
 
 @HiltAndroidApp
-class Tweet : Application() {
+class TweetApplication : Application() {
+    val appContainer = AppContainer()
 }
 
 @AndroidEntryPoint
@@ -56,17 +62,13 @@ class MainActivity : ComponentActivity() {
     companion object {
         init {
             // init global data here
-            val loggingInterceptor = HttpLoggingInterceptor().apply {
-                level = HttpLoggingInterceptor.Level.BODY
-            }
-            httpClient = OkHttpClient.Builder()
-                .addInterceptor(loggingInterceptor)
-                .build()
         }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        val appContainer = (application as TweetApplication).appContainer
         setContent {
             TwitterCloneTheme {
                 MainScreen()

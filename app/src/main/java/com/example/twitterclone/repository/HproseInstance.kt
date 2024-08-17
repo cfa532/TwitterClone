@@ -2,7 +2,6 @@ package com.example.twitterclone.repository
 
 import android.util.Log
 import com.example.twitterclone.R
-import com.example.twitterclone.httpClient
 import com.example.twitterclone.model.MimeiId
 import com.example.twitterclone.model.ScorePair
 import com.example.twitterclone.model.Tweet
@@ -18,7 +17,9 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonArray
+import okhttp3.OkHttpClient
 import okhttp3.Request
+import okhttp3.logging.HttpLoggingInterceptor
 import java.io.InputStream
 import java.math.BigInteger
 import java.net.URLEncoder
@@ -54,6 +55,12 @@ object HproseInstance {
     }
 
     private var sid = ""
+    private val loggingInterceptor = HttpLoggingInterceptor().apply {
+        level = HttpLoggingInterceptor.Level.BODY
+    }
+    private val httpClient = OkHttpClient.Builder()
+        .addInterceptor(loggingInterceptor)
+        .build()
 
     @Serializable
     data class TempJson(
@@ -360,6 +367,25 @@ object HproseInstance {
             }
         }
         return R.drawable.ic_user_avatar
+    }
+
+    fun isReachable(mid: MimeiId, ip: String, timeout: Int = 1000): User? {
+        try {
+            val method = "get_author_core_data"
+            val url =
+                "http://$ip/entry?&aid=$TWBE_APP_ID&ver=last&entry=$method&userid=$mid"
+            val request = Request.Builder().url(url).build()
+            val response = httpClient.newCall(request).execute()
+            if (response.isSuccessful) {
+                val responseBody = response.body?.string() ?: return null
+                val user = Json.decodeFromString<User>(responseBody)
+                user.baseUrl = "http://$ip"
+                return user
+            }
+        } catch (e: Exception) {
+            Log.e("Gadget.isReachable", e.toString())
+        }
+        return null
     }
 }
 
