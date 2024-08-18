@@ -16,8 +16,10 @@ export const TWT_CONTENT_KEY = "core_data_of_tweet"
 export const APP_ID = "V6MUd0cVeuCFE7YsGLNn5ygyJlm"
 export const APP_EXT = "com.example.twitterclone"
 export const APP_MARK = "version 0.0.2"
-export const FOLLOWINGS_KEY = "list_of_followings_mid"
-export const FOLLOWERS_KEY = "list_of_followers_mid"
 
 // Keys in App mimei database
 export const TWT_LIST_KEY = "list_of_tweets_mid"
+export const FOLLOWINGS_LIST = "list_of_followings_mid"
+export const FOLLOWERS_LIST = "list_of_followers_mid"
+export const FANS_COUNT = "user_followers_count"
+export const FOLLOWINGS_COUNT = "user_followings_count"

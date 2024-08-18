@@ -9,6 +9,7 @@
     const TWT_CONTENT_KEY = "core_data_of_tweet"
     const LIKE_LIST = "tweet_like_list"
     const BOOKMARK_LIST = "tweet_bookmark_list"
+    const RETWEET_LIST = "tweet_retweet_list"
 
     let tweetId = request["tweetid"]
     let userId = request["userid"]
@@ -24,7 +25,7 @@
     // check if the viewer has bookmarked or liked the tweet
     let hasLiked = lapi.Hget(mmsid, LIKE_LIST, userId)
     let hasBookmarked = lapi.Hget(mmsid, BOOKMARK_LIST, userId)
-
+    let hasRetweeted = lapi.Hget(mmsid, RETWEET_LIST, userId)
     return {
         // tweet core data
         "mid": tweet.mid,
@@ -39,8 +40,10 @@
         "retweetCount": retweetCount,
         "commentCount": commentCount,
         "likeCount": likeCount,
-
-        "hasLiked": hasLiked ? true : false,
-        "hasBookmarked": hasBookmarked ? true : false
+        "favorites": [
+            hasLiked ? true : false,
+            hasBookmarked ? true : false,
+            hasRetweeted ? true : false,
+        ],
     }
 })()

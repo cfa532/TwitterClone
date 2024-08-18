@@ -21,11 +21,10 @@
         lapi.Hset(mmsid, LIKE_LIST, userId, Date.now())
         count += 1
     }
-    console.log("hasliked", hasLiked, count)
     lapi.Set(mmsid, LIKE_COUNT, count)
     lapi.MMBackup(authSid, tweetId, "", "delref=true")
     // lapi.MiMeiPublish(authSid, "", tweetId)
 
     console.log("liked ", {hasLiked: !hasLiked, count: count})
-    return {hasLiked: hasLiked?false:true, count: count}
+    return {hasLiked: hasLiked ? false:true, count: count}
 })()
