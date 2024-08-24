@@ -17,12 +17,12 @@
     const TWT_LIST_KEY = "list_of_tweets_mid"
 
     let tweet = JSON.parse(request["tweet"])
-    console.log("uploaded ", request["tweet"], request["commentonly"])
+    console.log("uploaded ", request["tweet"])
 
     let authSid = lapi.BELoginAsAuthor()
     let mid = lapi.MMCreate(authSid, APP_ID, APP_EXT, "{{auto}}", 2, 0x07276704)
     tweet["mid"] = mid
-    tweet["timestamp"] = Date.now().toString()
+    tweet["timestamp"] = Date.now()
 
     let mmsid = lapi.MMOpen(authSid, mid, "cur")
     lapi.Set(mmsid, TWT_CONTENT_KEY, tweet)
@@ -35,21 +35,20 @@
     lapi.MMBackup(authSid, mid, "", "delref=true")
     lapi.MiMeiPublish(authSid, "", mid)
 
-    if (request["commentonly"] != "true") {
-        // only add the tweet in author's tweet list if it is not comment only.
-        // otherwise only show the comment under the original tweet
-        let appMid = lapi.MMCreate(authSid, APP_ID, APP_EXT, APP_MARK, 2, 0x07276704)
-        mmsid = lapi.MMOpen(authSid, appMid, "cur")
-        function ScorePair() {}
-        sp = new ScorePair
-        sp.score = Date.now()
-        sp.member = mid
-        console.log("appMid=", appMid, sp)
-        lapi.Zadd(mmsid, TWT_LIST_KEY, sp)
-        lapi.MMBackup(authSid, appMid, "", "delref=true")
-        lapi.MMAddRef(authSid, appMid, mid)
-        lapi.MiMeiPublish(authSid, "", appMid)
-    }
+    // only add the tweet in author's tweet list if it is not comment only.
+    // otherwise only show the comment under the original tweet
+    let appMid = lapi.MMCreate(authSid, APP_ID, APP_EXT, APP_MARK, 2, 0x07276704)
+    mmsid = lapi.MMOpen(authSid, appMid, "cur")
+    function ScorePair() {}
+    sp = new ScorePair
+    sp.score = Date.now()
+    sp.member = mid
+    console.log("appMid=", appMid, sp)
+    lapi.Zadd(mmsid, TWT_LIST_KEY, sp)
+    lapi.MMBackup(authSid, appMid, "", "delref=true")
+    lapi.MMAddRef(authSid, appMid, mid)
+    lapi.MiMeiPublish(authSid, "", appMid)
+    
     console.log("new tweet mid=", mid)
     return mid
 })()

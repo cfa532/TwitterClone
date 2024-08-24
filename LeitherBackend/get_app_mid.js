@@ -28,7 +28,7 @@
         lapi.MMBackup(authSid, appMid, "", "delref=true")
         lapi.MiMeiPublish(authSid, "", appMid)
     }
-    let user = lapi.RunMApp("get_author_core_data", {aid: request["aid"], ver:"last", userid: appMid})
+    let user = lapi.RunMApp("get_author_core_data", {aid: request["aid"], ver:"last", userid: appMid}, null)
     console.log(JSON.stringify(user))
     return {sid: authSid, mid: appMid}
     // console.log(appMid)
