@@ -25,6 +25,6 @@
     lapi.MMBackup(authSid, tweetId, "", "delref=true")
     // lapi.MiMeiPublish(authSid, "", tweetId)
 
-    console.log("liked ", {hasLiked: !hasLiked, count: count})
+    console.log("liked=", !hasLiked, count)
     return {hasLiked: hasLiked ? false:true, count: count}
 })()

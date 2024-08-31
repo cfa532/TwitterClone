@@ -10,7 +10,7 @@
 
     const APP_ID = "V6MUd0cVeuCFE7YsGLNn5ygyJlm"
     const APP_EXT = "com.example.twitterclone"
-    const APP_MARK = "version 0.0.4"
+    const APP_MARK = "version 0.0.1"
 
     // Keys in App mimei database
     const TWT_CONTENT_KEY = "core_data_of_tweet"

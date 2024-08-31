@@ -13,7 +13,6 @@
 
     let tweetId = request["tweetid"]
     let userId = request["userid"]
-    console.log("tweet mid=", tweetId)
     let mmsid = lapi.MMOpen("", tweetId, "last")
     let tweet = lapi.Get(mmsid, TWT_CONTENT_KEY)
 
@@ -26,7 +25,7 @@
     let hasLiked = lapi.Hget(mmsid, LIKE_LIST, userId)
     let hasBookmarked = lapi.Hget(mmsid, BOOKMARK_LIST, userId)
     let hasRetweeted = lapi.Hget(mmsid, RETWEET_LIST, userId)
-    return {
+    ret = {
         // tweet core data
         "mid": tweet.mid,
         "authorId": tweet.authorId,
@@ -35,7 +34,7 @@
         "isPrivate": tweet.isPrivate,
         "originalTweetId": tweet.originalTweetId,
         "originalAuthorId": tweet.originalAuthorId,
-
+        "timestamp": tweet.timestamp,
         "bookmarkCount": bookmarkCount,
         "retweetCount": retweetCount,
         "commentCount": commentCount,
@@ -46,4 +45,6 @@
             hasRetweeted ? true : false,
         ],
     }
+    console.log("Tweet=", JSON.stringify(ret))
+    return ret
 })()

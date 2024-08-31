@@ -1,7 +1,7 @@
 (()=>{
     const APP_ID = "V6MUd0cVeuCFE7YsGLNn5ygyJlm"
     const APP_EXT = "com.example.twitterclone"
-    const APP_MARK = "version 0.0.4"
+    const APP_MARK = "version 0.0.1"
     const FOLLOWINGS_KEY = "list_of_followings_mid"
     const OWNER_DATA_KEY = "data_of_author"
     const BOOKMARK_COUNT = "tweet_bookmark_count"
@@ -28,8 +28,8 @@
         lapi.MMBackup(authSid, appMid, "", "delref=true")
         lapi.MiMeiPublish(authSid, "", appMid)
     }
-    let user = lapi.RunMApp("get_author_core_data", {aid: request["aid"], ver:"last", userid: appMid}, null)
-    console.log(JSON.stringify(user))
+    let user = lapi.RunMApp("get_author_core_data", {aid: request["aid"], ver:"last", userid: appMid}, [])
+    console.log("APP mid=",JSON.stringify(user))
     return {sid: authSid, mid: appMid}
     // console.log(appMid)
     // return appMid

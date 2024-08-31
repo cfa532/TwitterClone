@@ -35,7 +35,7 @@
     sp.member = mid
     lapi.Zadd(mmsid, COMMENT_LIST, sp)
 
-    let count = lapi.Get(mmsid, COMMENT_COUNT) +1
+    let count = lapi.Get(mmsid, COMMENT_COUNT) + 1
     lapi.Set(mmsid, COMMENT_COUNT, count)
     lapi.MMBackup(authSid, tweetId, "", "delref=true")
     lapi.MMAddRef(authSid, tweetId, mid)
