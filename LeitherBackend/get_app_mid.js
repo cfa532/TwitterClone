@@ -12,25 +12,25 @@
 
     // request, lapi are global variables
     let authSid = lapi.BELoginAsAuthor()
-    let appMid = lapi.MMCreate(authSid, APP_ID, APP_EXT, APP_MARK, 2, 0x07276704)
-    let mmsid = lapi.MMOpen(authSid, appMid, "cur")
+    let userMid = lapi.MMCreate(authSid, APP_ID, APP_EXT, APP_MARK, 2, 0x07276704)
+    let mmsid = lapi.MMOpen(authSid, userMid, "cur")
 
     // check if there are data in list of followings. There should be at least the user mid itself
     let followings = lapi.Get(mmsid, FOLLOWINGS_KEY)
     if (!followings) {
-        lapi.Set(mmsid, FOLLOWINGS_KEY, [appMid])
-        lapi.Set(mmsid, OWNER_DATA_KEY, {mid: appMid})      // create default user data area
+        lapi.Set(mmsid, FOLLOWINGS_KEY, [userMid])
+        lapi.Set(mmsid, OWNER_DATA_KEY, {mid: userMid})      // create default user data area
         lapi.Set(mmsid, BOOKMARK_COUNT, 0)
         lapi.Set(mmsid, LIKE_COUNT, 0)
         lapi.Set(mmsid, COMMENT_COUNT, 0)
         lapi.Set(mmsid, FANS_COUNT, 0)
         lapi.Set(mmsid, FOLLOWINGS_COUNT, 0)
-        lapi.MMBackup(authSid, appMid, "", "delref=true")
-        lapi.MiMeiPublish(authSid, "", appMid)
+        lapi.MMBackup(authSid, userMid, "", "delref=true")
+        lapi.MiMeiPublish(authSid, "", userMid)
     }
-    let user = lapi.RunMApp("get_author_core_data", {aid: request["aid"], ver:"last", userid: appMid}, [])
+    let user = lapi.RunMApp("get_author_core_data", {aid: request["aid"], ver:"last", userid: userMid}, [])
     console.log("APP mid=",JSON.stringify(user))
-    return {sid: authSid, mid: appMid}
+    return {sid: authSid, mid: userMid}
     // console.log(appMid)
     // return appMid
 })()

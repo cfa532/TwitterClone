@@ -7,9 +7,10 @@
         let mmsid = lapi.MMOpen("", tweetId, "last")
     
         let arr = lapi.Zrevrange(mmsid, COMMENT_LIST, 0, -1)
-        return arr.map(sp => {
+        let ret = arr.map(sp => {
             return lapi.RunMApp("get_tweet", {aid: request["aid"], ver:"last", userid: userId, tweetid: sp.Member}, [])
         })
+        return JSON.stringify(ret)
     } catch(e) {
         return e
     }
