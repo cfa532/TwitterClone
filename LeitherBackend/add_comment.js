@@ -16,14 +16,14 @@
     let comment = JSON.parse(request["comment"])
     let mid = lapi.MMCreate(authSid, APP_ID, APP_EXT, "{{auto}}", 2, 0x07276704)
     comment["mid"] = mid
-    comment["timestamp"] = Date.now()
+
     let mmsid = lapi.MMOpen(authSid, mid, "cur")
     lapi.Set(mmsid, TWT_CONTENT_KEY, comment)
     lapi.Set(mmsid, RETWEET_COUNT, 0)
     lapi.Set(mmsid, COMMENT_COUNT, 0)
     lapi.Set(mmsid, LIKE_COUNT, 0)
     lapi.Set(mmsid, BOOKMARK_COUNT, 0)
-    lapi.MMBackup(authSid, mid, "", "delref=true")
+    lapi.MMBackup(authSid, mid, "")
     lapi.MiMeiPublish(authSid, "", mid)
 
     // add comment to comment_list of the tweet
@@ -37,7 +37,7 @@
 
     let count = lapi.Get(mmsid, COMMENT_COUNT) + 1
     lapi.Set(mmsid, COMMENT_COUNT, count)
-    lapi.MMBackup(authSid, tweetId, "", "delref=true")
+    lapi.MMBackup(authSid, tweetId, "")
     lapi.MMAddRef(authSid, tweetId, mid)
     lapi.MiMeiPublish(authSid, "", tweetId)
 

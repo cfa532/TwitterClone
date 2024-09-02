@@ -19,7 +19,7 @@
         count++
     }
     lapi.Set(mmsid, FANS_COUNT, count)
-    lapi.MMBackup(authSid, userId, "", "delref=true")
+    lapi.MMBackup(authSid, userId, "")
     // lapi.MiMeiPublish(authSid, "", tweetId)
 
     return count

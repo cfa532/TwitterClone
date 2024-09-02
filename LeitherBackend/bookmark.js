@@ -21,7 +21,7 @@
         count += 1
     }
     lapi.Set(mmsid, BOOKMARK_COUNT, count)
-    lapi.MMBackup(authSid, tweetId, "", "delref=true")
+    lapi.MMBackup(authSid, tweetId, "")
     // lapi.MiMeiPublish(authSid, "", tweetId)
 
      return {hasBookmarked: hasMarked?false:true, count: count}

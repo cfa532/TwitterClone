@@ -14,7 +14,7 @@
 
     let count = lapi.Get(mmsid, COMMENT_COUNT) - 1
     lapi.Set(mmsid, COMMENT_COUNT, count)
-    lapi.MMBackup(authSid, tweetId, "", "delref=true")
+    lapi.MMBackup(authSid, tweetId, "")
     // lapi.MiMeiPublish(authSid, "", tweetid)
 
     return count

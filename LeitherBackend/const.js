@@ -15,7 +15,7 @@ export const TWT_CONTENT_KEY = "core_data_of_tweet"
 
 export const APP_ID = "V6MUd0cVeuCFE7YsGLNn5ygyJlm"
 export const APP_EXT = "com.example.twitterclone"
-export const APP_MARK = "version 0.0.1"
+export const APP_MARK = "version 0.0.4"
 
 // Keys in App mimei database
 export const TWT_LIST_KEY = "list_of_tweets_mid"

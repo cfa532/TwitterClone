@@ -16,14 +16,14 @@
       lapi.Hdel(mmsid, RETWEET_LIST, fansId)
       count--
       lapi.Set(mmsid, RETWEET_COUNT, count)
-      lapi.MMBackup(authSid, tweetId, "", "delref=true")
+      lapi.MMBackup(authSid, tweetId, "")
       // when the follower received this Id, it will remove it from its own tweet list
       return {retweetId: tid, count: count}
     } else {
       lapi.Hset(mmsid, RETWEET_LIST, fansId, retweetId)
       count++
       lapi.Set(mmsid, RETWEET_COUNT, count)
-      lapi.MMBackup(authSid, tweetId, "", "delref=true")
+      lapi.MMBackup(authSid, tweetId, "")
       return {retweetId: null, count: count}
     }
 })()

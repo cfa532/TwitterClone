@@ -1,7 +1,8 @@
 (()=>{
     const APP_ID = "V6MUd0cVeuCFE7YsGLNn5ygyJlm"
     const APP_EXT = "com.example.twitterclone"
-    const APP_MARK = "version 0.0.1"
+    const APP_MARK = "version 0.0.4"
+
     const FOLLOWINGS_KEY = "list_of_followings_mid"
     const OWNER_DATA_KEY = "data_of_author"
     const BOOKMARK_COUNT = "tweet_bookmark_count"
@@ -13,6 +14,7 @@
     // request, lapi are global variables
     let authSid = lapi.BELoginAsAuthor()
     let userMid = lapi.MMCreate(authSid, APP_ID, APP_EXT, APP_MARK, 2, 0x07276704)
+
     let mmsid = lapi.MMOpen(authSid, userMid, "cur")
 
     // check if there are data in list of followings. There should be at least the user mid itself
@@ -25,11 +27,11 @@
         lapi.Set(mmsid, COMMENT_COUNT, 0)
         lapi.Set(mmsid, FANS_COUNT, 0)
         lapi.Set(mmsid, FOLLOWINGS_COUNT, 0)
-        lapi.MMBackup(authSid, userMid, "", "delref=true")
-        lapi.MiMeiPublish(authSid, "", userMid)
+        lapi.MMBackup(authSid, userMid, "")
+        lapi.MiMeiPublish(authSid, "", userMid)     // the only time to publish user Mid
     }
     let user = lapi.RunMApp("get_author_core_data", {aid: request["aid"], ver:"last", userid: userMid}, [])
-    console.log("APP mid=",JSON.stringify(user))
+    console.log("APP mid=", JSON.stringify(user))
     return {sid: authSid, mid: userMid}
     // console.log(appMid)
     // return appMid

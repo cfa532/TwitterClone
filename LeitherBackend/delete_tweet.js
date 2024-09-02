@@ -8,11 +8,11 @@
     let mmsid = lapi.MMOpen(authSid, authorMid, "cur")
     lapi.Zrem(mmsid, TWT_LIST_KEY, tweetId)
     lapi.MMDelRef(authSid, authorMid, tweetId)
-    lapi.MMBackup(authSid, authorMid, "", "delref=true")
+    lapi.MMBackup(authSid, authorMid, "")
 
     mmsid = lapi.MMOpen(authSid, tweetId, "cur")
     lapi.MMDelVers(mmsid)
-    lapi.MMBackup(authSid, tweetId, "", "delref=true")
+    lapi.MMBackup(authSid, tweetId, "")
     console.log("Delete tweet mid=", tweetId)
     return tweetId
     // lapi.MiMeiPublish(authSid, "", authorMid)
