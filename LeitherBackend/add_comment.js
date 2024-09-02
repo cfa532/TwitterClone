@@ -24,7 +24,7 @@
     lapi.Set(mmsid, LIKE_COUNT, 0)
     lapi.Set(mmsid, BOOKMARK_COUNT, 0)
     lapi.MMBackup(authSid, mid, "")
-    lapi.MiMeiPublish(authSid, "", mid)
+    // lapi.MiMeiPublish(authSid, "", mid)
 
     // add comment to comment_list of the tweet
     let tweetId = request["tweetid"]
@@ -39,7 +39,8 @@
     lapi.Set(mmsid, COMMENT_COUNT, count)
     lapi.MMBackup(authSid, tweetId, "")
     lapi.MMAddRef(authSid, tweetId, mid)
-    lapi.MiMeiPublish(authSid, "", tweetId)
+    // lapi.MiMeiPublish(authSid, "", tweetId)
+    console.log("Comment added.", JSON.stringify(comment))
 
     return {commentId: mid, count: count}
 })()
