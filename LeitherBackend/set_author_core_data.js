@@ -1,7 +1,7 @@
 (()=>{
     const OWNER_DATA_KEY = "data_of_author"
     
-    // request, lapi are global variables
+    // request, lapi are global variables. so are aid, ver
     console.log("Author mid=", request["user"])
     let author = JSON.parse(request["user"])
     const authSid = lapi.BELoginAsAuthor()
