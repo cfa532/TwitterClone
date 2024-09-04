@@ -1,7 +1,7 @@
 (()=>{
     const APP_ID = request["aid"]       // App ID assigned by Leither upon publication
     const APP_EXT = "com.example.twitterclone"
-    const APP_MARK = "version 0.0.4"
+    let APP_MARK = "στηναρχή"
 
     const FOLLOWINGS_KEY = "list_of_followings_mid"
     const OWNER_DATA_KEY = "data_of_author"
@@ -13,14 +13,19 @@
 
     // request, lapi are global variables
     let authSid = lapi.BELoginAsAuthor()
-    let userMid = lapi.MMCreate(authSid, APP_ID, APP_EXT, APP_MARK, 2, 0x07276704)
-
+    let userMid = request["userid"]
+    if (!userMid && request["phrase"]) {
+        // registering new user
+        APP_MARK = request["phrase"]
+        userMid = lapi.MMCreate(authSid, APP_ID, APP_EXT, APP_MARK, 2, 0x07276704)
+        console.log("Create new user.", APP_ID, APP_EXT, APP_MARK, userMid)
+    }
     let mmsid = lapi.MMOpen(authSid, userMid, "cur")
 
     // check if there are data in list of followings. There should be at least the user mid itself
-    let followings = lapi.Get(mmsid, FOLLOWINGS_KEY)
-    if (!followings) {
-        lapi.Set(mmsid, FOLLOWINGS_KEY, [userMid])
+    let len = lapi.Hlen(mmsid, FOLLOWINGS_KEY)
+    if (len < 1) {
+        lapi.Hset(mmsid, FOLLOWINGS_KEY, userMid, Date.now())
         lapi.Set(mmsid, OWNER_DATA_KEY, {mid: userMid})      // create default user data area
         lapi.Set(mmsid, BOOKMARK_COUNT, 0)
         lapi.Set(mmsid, LIKE_COUNT, 0)
@@ -31,8 +36,6 @@
         lapi.MiMeiPublish(authSid, "", userMid)     // the only time to publish user Mid
     }
     let user = lapi.RunMApp("get_author_core_data", {aid: request["aid"], ver:"last", userid: userMid}, [])
-    console.log("APP mid=", JSON.stringify(user))
-    return {sid: authSid, mid: userMid}
-    // console.log(appMid)
-    // return appMid
+    console.log("init_user_mid", JSON.stringify(user))
+    return user
 })()
