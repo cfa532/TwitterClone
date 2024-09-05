@@ -17,6 +17,6 @@
     user["commentCount"] = lapi.Get(mmsid, COMMENT_COUNT)
     user["fansCount"] = lapi.Get(mmsid, FANS_COUNT)
     user["followingCount"] = lapi.Get(mmsid, FOLLOWINGS_COUNT)
-    console.log("get_author_core.", JSON.stringify(user))
+    console.log("get_user_core.", JSON.stringify(user))
     return user
 })()

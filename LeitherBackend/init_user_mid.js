@@ -26,7 +26,7 @@
     let len = lapi.Hlen(mmsid, FOLLOWINGS_KEY)
     if (len < 1) {
         lapi.Hset(mmsid, FOLLOWINGS_KEY, userMid, Date.now())
-        lapi.Set(mmsid, OWNER_DATA_KEY, {mid: userMid})      // create default user data area
+        lapi.Set(mmsid, OWNER_DATA_KEY, {mid: userMid, timestamp: Date.now()})      // create default user data area
         lapi.Set(mmsid, BOOKMARK_COUNT, 0)
         lapi.Set(mmsid, LIKE_COUNT, 0)
         lapi.Set(mmsid, COMMENT_COUNT, 0)
@@ -35,7 +35,7 @@
         lapi.MMBackup(authSid, userMid, "")
         lapi.MiMeiPublish(authSid, "", userMid)     // the only time to publish user Mid
     }
-    let user = lapi.RunMApp("get_author_core_data", {aid: request["aid"], ver:"last", userid: userMid}, [])
+    let user = lapi.RunMApp("get_user_core_data", {aid: request["aid"], ver:"last", userid: userMid}, [])
     console.log("init_user_mid", JSON.stringify(user))
     return user
 })()
