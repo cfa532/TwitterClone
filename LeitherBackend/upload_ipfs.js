@@ -1,4 +1,4 @@
-(()=>{
+((request, args)=>{
     let userId = request["userid"];
     let chunkSize = 1024*1024*5; // 5MB
     console.log("upload ipfs", args.length)
@@ -30,4 +30,4 @@
             console.error("Error in MFTemp2Ipfs:", error);
         }
     }
-})();
+})(request, args);

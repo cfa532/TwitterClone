@@ -18,6 +18,7 @@
         // registering new user
         APP_MARK = request["phrase"]
         userMid = lapi.MMCreate(authSid, APP_ID, APP_EXT, APP_MARK, 2, 0x07276704)
+        // should check if the mid is taken.
         console.log("Create new user.", APP_ID, APP_EXT, APP_MARK, userMid)
     }
     let mmsid = lapi.MMOpen(authSid, userMid, "cur")
