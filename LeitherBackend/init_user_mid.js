@@ -37,6 +37,7 @@
         lapi.MiMeiPublish(authSid, "", userMid)     // the only time to publish user Mid
     }
     let user = lapi.RunMApp("get_user_core_data", {aid: request["aid"], ver:"last", userid: userMid}, [])
+    delete user.password
     console.log("init_user_mid", JSON.stringify(user))
     return user
 })()

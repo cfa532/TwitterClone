@@ -1,8 +1,8 @@
-(()=>{
+((request, args)=>{
     const FOLLOWINGS_LIST = "list_of_followings_mid"
 
     let userId = request["userid"]
-    let otherId = requet["otherid"]     // user to be followed or unfollowed
+    let otherId = request["otherid"]     // user to be followed or unfollowed
 
     let authSid = lapi.BELoginAsAuthor()
     let mmsid = lapi.MMOpen(authSid, userId, "cur")
@@ -17,4 +17,4 @@
     lapi.MMBackup(mmsid, userId, "", "delref=true")
     mmsid = lapi.MMOpen(authSid, userId, "last")
     return lapi.Hkeys(mmsid, FOLLOWINGS_LIST)
-})()
+})(request, args)
