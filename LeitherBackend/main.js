@@ -11,5 +11,5 @@
     let creatorMid = lapi.MMCreate(authSid, APP_ID, APP_EXT, APP_MARK, 2, 0x07276704)
     lapi.MiMeiPublish(authSid, "", creatorMid)
     console.log("app id, ", creatorMid, request["aid"])
-    return {appId: request["mid"], alphaId: creatorMid}
+    return {appId: request["mid"] || request["aid"], alphaId: creatorMid}
 })()

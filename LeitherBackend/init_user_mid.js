@@ -26,7 +26,6 @@
     // check if there are data in list of followings. There should be at least the user mid itself
     let len = lapi.Hlen(mmsid, FOLLOWINGS_KEY)
     if (len < 1) {
-        lapi.Hset(mmsid, FOLLOWINGS_KEY, userMid, Date.now())
         lapi.Set(mmsid, OWNER_DATA_KEY, {mid: userMid, timestamp: Date.now()})      // create default user data area
         lapi.Set(mmsid, BOOKMARK_COUNT, 0)
         lapi.Set(mmsid, LIKE_COUNT, 0)
