@@ -1,5 +1,7 @@
 ((request, args)=>{
     try {
+        // fetch new messages from a sender.
+
         const READ_MESSAGE = "read_message_indicator"   // hset of the last time a user message is read.
         const INCOMING_MESSAGE = "incoming_message_indicator"
         const MESSAGE_MIMEI = "message_mimei"
@@ -15,27 +17,21 @@
         let mmsid = lapi.MMOpen("", msgMid, "cur")
 
         // the last time user ever sent a message to the receipt.
-        let lastTimeRead = lapi.ZScore(mmsid, READ_MESSAGE, senderId) || 0;
-        let tsList = lapi.ZRangeByScore(mmsid, INCOMING_MESSAGE, lastTimeRead, -1)
-        let rank = lapi.ZRank(mmsid, INCOMING_MESSAGE, tsList[0].score) // get rank of first element
-        let startRank = Math.min(rank-50, 0)
-        tsList = lapi.ZRange(mmsid, INCOMING_MESSAGE, startRank, rank) + tsList
+        let lastTimeFetched = lapi.ZScore(mmsid, READ_MESSAGE, senderId) || 0;
+        let tsList = lapi.ZRevRangeByScore(mmsid, INCOMING_MESSAGE, lastTimeFetched, -1)
         let messages = tsList.map(e => {
-            // INCOMING_MESSAGE is key of another zset. Give the same e.member, get the score of
-            // its correspoing score in that zset. If null, set the score to zero.
-            // compare the score of 2nd zset with e.score, if e.score is larger, return e.member
-            lapi.Hget(mmsid, INCOMING_MESSAGE, e.member)
+            lapi.Hget(mmsid, senderId, e.member)
         })
-        console.log("Incoming from", msgMid, messages)
+        console.log("Incoming from", senderId, messages)
 
-        // update message reading indicator. 
+        // update message reading indicator
         function ScorePair() {}
         sp = new ScorePair
         sp.score = Date.now()
         sp.member = senderId
-        lapi.Zadd(mmsid, INCOMING_MESSAGE, sp)
-
-        return messages 
+        lapi.Zadd(mmsid, READ_MESSAGE, sp)  // if memeber exists, update the score.
+        lapi.MMBackup(authSid, msgMid, "", "delref=true")
+        return messages
     } catch(e) {
         console.error(e)
     }

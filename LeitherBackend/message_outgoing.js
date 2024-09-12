@@ -4,8 +4,8 @@
         const APP_ID = request["aid"]       // App ID assigned by Leither upon publication
         const APP_EXT = "com.example.twitterclone"
 
-        let receiptId = request["receipt"]
-        let userId = request["sender"]
+        let receiptId = request["receiptid"]
+        let userId = request["userid"]
         let authSid = lapi.BELoginAsAuthor()
 
         // create a Mimei for all messages, incoming and outgoing.
@@ -15,7 +15,7 @@
 
         function ScorePair() {}
         sp = new ScorePair
-        sp.score = Date.now()
+        sp.score = msg.id
         sp.member = msg.id
 
         // use a zset as message index and hset to store message.

@@ -6,23 +6,25 @@
         const APP_EXT = "com.example.twitterclone"
         const MESSAGE_MIMEI = "message_mimei"
 
+        // check the last message from anyone who has sent a message.
+
         let userId = request["userid"]
-        // lapi is a global handle to a Redis database.
         let msgMid = lapi.MMCreate(authSid, APP_ID, APP_EXT, userId+"_"+MESSAGE_MIMEI, 2, 0x07276704)
         let mmsid = lapi.MMOpen("", msgMid, "last")
-        let senders = lapi.ZRange(mmsid, INCOMING_MESSAGE, 0, -1)
+
+        // all users who has sent incoming message.
+        let senders = lapi.Hkeys(mmsid, INCOMING_MESSAGE)
         console.log("message senders:", senders)
-        let members = senders.map(e => {
-            // INCOMING_MESSAGE is key of another zset. Give the same e.member, get the score of
-            // its correspoing score in that zset. If null, set the score to zero.
-            // compare the score of 2nd zset with e.score, if e.score is larger, return e.member
-            let readScore = lapi.ZScore(mmsid, READ_MESSAGE, e.member) || 0;
-            if (e.score > readScore) {
-                return e.member;    // there is new message.
+
+        let messageList = senders.map(senderId => {
+            let lastTimeFetched = lapi.ZScore(mmsid, READ_MESSAGE, senderId) || 0;
+            let lastMsg = lapi.Hget(mmsid, INCOMING_MESSAGE, senderId)
+            if (lastMsg.id /* timestamp of the message */ > lastTimeFetched) {
+                lastMsg
             }
         })
-        console.log("Incoming from", members)
-        return members  // a list of users who send incoming messages
+        console.log("Incoming from", messageList)
+        return messageList  // a list of most recent incoming messages
 
     } catch(e) {
         console.error(e)
