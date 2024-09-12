@@ -1,4 +1,4 @@
-(()=>{
+((request, args)=>{
     const APP_ID = request["aid"]       // App ID assigned by Leither upon publication
     const APP_EXT = "com.example.twitterclone"
     let APP_MARK = "στηναρχή"
@@ -39,4 +39,4 @@
     delete user.password
     console.log("init_user_mid", JSON.stringify(user))
     return user
-})()
+})(request, args)

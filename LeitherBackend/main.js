@@ -1,4 +1,4 @@
-(()=>{
+((request, args)=>{
     // request, lapi are global variables
     const APP_ID = request["aid"]       // App ID assigned by Leither upon publication
     const APP_EXT = "com.example.twitterclone"
@@ -12,4 +12,4 @@
     lapi.MiMeiPublish(authSid, "", creatorMid)
     console.log("app id, ", creatorMid, request["aid"])
     return {appId: request["mid"] || request["aid"], alphaId: creatorMid}
-})()
+})(request, args)
