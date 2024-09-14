@@ -7,13 +7,13 @@
     const authSid = lapi.BELoginAsAuthor()
     let mmsid = lapi.MMOpen(authSid, authorMid, "cur")
     lapi.Zrem(mmsid, TWT_LIST_KEY, tweetId)
+    lapi.MMBackup(authSid, authorMid, "", "delref=true")
     lapi.MMDelRef(authSid, authorMid, tweetId)
-    lapi.MMBackup(authSid, authorMid, "")
 
     mmsid = lapi.MMOpen(authSid, tweetId, "cur")
-    lapi.MMDelVers(mmsid)
-    lapi.MMBackup(authSid, tweetId, "")
-    console.log("Delete tweet mid=", tweetId)
+    lapi.MMDelVers(mmsid, tweetId)
+    lapi.MMBackup(authSid, tweetId, "", "delref=true")
+    console.log("Delete tweet ", tweetId)
     return tweetId
     // lapi.MiMeiPublish(authSid, "", authorMid)
 })()

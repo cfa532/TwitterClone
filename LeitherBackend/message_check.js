@@ -9,6 +9,7 @@
         // check the last message from anyone who has sent a message.
 
         let userId = request["userid"]
+        let authSid = lapi.BELoginAsAuthor()
         let msgMid = lapi.MMCreate(authSid, APP_ID, APP_EXT, userId+"_"+MESSAGE_MIMEI, 2, 0x07276704)
         let mmsid = lapi.MMOpen("", msgMid, "last")
 

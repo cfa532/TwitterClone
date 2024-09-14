@@ -13,29 +13,28 @@
 
     // request, lapi are global variables
     let authSid = lapi.BELoginAsAuthor()
-    let userMid = request["userid"]
-    if (!userMid && request["phrase"]) {
+    let userId = request["userid"]
+    if (!userId && request["phrase"]) {
         // registering new user
         APP_MARK = request["phrase"]
-        userMid = lapi.MMCreate(authSid, APP_ID, APP_EXT, APP_MARK, 2, 0x07276704)
+        userId = lapi.MMCreate(authSid, APP_ID, APP_EXT, APP_MARK, 2, 0x07276704)
         // should check if the mid is taken.
-        console.log("Create new user.", APP_ID, APP_EXT, APP_MARK, userMid)
+        console.log("Create new user.", APP_ID, APP_EXT, APP_MARK, userId)
     }
-    let mmsid = lapi.MMOpen(authSid, userMid, "cur")
-
-    // check if there are data in list of followings. There should be at least the user mid itself
-    let len = lapi.Hlen(mmsid, FOLLOWINGS_KEY)
-    if (len < 1) {
-        lapi.Set(mmsid, OWNER_DATA_KEY, {mid: userMid, timestamp: Date.now()})      // create default user data area
+    let mmsid = lapi.MMOpen(authSid, userId, "cur")
+    let user = lapi.Get(mmsid, OWNER_DATA_KEY)
+    if (!user) {
+        lapi.Set(mmsid, OWNER_DATA_KEY, {mid: userId, timestamp: Date.now()})      // create default user data area
         lapi.Set(mmsid, BOOKMARK_COUNT, 0)
         lapi.Set(mmsid, LIKE_COUNT, 0)
         lapi.Set(mmsid, COMMENT_COUNT, 0)
         lapi.Set(mmsid, FANS_COUNT, 0)
         lapi.Set(mmsid, FOLLOWINGS_COUNT, 0)
-        lapi.MMBackup(authSid, userMid, "")
-        lapi.MiMeiPublish(authSid, "", userMid)     // the only time to publish user Mid
+        lapi.MMBackup(authSid, userId, "", "delref=true")
+        lapi.MiMeiPublish(authSid, "", userId)     // the only time to publish user Mid
     }
-    let user = lapi.RunMApp("get_user_core_data", {aid: request["aid"], ver:"last", userid: userMid}, [])
+        
+    user = lapi.RunMApp("get_user_core_data", {aid: request["aid"], ver:"last", userid: userId}, [])
     delete user.password
     console.log("init_user_mid", JSON.stringify(user))
     return user
