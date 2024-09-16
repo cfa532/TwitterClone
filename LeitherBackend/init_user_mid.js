@@ -35,6 +35,9 @@
         
     user = lapi.RunMApp("get_user_core_data", {aid: request["aid"], ver:"last", userid: userId}, [])
     delete user.password
+    user["fansList"] = lapi.RunMApp("get_followers", {aid: request["aid"], ver:"last", userid: userId}, [])
+    user["followingList"] = lapi.RunMApp("get_followings", {aid: request["aid"], ver:"last", userid: userId}, [])
+
     console.log("init_user_mid", JSON.stringify(user))
     return user
 })(request, args)
