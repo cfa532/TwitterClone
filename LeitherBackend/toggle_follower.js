@@ -7,7 +7,7 @@
     let authSid = lapi.BELoginAsAuthor()
     let mmsid = lapi.MMOpen(authSid, userId, "cur")
 
-    // check if the otherid is being followed by the user
+    // check if the otherid is following the user
     let f = lapi.Hget(mmsid, FOLLOWERS_LIST, otherId)
     if (f) {
         lapi.Hdel(mmsid, FOLLOWERS_LIST, otherId)

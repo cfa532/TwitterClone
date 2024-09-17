@@ -18,7 +18,7 @@
         console.log("message senders:", senders)
 
         let messageList = senders.map(senderId => {
-            let lastTimeFetched = lapi.ZScore(mmsid, READ_MESSAGE, senderId) || 0;
+            let lastTimeFetched = lapi.Zscore(mmsid, READ_MESSAGE, senderId) || 0;
             let lastMsg = lapi.Hget(mmsid, INCOMING_MESSAGE, senderId)
             if (lastMsg.id /* timestamp of the message */ > lastTimeFetched) {
                 lastMsg
