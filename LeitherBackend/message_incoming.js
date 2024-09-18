@@ -7,14 +7,14 @@
         const APP_EXT = "com.example.twitterclone"
 
         let senderId = request["senderid"]
-        let userId = request["receiptid"]       // current user of app.
+        let userId = request["receiptid"]       // owner of the data Mimei
         let authSid = lapi.BELoginAsAuthor()
 
         // create a Mimei for all messages, incoming and outgoing.
         let msgMid = lapi.MMCreate(authSid, APP_ID, APP_EXT, userId+"_"+MESSAGE_MIMEI, 2, 0x07276704)
         let mmsid = lapi.MMOpen(authSid, msgMid, "cur")
         let msg = JSON.parse(request["msg"])
-
+        console.log("Incoming message", msgMid, request["msg"])
         // Always keep the most recent message in the Hset
         lapi.Hset(mmsid, INCOMING_MESSAGE, senderId, msg)
 
@@ -22,9 +22,9 @@
         // senderId is the key for both.
         sp = new ScorePair
         sp.score = msg.id
-        sp.member = msg.id
+        sp.member = String(msg.id)
         lapi.Zadd(mmsid, senderId, sp)
-        lapi.Hset(mmsid, senderId, msg.id, msg)
+        lapi.Hset(mmsid, senderId, sp.member, msg)
         lapi.MMBackup(authSid, msgMid, "", "delref=true")
 
     } catch(e) {

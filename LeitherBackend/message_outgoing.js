@@ -6,6 +6,8 @@
 
         let receiptId = request["receiptid"]
         let userId = request["userid"]
+        console.log("outgoing message", request["msg"], userId, receiptId)
+
         let authSid = lapi.BELoginAsAuthor()
 
         // create a Mimei for all messages, incoming and outgoing.
@@ -15,13 +17,13 @@
 
         function ScorePair() {}
         sp = new ScorePair
-        sp.score = msg.id
-        sp.member = msg.id
+        sp.score = Number(msg.id)
+        sp.member = String(msg.id)
 
         // use a zset as message index and hset to store message.
         // senderId is the key for both.
         lapi.Zadd(mmsid, receiptId, sp)
-        lapi.Hset(mmsid, receiptId, msg.id, msg)
+        lapi.Hset(mmsid, receiptId, sp.member, msg)
         lapi.MMBackup(authSid, msgMid, "", "delref=true")
 
     } catch(e) {

@@ -14,10 +14,15 @@
 
         // get Mid of message Mimei
         let msgMid = lapi.MMCreate(authSid, APP_ID, APP_EXT, userId+"_"+MESSAGE_MIMEI, 2, 0x07276704)
-        let mmsid = lapi.MMOpen("", msgMid, "cur")
+        let mmsid = lapi.MMOpen(authSid, msgMid, "cur")
         
-        // the last time user ever sent a message to the receipt.
-        let lastTimeFetched = lapi.Zscore(mmsid, READ_MESSAGE, senderId) || 0;
+        // the last time user fetch message from the sender
+        let lastTimeFetched = 0
+        lapi.Zrange(mmsid, READ_MESSAGE, 0, -1).map(sp => {
+            if (sp.member == senderId) {
+                lastTimeFetched = sp.score
+            }
+        })
         console.log("message MimeiId", msgMid, lastTimeFetched)
         let tsList = lapi.Zrangebyscore(mmsid, INCOMING_MESSAGE, lastTimeFetched, Date.now(), 0, 10000)
         let messages = tsList.map(e => {
