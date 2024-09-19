@@ -16,5 +16,11 @@
     }
     lapi.MMBackup(mmsid, userId, "", "delref=true")
     mmsid = lapi.MMOpen(authSid, userId, "last")
-    return lapi.Hkeys(mmsid, FOLLOWERS_LIST)
+
+    // return if the other is follower or not
+    if (f) {
+        return false
+    } else {
+        return true
+    }
 })()
