@@ -15,16 +15,28 @@
 
         // all users who has sent incoming message.
         let senders = lapi.Hkeys(mmsid, INCOMING_MESSAGE)
-        console.log("message senders:", senders)
+
+        // user IDs whose massage has been fetched last time.
+        let idOfLastFetch = lapi.Hkeys(mmsid, READ_MESSAGE)
+        console.log("message senders:", JSON.stringify(senders), JSON.stringify(idOfLastFetch))
 
         let messageList = senders.map(senderId => {
-            let lastTimeFetched = lapi.Zscore(mmsid, READ_MESSAGE, senderId) || 0;
-            let lastMsg = lapi.Hget(mmsid, INCOMING_MESSAGE, senderId)
-            if (lastMsg.id /* timestamp of the message */ > lastTimeFetched) {
-                lastMsg
+            let index = idOfLastFetch.findIndex(e => e==senderId)
+            let lastTimeFetched = 0;
+            if (index > -1) {
+                // if there is no Field value of senderId under key READ_MESSAGE, Redis excepts.
+                // update timestamp of last fetch
+                lastTimeFetched = lapi.Zscore(mmsid, READ_MESSAGE, senderId)
             }
-        })
-        console.log("Incoming from", messageList)
+            let lastMsg = lapi.Hget(mmsid, INCOMING_MESSAGE, senderId)
+            if (lastMsg.timestamp > lastTimeFetched) {
+                return lastMsg
+            } else {
+                return null
+            }
+        }).filter(e => e)   // return only non-null results.
+        
+        console.log("Incoming from", JSON.stringify(messageList))
         return messageList  // a list of most recent incoming messages
 
     } catch(e) {

@@ -21,8 +21,8 @@
         // use a Zset as message index for fast query, and hset to store message.
         // senderId is the key for both.
         sp = new ScorePair
-        sp.score = msg.id
-        sp.member = String(msg.id)
+        sp.score = msg.timestamp
+        sp.member = String(msg.timestamp)
         lapi.Zadd(mmsid, senderId, sp)
         lapi.Hset(mmsid, senderId, sp.member, msg)
         lapi.MMBackup(authSid, msgMid, "", "delref=true")

@@ -6,7 +6,6 @@
 
         let receiptId = request["receiptid"]
         let userId = request["userid"]
-        console.log("outgoing message", request["msg"], userId, receiptId)
 
         let authSid = lapi.BELoginAsAuthor()
 
@@ -14,11 +13,12 @@
         let msg = JSON.parse(request["msg"])
         let msgMid = lapi.MMCreate(authSid, APP_ID, APP_EXT, userId+"_"+MESSAGE_MIMEI, 2, 0x07276704)
         let mmsid = lapi.MMOpen(authSid, msgMid, "cur")
+        console.log("outgoing message", request["msg"], msgMid)
 
         function ScorePair() {}
         sp = new ScorePair
-        sp.score = Number(msg.id)
-        sp.member = String(msg.id)
+        sp.score = msg.timestamp
+        sp.member = String(msg.timestamp)
 
         // use a zset as message index and hset to store message.
         // senderId is the key for both.
