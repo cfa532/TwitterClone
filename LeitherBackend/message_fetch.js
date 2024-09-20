@@ -23,12 +23,13 @@
                 lastTimeFetched = sp.score
             }
         })
-        console.log("message MimeiId", msgMid, lastTimeFetched)
+        console.log("Fetch message MimeiId", msgMid, lastTimeFetched, senderId)
+        
         let tsList = lapi.Zrangebyscore(mmsid, INCOMING_MESSAGE, lastTimeFetched, Date.now(), 0, 10000)
         let messages = tsList.map(e => {
             lapi.Hget(mmsid, senderId, e.member)
         })
-        console.log("Incoming from", senderId, JSON.stringify(messages))
+        console.log("Fetch incoming from", senderId, JSON.stringify(messages))
 
         // update message reading indicator
         function ScorePair() {}
